@@ -2,6 +2,71 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+export async function generateRoomPrompts(roomName: string, roomDescription: string) {
+  try {
+    const apiKey = process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
+      return {
+        success: true,
+        data: [
+          `${roomName}について、最近の体験を教えてください`,
+          `${roomName}で困ったことはありますか？`,
+          `${roomName}のおすすめ情報があれば共有してください`,
+        ],
+      };
+    }
+
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
+    const prompt = `あなたは食物アレルギーを持つ子どもの親のコミュニティのファシリテーターです。
+
+以下のトークルームで会話を始めるための「問いかけ」を3つ生成してください。
+
+ルーム名: ${roomName}
+ルーム説明: ${roomDescription}
+
+ルール:
+- 保護者（ママ・パパ）が思わず答えたくなる、具体的で親しみやすい問いかけにする
+- 「うちはこうだった」と体験を共有したくなる質問にする
+- 堅苦しくなく、友達に聞くようなカジュアルなトーンにする
+- 各質問は40文字以内に収める
+- 医療的な判断を求める質問は避ける
+
+JSON形式で配列のみ返してください:
+["質問1", "質問2", "質問3"]`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const match = text.match(/\[[\s\S]*?\]/);
+
+    if (match) {
+      const questions: string[] = JSON.parse(match[0]);
+      return { success: true, data: questions.slice(0, 3) };
+    }
+
+    return {
+      success: true,
+      data: [
+        `${roomName}について、最近の体験を教えてください`,
+        `${roomName}で困ったことはありますか？`,
+        `${roomName}のおすすめ情報があれば共有してください`,
+      ],
+    };
+  } catch (err) {
+    console.error("[generateRoomPrompts]", err);
+    return {
+      success: true,
+      data: [
+        `${roomName}について、最近の体験を教えてください`,
+        `${roomName}で困ったことはありますか？`,
+        `${roomName}のおすすめ情報があれば共有してください`,
+      ],
+    };
+  }
+}
+
 export async function postMessage(roomId: string, content: string) {
   try {
     const supabase = await createClient();
