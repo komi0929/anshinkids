@@ -16,16 +16,8 @@ export default function LoginPage() {
     try {
       const supabase = createClient();
 
-      // LINE Login via Supabase
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      if (supabaseUrl) {
-        const redirectUrl = `${supabaseUrl}/auth/v1/authorize?provider=line&redirect_to=${encodeURIComponent(window.location.origin + "/auth/callback")}`;
-        window.location.href = redirectUrl;
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider: "custom:line" as any,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
