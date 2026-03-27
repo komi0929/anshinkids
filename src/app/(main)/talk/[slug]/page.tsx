@@ -3,14 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, Heart, MessageCircle, Sparkles, RefreshCw } from "lucide-react";
+import { ArrowLeft, Send, Heart, MessageCircle, Sparkles, RefreshCw, BookOpen } from "lucide-react";
 import {
   getActiveMessages,
   postMessage,
   sendThanks,
   removeThanks,
   generateRoomPrompts,
-  getTalkRooms,
+  getTalkRoomBySlug,
+  getWikiCountForRoom,
 } from "@/app/actions/messages";
 
 interface Message {
@@ -28,6 +29,7 @@ interface Message {
 }
 
 interface RoomInfo {
+  id: string;
   name: string;
   description: string;
   icon_emoji: string;
@@ -41,29 +43,32 @@ export default function TalkRoomPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [thankedIds, setThankedIds] = useState<Set<string>>(new Set());
-  const [roomInfo, setRoomInfo] = useState<RoomInfo>({ name: "", description: "", icon_emoji: "💬" });
+  const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [prompts, setPrompts] = useState<string[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(true);
+  const [wikiCount, setWikiCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadRoom();
-    loadMessages();
-    const interval = setInterval(loadMessages, 15000);
-    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   async function loadRoom() {
-    const { data } = await getTalkRooms();
-    const rooms = data as Array<{ slug: string; name: string; description: string; icon_emoji: string }>;
-    const room = rooms.find((r) => r.slug === slug);
-    if (room) {
-      setRoomInfo({ name: room.name, description: room.description, icon_emoji: room.icon_emoji });
+    const result = await getTalkRoomBySlug(slug);
+    if (result.success && result.data) {
+      const room = result.data as RoomInfo;
+      setRoomInfo(room);
+      loadMessages(room.id);
       loadPrompts(room.name, room.description);
+      loadWikiCount(room.id);
+
+      // Set up polling with room UUID
+      const interval = setInterval(() => loadMessages(room.id), 15000);
+      return () => clearInterval(interval);
     } else {
-      setRoomInfo({ name: slug, description: "", icon_emoji: "💬" });
-      loadPrompts(slug, "");
+      setRoomInfo({ id: "", name: slug, description: "", icon_emoji: "💬" });
+      setIsLoading(false);
     }
   }
 
@@ -76,14 +81,19 @@ export default function TalkRoomPage() {
     setIsLoadingPrompts(false);
   }
 
+  async function loadWikiCount(roomId: string) {
+    const result = await getWikiCountForRoom(roomId);
+    setWikiCount(result.count || 0);
+  }
+
   async function refreshPrompts() {
-    if (roomInfo.name) {
+    if (roomInfo?.name) {
       loadPrompts(roomInfo.name, roomInfo.description);
     }
   }
 
-  async function loadMessages() {
-    const result = await getActiveMessages(slug);
+  async function loadMessages(roomId: string) {
+    const result = await getActiveMessages(roomId);
     if (result.success) {
       setMessages(result.data as Message[]);
     }
@@ -92,13 +102,13 @@ export default function TalkRoomPage() {
 
   async function handleSend(content?: string) {
     const text = content || newMessage;
-    if (!text.trim() || isSending) return;
+    if (!text.trim() || isSending || !roomInfo?.id) return;
     setIsSending(true);
 
-    const result = await postMessage(slug, text);
+    const result = await postMessage(roomInfo.id, text);
     if (result.success) {
       setNewMessage("");
-      await loadMessages();
+      await loadMessages(roomInfo.id);
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
     setIsSending(false);
@@ -106,7 +116,6 @@ export default function TalkRoomPage() {
 
   function handlePromptClick(prompt: string) {
     setNewMessage(prompt);
-    // Auto-focus the textarea
     const textarea = document.querySelector("textarea");
     textarea?.focus();
   }
@@ -123,7 +132,7 @@ export default function TalkRoomPage() {
       await sendThanks(messageId);
       setThankedIds((prev) => new Set(prev).add(messageId));
     }
-    await loadMessages();
+    if (roomInfo?.id) await loadMessages(roomInfo.id);
   }
 
   function getTimeAgo(dateStr: string) {
@@ -156,9 +165,9 @@ export default function TalkRoomPage() {
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
         <div className="flex items-center gap-2 flex-1">
-          <span className="text-xl">{roomInfo.icon_emoji}</span>
+          <span className="text-xl">{roomInfo?.icon_emoji || "💬"}</span>
           <div>
-            <h1 className="text-[15px] font-bold text-[var(--color-text)]">{roomInfo.name}</h1>
+            <h1 className="text-[15px] font-bold text-[var(--color-text)]">{roomInfo?.name || ""}</h1>
             <p className="text-[10px] text-[var(--color-subtle)]">
               投稿は24hで消えて、みんなの知恵に変わります
             </p>
@@ -168,16 +177,30 @@ export default function TalkRoomPage() {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {/* Wiki Knowledge Banner */}
+        {wikiCount > 0 && (
+          <Link href="/wiki" className="block mb-2">
+            <div className="p-3 rounded-xl bg-gradient-to-r from-[var(--color-success-light)]/60 to-[var(--color-surface-warm)] border border-[var(--color-success)]/15 hover:border-[var(--color-success)]/30 transition-colors">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-[var(--color-success)] flex-shrink-0" />
+                <p className="text-[11px] text-[var(--color-text-secondary)]">
+                  みんなの会話から <strong className="text-[var(--color-success)]">{wikiCount}件</strong> の知恵が生まれました 📖
+                </p>
+              </div>
+            </div>
+          </Link>
+        )}
+
         {/* AI Conversation Starters */}
         {messages.length === 0 && !isLoading && (
           <div className="mb-6">
             {/* Welcome */}
             <div className="text-center mb-5">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-success-light)] flex items-center justify-center mx-auto mb-3 text-2xl">
-                {roomInfo.icon_emoji}
+                {roomInfo?.icon_emoji || "💬"}
               </div>
               <h2 className="text-[15px] font-bold text-[var(--color-text)]">
-                「{roomInfo.name}」について話そう
+                「{roomInfo?.name}」について話そう
               </h2>
               <p className="text-[12px] text-[var(--color-subtle)] mt-1">
                 AIが話題を用意しました。気になるものをタップ！

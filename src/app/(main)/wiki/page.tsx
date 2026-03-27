@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, Shield, Clock, Plus, Loader2, Check, X } from "lucide-react";
-import { contributeToWiki } from "@/app/actions/wiki";
+import Link from "next/link";
+import { searchWiki, contributeToWiki } from "@/app/actions/wiki";
 
 const CATEGORIES = [
   "すべて",
@@ -28,64 +29,6 @@ interface WikiEntry {
   updated_at: string;
 }
 
-const DEMO_ENTRIES: WikiEntry[] = [
-  {
-    id: "1",
-    title: "卵不使用の市販おやつリスト 2026年版",
-    slug: "egg-free-snacks-2026",
-    category: "市販品",
-    summary: "卵アレルギーの子どもでも安心して食べられる市販おやつを、複数の保護者の体験に基づいてまとめました。",
-    allergen_tags: ["卵"],
-    avg_trust_score: 78.5,
-    source_count: 23,
-    updated_at: "2026-03-25T10:00:00Z",
-  },
-  {
-    id: "2",
-    title: "乳・卵不使用のケーキ専門店まとめ",
-    slug: "dairy-egg-free-cake-shops",
-    category: "外食",
-    summary: "誕生日やイベント時に利用できる、アレルギー対応ケーキを提供する専門店のリストです。",
-    allergen_tags: ["卵", "乳"],
-    avg_trust_score: 65.2,
-    source_count: 15,
-    updated_at: "2026-03-20T10:00:00Z",
-  },
-  {
-    id: "3",
-    title: "卵アレルギーの負荷試験の進め方ガイド",
-    slug: "egg-challenge-guide",
-    category: "負荷試験",
-    summary: "実際に負荷試験を経験した保護者の声をもとに、準備から当日の流れ、注意点をまとめました。",
-    allergen_tags: ["卵"],
-    avg_trust_score: 85.0,
-    source_count: 42,
-    updated_at: "2026-03-18T10:00:00Z",
-  },
-  {
-    id: "4",
-    title: "小麦フリーの代替パスタ比較レビュー",
-    slug: "wheat-free-pasta-reviews",
-    category: "市販品",
-    summary: "米粉パスタやとうもろこしパスタなど、小麦不使用の代替パスタの食感・味を比較した保護者のレビュー集。",
-    allergen_tags: ["小麦"],
-    avg_trust_score: 58.3,
-    source_count: 18,
-    updated_at: "2026-03-15T10:00:00Z",
-  },
-  {
-    id: "5",
-    title: "保育園でのアレルギー給食対応事例集",
-    slug: "nursery-allergy-meal-cases",
-    category: "病院",
-    summary: "保育園入園時の除去食対応、栄養士との面談、代替メニューの交渉テクニックなどの実例。",
-    allergen_tags: ["卵", "乳", "小麦"],
-    avg_trust_score: 72.0,
-    source_count: 31,
-    updated_at: "2026-03-12T10:00:00Z",
-  },
-];
-
 function getTrustLevel(score: number) {
   if (score >= 70) return { label: "高信頼", className: "trust-high" };
   if (score >= 40) return { label: "中信頼", className: "trust-medium" };
@@ -102,6 +45,8 @@ function getFreshness(updatedAt: string) {
 }
 
 export default function WikiPage() {
+  const [entries, setEntries] = useState<WikiEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("すべて");
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
@@ -111,14 +56,21 @@ export default function WikiPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
 
-  const filteredEntries = DEMO_ENTRIES.filter((entry) => {
-    if (searchQuery && !entry.title.includes(searchQuery) && !entry.summary.includes(searchQuery))
-      return false;
-    if (selectedCategory !== "すべて" && entry.category !== selectedCategory) return false;
-    if (selectedAllergens.length > 0 && !selectedAllergens.some((a) => entry.allergen_tags.includes(a)))
-      return false;
-    return true;
-  });
+  useEffect(() => {
+    loadEntries();
+  }, [searchQuery, selectedCategory, selectedAllergens]);
+
+  async function loadEntries() {
+    setIsLoading(true);
+    const result = await searchWiki(searchQuery, {
+      category: selectedCategory === "すべて" ? undefined : selectedCategory,
+      allergens: selectedAllergens.length > 0 ? selectedAllergens : undefined,
+    });
+    if (result.success) {
+      setEntries(result.data as WikiEntry[]);
+    }
+    setIsLoading(false);
+  }
 
   async function handleContribute(entryId: string) {
     if (!contribText.trim()) return;
@@ -127,7 +79,7 @@ export default function WikiPage() {
     if (result.success) {
       setSubmitted(entryId);
       setContribText("");
-      setTimeout(() => { setSubmitted(null); setExpandedEntry(null); }, 2500);
+      setTimeout(() => { setSubmitted(null); setExpandedEntry(null); loadEntries(); }, 2500);
     }
     setIsSubmitting(false);
   }
@@ -221,14 +173,29 @@ export default function WikiPage() {
 
       {/* Results */}
       <div className="px-4 space-y-3 pb-4">
-        {filteredEntries.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="shimmer h-32 rounded-2xl" />
+            ))}
+          </div>
+        ) : entries.length === 0 ? (
           <div className="empty-state">
             <div className="text-5xl mb-2">🌱</div>
             <h3>まだここは育ち中です</h3>
-            <p>「みんなの声」で体験を共有すると、AIが自動的にここに知恵を集めます。<br/>あなたの一言が、次のページになります。</p>
+            <p>
+              「みんなの声」で体験を共有すると、AIが自動的にここに知恵を集めます。
+              <br/>あなたの一言が、次のページになります。
+            </p>
+            <Link
+              href="/talk"
+              className="btn-primary mt-6 inline-flex items-center gap-2"
+            >
+              💬 みんなの声で話してみる
+            </Link>
           </div>
         ) : (
-          filteredEntries.map((entry) => {
+          entries.map((entry) => {
             const trust = getTrustLevel(entry.avg_trust_score);
             const freshness = getFreshness(entry.updated_at);
             const isExpanded = expandedEntry === entry.id;
@@ -236,7 +203,7 @@ export default function WikiPage() {
 
             return (
               <div key={entry.id} className="card slide-up overflow-hidden">
-                <div className="p-4">
+                <Link href={`/wiki/${entry.slug}`} className="block p-4 hover:bg-[var(--color-surface-warm)]/30 transition-colors">
                   <h3 className="font-semibold text-[15px] text-[var(--color-text)] mb-2">{entry.title}</h3>
                   <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mb-3">{entry.summary}</p>
                   <div className="flex items-center flex-wrap gap-2">
@@ -252,25 +219,25 @@ export default function WikiPage() {
                       {entry.source_count}件の体験にもとづく
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex flex-wrap gap-1.5">
-                      {entry.allergen_tags.map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 bg-[var(--color-surface-warm)] rounded-full text-[11px] text-[var(--color-text-secondary)]">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => { setExpandedEntry(isExpanded ? null : entry.id); setContribText(""); }}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                        isExpanded
-                          ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                          : "text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)] hover:text-[var(--color-primary)]"
-                      }`}
-                    >
-                      {isExpanded ? (<><X className="w-3 h-3" /> とじる</>) : (<><Plus className="w-3 h-3" /> 情報を追加</>)}
-                    </button>
+                </Link>
+                <div className="px-4 pb-3 flex items-center justify-between">
+                  <div className="flex flex-wrap gap-1.5">
+                    {entry.allergen_tags?.map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 bg-[var(--color-surface-warm)] rounded-full text-[11px] text-[var(--color-text-secondary)]">
+                        {tag}
+                      </span>
+                    ))}
                   </div>
+                  <button
+                    onClick={(e) => { e.preventDefault(); setExpandedEntry(isExpanded ? null : entry.id); setContribText(""); }}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                      isExpanded
+                        ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                        : "text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)] hover:text-[var(--color-primary)]"
+                    }`}
+                  >
+                    {isExpanded ? (<><X className="w-3 h-3" /> とじる</>) : (<><Plus className="w-3 h-3" /> 情報を追加</>)}
+                  </button>
                 </div>
 
                 {isExpanded && (

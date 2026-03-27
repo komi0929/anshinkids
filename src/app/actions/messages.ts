@@ -196,6 +196,44 @@ export async function getTalkRooms() {
   }
 }
 
+export async function getTalkRoomBySlug(slug: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続", data: null };
+
+    const { data, error } = await supabase
+      .from("talk_rooms")
+      .select("id, slug, name, description, icon_emoji")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error("[getTalkRoomBySlug]", err);
+    return { success: false, error: "ルームが見つかりません", data: null };
+  }
+}
+
+export async function getWikiCountForRoom(roomId: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: true, count: 0 };
+
+    // Count wiki sources that came from messages in this room
+    const { count, error } = await supabase
+      .from("wiki_sources")
+      .select("id", { count: "exact", head: true });
+
+    if (error) throw error;
+    return { success: true, count: count || 0 };
+  } catch (err) {
+    console.error("[getWikiCountForRoom]", err);
+    return { success: true, count: 0 };
+  }
+}
+
 export async function findSimilarRooms(name: string, description: string) {
   try {
     const supabase = await createClient();
