@@ -38,9 +38,13 @@ export default function MyPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header">
-        <h1 className="page-title">マイページ</h1>
-        <p className="page-subtitle">あなたの貢献はちゃんと届いています</p>
+      <div className="px-5 pt-8 pb-5">
+        <h1 className="text-[22px] font-bold text-[var(--color-text)] leading-tight">
+          わたしの記録 🌿
+        </h1>
+        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
+          あなたの貢献は、ちゃんとみんなの役に立っています
+        </p>
       </div>
 
       {/* Profile Card */}
@@ -74,7 +78,7 @@ export default function MyPage() {
                 {profile.total_contributions}
               </div>
               <div className="text-[10px] text-[var(--color-subtle)]">
-                投稿数
+                共有数
               </div>
             </div>
             <div className="bg-[var(--color-success-light)] rounded-xl p-3 text-center">
@@ -83,7 +87,7 @@ export default function MyPage() {
                 {profile.total_thanks_received}
               </div>
               <div className="text-[10px] text-[var(--color-subtle)]">
-                感謝された回数
+                ありがとう
               </div>
             </div>
             <div className="bg-[var(--color-warning-light)] rounded-xl p-3 text-center">
@@ -92,7 +96,7 @@ export default function MyPage() {
                 {gratitudeReports.length}
               </div>
               <div className="text-[10px] text-[var(--color-subtle)]">
-                Wiki反映数
+                知恵に反映
               </div>
             </div>
           </div>
@@ -120,11 +124,11 @@ export default function MyPage() {
       {/* Silent Gratitude Reports */}
       <div className="px-4 pb-4">
         <h3 className="text-sm font-semibold text-[var(--color-text)] mb-3 flex items-center gap-2">
-          <span className="text-base">🌿</span>
-          サイレント感謝レポート
+          <span className="text-base">🌱</span>
+          あなたの声が役に立っています
         </h3>
         <p className="text-[12px] text-[var(--color-subtle)] mb-4">
-          あなたの投稿がWikiに反映され、他の保護者の助けになっています
+          あなたの投稿が「みんなの知恵」に反映され、他のママ・パパの助けになっています
         </p>
 
         <div className="space-y-3">

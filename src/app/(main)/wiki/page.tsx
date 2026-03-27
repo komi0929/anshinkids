@@ -126,9 +126,13 @@ export default function WikiPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Wiki辞書</h1>
-        <p className="page-subtitle">当事者の一次情報をAIが整理した知恵の辞書</p>
+      <div className="px-5 pt-8 pb-5">
+        <h1 className="text-[22px] font-bold text-[var(--color-text)] leading-tight">
+          みんなの知恵 📖
+        </h1>
+        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
+          ママ・パパの体験をAIが整理した、みんなでつくる知恵袋
+        </p>
       </div>
 
       {/* Search */}
@@ -232,9 +236,9 @@ export default function WikiPage() {
       <div className="px-4 space-y-3 pb-4">
         {filteredEntries.length === 0 ? (
           <div className="empty-state">
-            <div className="text-5xl mb-2">📚</div>
-            <h3>該当する記事がありません</h3>
-            <p>トークルームで情報を共有すると、AIが自動的に辞書化します</p>
+            <div className="text-5xl mb-2">🌱</div>
+            <h3>まだここは育ち中です</h3>
+            <p>「みんなの声」で体験を共有すると、AIが自動的にここに知恵を集めます。<br/>あなたの一言が、次のページになります。</p>
           </div>
         ) : (
           filteredEntries.map((entry) => {

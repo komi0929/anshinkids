@@ -59,10 +59,10 @@ export default function ConciergePage() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-[var(--color-text)]">
-              AIコンシェルジュ
+              AI相談 ✨
             </h1>
             <p className="text-[11px] text-[var(--color-subtle)]">
-              アプリ内の一次情報のみをもとに回答します
+              みんなの知恵をもとに、やさしくお答えします
             </p>
           </div>
         </div>
@@ -76,11 +76,11 @@ export default function ConciergePage() {
               <Leaf className="w-10 h-10 text-[var(--color-success)]" />
             </div>
             <h2 className="text-lg font-bold text-[var(--color-text)] mb-2">
-              お悩みをお聞かせください
+              なんでも聞いてくださいね 🌿
             </h2>
             <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed mb-8 max-w-sm">
-              あんしんキッズのAI辞書に蓄積された当事者の一次情報をもとに、
-              可能性のある選択肢を優しくお伝えします。
+              みんなから集まった体験をもとに、可能性のある選択肢をやさしくお伝えします。<br />
+              断定的な医療アドバイスではなく、「こんな声がありましたよ」という形でお答えします。
             </p>
 
             {/* Suggestion chips */}

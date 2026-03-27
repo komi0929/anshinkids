@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { MessageCircle, BookOpen, Sparkles, User } from "lucide-react";
 
 const navItems = [
-  { href: "/talk", icon: MessageCircle, label: "トーク" },
-  { href: "/wiki", icon: BookOpen, label: "Wiki辞書" },
+  { href: "/talk", icon: MessageCircle, label: "みんなの声" },
+  { href: "/wiki", icon: BookOpen, label: "みんなの知恵" },
   { href: "/concierge", icon: Sparkles, label: "AI相談" },
-  { href: "/mypage", icon: User, label: "マイページ" },
+  { href: "/mypage", icon: User, label: "わたし" },
 ];
 
 export default function MainLayout({
