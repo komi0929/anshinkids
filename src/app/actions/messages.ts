@@ -130,3 +130,130 @@ export async function getTalkRooms() {
     return { success: true, data: [] };
   }
 }
+
+export async function findSimilarRooms(name: string, description: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: true, data: [] };
+
+    // Get all existing rooms
+    const { data: rooms } = await supabase
+      .from("talk_rooms")
+      .select("id, slug, name, description, icon_emoji")
+      .eq("is_active", true);
+
+    if (!rooms || rooms.length === 0) return { success: true, data: [] };
+
+    // Use Gemini to find similar rooms
+    const apiKey = process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
+      // Fallback: simple text matching
+      const similar = rooms.filter((r) => {
+        const rName = (r.name || "").toLowerCase();
+        const rDesc = (r.description || "").toLowerCase();
+        const qName = name.toLowerCase();
+        const qDesc = description.toLowerCase();
+        return (
+          rName.includes(qName) ||
+          qName.includes(rName) ||
+          rDesc.includes(qName) ||
+          qName.includes(rDesc) ||
+          rName.includes(qDesc) ||
+          qDesc.includes(rName)
+        );
+      });
+      return { success: true, data: similar };
+    }
+
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
+    const prompt = `あなたはトークルームの類似性を判定するAIです。
+
+ユーザーが以下のテーマで新しいトークルームを作ろうとしています：
+テーマ名: 「${name}」
+説明: 「${description}」
+
+既存のトークルーム一覧:
+${rooms.map((r, i) => `${i + 1}. 「${r.name}」- ${r.description}`).join("\n")}
+
+上記の既存ルームの中で、ユーザーが作ろうとしているテーマと内容が重複・類似するものがあれば、
+その番号をJSON配列で返してください。類似がなければ空配列を返してください。
+
+判定基準:
+- 同じアレルゲンについて話している場合は類似
+- 同じシチュエーション（外食、保育園等）について話している場合は類似
+- テーマの一部が重なる場合は類似
+
+回答は数字の配列のみ（例: [1, 3, 5] ）`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const match = text.match(/\[[\d\s,]*\]/);
+
+    if (match) {
+      const indices: number[] = JSON.parse(match[0]);
+      const similarRooms = indices
+        .map((i) => rooms[i - 1])
+        .filter(Boolean);
+      return { success: true, data: similarRooms };
+    }
+
+    return { success: true, data: [] };
+  } catch (err) {
+    console.error("[findSimilarRooms]", err);
+    return { success: true, data: [] };
+  }
+}
+
+export async function createTalkRoom(
+  name: string,
+  description: string,
+  iconEmoji: string
+) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "ログインが必要です" };
+
+    // Generate slug from name
+    const slug = name
+      .replace(/[^\w\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g, "-")
+      .replace(/-+/g, "-")
+      .toLowerCase()
+      .slice(0, 60)
+      + "-" + Date.now().toString(36);
+
+    // Get the max sort_order
+    const { data: maxOrder } = await supabase
+      .from("talk_rooms")
+      .select("sort_order")
+      .order("sort_order", { ascending: false })
+      .limit(1)
+      .single();
+
+    const nextOrder = ((maxOrder?.sort_order as number) || 100) + 1;
+
+    const { data, error } = await supabase
+      .from("talk_rooms")
+      .insert({
+        slug,
+        name: name.trim(),
+        description: description.trim(),
+        icon_emoji: iconEmoji || "💬",
+        sort_order: nextOrder,
+        is_active: true,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error("[createTalkRoom]", err);
+    return { success: false, error: "ルームの作成に失敗しました" };
+  }
+}
