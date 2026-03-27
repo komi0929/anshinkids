@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Leaf, MessageCircle, BookOpen, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -8,6 +8,12 @@ import { createClient } from "@/lib/supabase/client";
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlError = params.get("error");
+    if (urlError) setError(`認証エラー: ${urlError}`);
+  }, []);
 
   async function handleLineLogin() {
     setIsLoading(true);
