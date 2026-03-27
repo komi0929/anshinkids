@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageCircle, BookOpen, Sparkles, User } from "lucide-react";
+import { MessageCircle, BookOpen, Sparkles, User, LogIn } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/talk", icon: MessageCircle, label: "みんなの声" },
@@ -17,6 +19,22 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function check() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!cancelled) setIsLoggedIn(!!user);
+      } catch {
+        if (!cancelled) setIsLoggedIn(false);
+      }
+    }
+    check();
+    return () => { cancelled = true; };
+  }, [pathname]);
 
   return (
     <div className="min-h-screen pb-20">
@@ -40,6 +58,17 @@ export default function MainLayout({
               </Link>
             );
           })}
+          {/* Show login button if not authenticated */}
+          {isLoggedIn === false && (
+            <Link
+              href="/login"
+              className="nav-item"
+              style={{ color: "var(--color-primary)" }}
+            >
+              <LogIn />
+              <span>ログイン</span>
+            </Link>
+          )}
         </div>
       </nav>
     </div>

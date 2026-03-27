@@ -60,7 +60,6 @@ export default function MyPage() {
 
   useEffect(() => {
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSave() {
@@ -112,6 +111,13 @@ export default function MyPage() {
           <div className="text-5xl mb-2">🔐</div>
           <h3>ログインが必要です</h3>
           <p>マイページを見るにはログインしてください</p>
+          <a
+            href="/login"
+            className="btn-primary mt-6 inline-flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            LINEでログイン
+          </a>
         </div>
       </div>
     );

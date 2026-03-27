@@ -100,6 +100,8 @@ export default function TalkRoomPage() {
     setIsLoading(false);
   }
 
+  const [authError, setAuthError] = useState(false);
+
   async function handleSend(content?: string) {
     const text = content || newMessage;
     if (!text.trim() || isSending || !roomInfo?.id) return;
@@ -108,8 +110,11 @@ export default function TalkRoomPage() {
     const result = await postMessage(roomInfo.id, text);
     if (result.success) {
       setNewMessage("");
+      setAuthError(false);
       await loadMessages(roomInfo.id);
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else if (result.error === "ログインが必要です") {
+      setAuthError(true);
     }
     setIsSending(false);
   }
@@ -345,6 +350,23 @@ export default function TalkRoomPage() {
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Auth Error Banner */}
+      {authError && (
+        <div className="px-4 py-3 bg-[var(--color-warning-light)] border-t border-[var(--color-warning)]/20">
+          <div className="flex items-center justify-between max-w-lg mx-auto">
+            <p className="text-[12px] text-[var(--color-text-secondary)]">
+              💬 投稿するにはログインが必要です
+            </p>
+            <a
+              href="/login"
+              className="btn-primary !py-1.5 !px-4 !text-[12px] flex-shrink-0"
+            >
+              ログインする
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)] p-4 pb-[max(16px,env(safe-area-inset-bottom))]">
