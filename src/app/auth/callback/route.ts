@@ -11,8 +11,14 @@ export async function GET(request: Request) {
   // Handle OAuth error from provider
   if (errorParam) {
     console.error("OAuth error:", errorParam, errorDescription);
+    // Detect LINE OIDC misconfiguration
+    const desc = errorDescription || errorParam;
+    const isProfileError = desc.toLowerCase().includes("profile") || desc.toLowerCase().includes("provider");
+    const message = isProfileError
+      ? "LINE連携の設定に問題があります。LINE Developer ConsoleのCallback URLを https://www.anshin.kids/auth/callback/line に設定してください。"
+      : desc;
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(errorDescription || errorParam)}`
+      `${origin}/login?error=${encodeURIComponent(message)}`
     );
   }
 
