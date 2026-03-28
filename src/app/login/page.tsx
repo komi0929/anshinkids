@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Leaf, MessageCircle, BookOpen, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,21 +14,30 @@ export default function LoginPage() {
     if (urlError) setError(`認証エラー: ${urlError}`);
   }, []);
 
-  async function handleLineLogin() {
+  function handleLineLogin() {
     setIsLoading(true);
     setError(null);
 
     try {
-      const supabase = createClient();
+      const channelId = process.env.NEXT_PUBLIC_LINE_CHANNEL_ID;
+      if (!channelId) {
+        throw new Error("LINE Channel ID not configured");
+      }
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "custom:line" as any,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+      // Generate state for CSRF protection
+      const state = crypto.randomUUID();
+      localStorage.setItem("line_oauth_state", state);
+
+      const redirectUri = `${window.location.origin}/auth/callback/line`;
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: channelId,
+        redirect_uri: redirectUri,
+        state,
+        scope: "profile openid",
       });
 
-      if (error) throw error;
+      window.location.href = `https://access.line.me/oauth2/v2.1/authorize?${params.toString()}`;
     } catch (err) {
       console.error("LINE Login error:", err);
       setError("LINEログインに失敗しました。しばらくしてからお試しください。");
