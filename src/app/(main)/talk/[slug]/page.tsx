@@ -174,7 +174,7 @@ export default function TalkRoomPage() {
           <div>
             <h1 className="text-[15px] font-bold text-[var(--color-text)]">{roomInfo?.name || ""}</h1>
             <p className="text-[10px] text-[var(--color-subtle)]">
-              投稿は24hで消えて、みんなの知恵に変わります
+              体験談やおすすめ情報を気軽にシェア
             </p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function TalkRoomPage() {
                 「{roomInfo?.name}」について話そう
               </h2>
               <p className="text-[12px] text-[var(--color-subtle)] mt-1">
-                AIが話題を用意しました。気になるものをタップ！
+                まだ投稿がありません。最初の投稿者になりませんか？
               </p>
             </div>
 
@@ -257,7 +257,7 @@ export default function TalkRoomPage() {
           <div className="mb-2">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-3 h-3 text-[var(--color-primary)]" />
-              <span className="text-[10px] font-medium text-[var(--color-subtle)]">こんな話題はどう？</span>
+              <span className="text-[10px] font-medium text-[var(--color-subtle)]">こんな話題で書いてみませんか？</span>
               <button
                 onClick={refreshPrompts}
                 className="ml-auto text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-colors"

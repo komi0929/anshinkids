@@ -56,11 +56,7 @@ export default function WikiPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadEntries();
-  }, [searchQuery, selectedCategory, selectedAllergens]);
-
-  async function loadEntries() {
+  const loadEntries = async () => {
     setIsLoading(true);
     const result = await searchWiki(searchQuery, {
       category: selectedCategory === "すべて" ? undefined : selectedCategory,
@@ -70,7 +66,12 @@ export default function WikiPage() {
       setEntries(result.data as WikiEntry[]);
     }
     setIsLoading(false);
-  }
+  };
+
+  useEffect(() => {
+    loadEntries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, selectedCategory, selectedAllergens]);
 
   async function handleContribute(entryId: string) {
     if (!contribText.trim()) return;
@@ -87,16 +88,16 @@ export default function WikiPage() {
   return (
     <div className="fade-in">
       <div className="px-5 pt-8 pb-5">
-        <h1 className="text-[22px] font-bold text-[var(--color-text)] leading-tight">みんなの知恵 📖</h1>
+        <h1 className="text-[22px] font-bold text-[var(--color-text)] leading-tight">知恵袋 📖</h1>
         <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
-          ママ・パパの体験をAIが整理した、みんなでつくる知恵袋
+          保護者の体験をAIが整理した、食物アレルギーの知識ライブラリ
         </p>
       </div>
 
       {/* Contribution CTA */}
       <div className="mx-4 mb-4 p-3 rounded-xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-success-light)]/50 border border-[var(--color-border-light)]">
         <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
-          ✍️ 各記事の「<strong>情報を追加</strong>」から、あなたの知識をざざっと書くだけ。AIが整理してマージします。
+          ✍️ 各記事の「<strong>あなたの体験・情報を追加</strong>」から、知っていることを少し書くだけでOK。AIが整理して反映します。
         </p>
       </div>
 
@@ -181,18 +182,33 @@ export default function WikiPage() {
           </div>
         ) : entries.length === 0 ? (
           <div className="empty-state">
-            <div className="text-5xl mb-2">🌱</div>
-            <h3>まだここは育ち中です</h3>
+            <div className="text-5xl mb-2">📖</div>
+            <h3>まだ記事がありません</h3>
             <p>
-              「みんなの声」で体験を共有すると、AIが自動的にここに知恵を集めます。
-              <br/>あなたの一言が、次のページになります。
+              トークルームで体験を共有すると、
+              <br/>AIが自動的に知恵袋の記事を作成します。
             </p>
             <Link
               href="/talk"
               className="btn-primary mt-6 inline-flex items-center gap-2"
             >
-              💬 みんなの声で話してみる
+              💬 トークルームで話してみる
             </Link>
+
+            {/* Placeholder themes */}
+            <div className="mt-8 w-full max-w-sm">
+              <p className="text-[11px] text-[var(--color-subtle)] mb-3">今後こんな情報が集まる予定です</p>
+              <div className="space-y-2">
+                {["卵アレルギー対応の市販おやつ", "外食チェーン店のアレルギー対応", "保育園・幼稚園の給食対応", "負荷試験の進め方・体験談"].map((theme) => (
+                  <div key={theme} className="card p-3 text-left opacity-60">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-[var(--color-surface-warm)] flex items-center justify-center text-sm">📖</div>
+                      <span className="text-[13px] text-[var(--color-text-secondary)]">{theme}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           entries.map((entry) => {
@@ -236,7 +252,7 @@ export default function WikiPage() {
                         : "text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)] hover:text-[var(--color-primary)]"
                     }`}
                   >
-                    {isExpanded ? (<><X className="w-3 h-3" /> とじる</>) : (<><Plus className="w-3 h-3" /> 情報を追加</>)}
+                    {isExpanded ? (<><X className="w-3 h-3" /> とじる</>) : (<><Plus className="w-3 h-3" /> あなたの体験・情報を追加</>)}
                   </button>
                 </div>
 

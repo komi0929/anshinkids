@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, X, Sparkles, ArrowRight, Loader2, Users, Clock } from "lucide-react";
+import { Plus, X, Sparkles, ArrowRight, Loader2, Clock } from "lucide-react";
 import { getTalkRooms, findSimilarRooms, createTalkRoom } from "@/app/actions/messages";
 
 interface Room {
@@ -99,72 +99,26 @@ export default function TalkRoomsPage() {
   return (
     <div className="fade-in">
       {/* Hero Section */}
-      <div className="px-5 pt-8 pb-6">
+      <div className="px-5 pt-8 pb-4">
         <h1 className="text-[22px] font-bold text-[var(--color-text)] leading-tight">
-          みんなの声 🌱
+          トークルーム 💬
         </h1>
         <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
-          同じ悩みを持つママ・パパの体験がここに集まります。<br />
-          あなたの一言が、誰かの助けになります。
+          食物アレルギーのテーマ別に、体験や情報を気軽にシェアできます
         </p>
       </div>
 
-      {/* Community Stats Banner */}
-      <div className="mx-4 mb-4 p-4 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-success-light)] border border-[var(--color-border-light)]">
-        <div className="flex items-center gap-3">
-          <div className="flex -space-x-2">
-            <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/20 flex items-center justify-center text-sm">🐣</div>
-            <div className="w-8 h-8 rounded-full bg-[var(--color-success)]/20 flex items-center justify-center text-sm">🌿</div>
-            <div className="w-8 h-8 rounded-full bg-[var(--color-warning)]/20 flex items-center justify-center text-sm">🧡</div>
-          </div>
-          <div className="flex-1">
-            <p className="text-[12px] font-medium text-[var(--color-text)]">
-              みんなでつくる、アレルギーの知恵袋
-            </p>
-            <p className="text-[11px] text-[var(--color-subtle)] mt-0.5">
-              あなたの経験がAIによって整理され、「みんなの知恵」に変わります
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* How It Works - Inline Guide */}
-      <div className="mx-4 mb-5 flex gap-2">
-        <div className="flex-1 p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border-light)] text-center">
-          <div className="text-lg mb-1">💬</div>
-          <p className="text-[10px] font-medium text-[var(--color-text)]">体験を共有</p>
-          <p className="text-[9px] text-[var(--color-subtle)] mt-0.5">気軽にひとこと</p>
-        </div>
-        <div className="flex items-center text-[var(--color-muted)]">→</div>
-        <div className="flex-1 p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border-light)] text-center">
-          <div className="text-lg mb-1">🤖</div>
-          <p className="text-[10px] font-medium text-[var(--color-text)]">AIが整理</p>
-          <p className="text-[9px] text-[var(--color-subtle)] mt-0.5">毎晩自動で抽出</p>
-        </div>
-        <div className="flex items-center text-[var(--color-muted)]">→</div>
-        <div className="flex-1 p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border-light)] text-center">
-          <div className="text-lg mb-1">📖</div>
-          <p className="text-[10px] font-medium text-[var(--color-text)]">知恵になる</p>
-          <p className="text-[9px] text-[var(--color-subtle)] mt-0.5">みんなの役に立つ</p>
-        </div>
-      </div>
-
-      {/* Ephemeral Notice */}
-      <div className="mx-4 mb-4 p-3 rounded-xl bg-[var(--color-success-light)]/50 border border-[var(--color-success)]/15">
-        <div className="flex items-center gap-2">
+      {/* How It Works - Compact */}
+      <div className="mx-4 mb-4 p-3 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+        <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
           <Clock className="w-3.5 h-3.5 text-[var(--color-success)] flex-shrink-0" />
-          <p className="text-[11px] text-[var(--color-text-secondary)]">
-            <span className="font-medium">投稿は24時間で消えます</span> — 気軽に話せて、発言が残る心配なし
-          </p>
+          <span><strong>投稿は24時間で自動消去</strong> → AIが知恵袋に整理して残します</span>
         </div>
       </div>
 
       {/* Section Label */}
       <div className="px-5 mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-[var(--color-subtle)]" />
-          <span className="text-xs font-medium text-[var(--color-text-secondary)]">テーマ一覧</span>
-        </div>
+        <span className="text-xs font-medium text-[var(--color-text-secondary)]">テーマ一覧</span>
         <span className="text-[10px] text-[var(--color-muted)]">{rooms.length}テーマ</span>
       </div>
 

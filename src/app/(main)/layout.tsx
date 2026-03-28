@@ -7,10 +7,10 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
-  { href: "/talk", icon: MessageCircle, label: "みんなの声" },
-  { href: "/wiki", icon: BookOpen, label: "みんなの知恵" },
+  { href: "/talk", icon: MessageCircle, label: "トーク" },
+  { href: "/wiki", icon: BookOpen, label: "知恵袋" },
   { href: "/concierge", icon: Sparkles, label: "AI相談" },
-  { href: "/mypage", icon: User, label: "わたし" },
+  { href: "/mypage", icon: User, label: "マイページ" },
 ];
 
 export default function MainLayout({

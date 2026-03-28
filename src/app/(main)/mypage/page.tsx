@@ -129,7 +129,7 @@ export default function MyPage() {
     <div className="fade-in pb-4">
       <div className="px-5 pt-8 pb-5">
         <h1 className="text-[22px] font-bold text-[var(--color-text)] leading-tight">
-          わたしの記録 🌿
+          マイページ
         </h1>
         <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
           あなたの貢献は、ちゃんとみんなの役に立っています

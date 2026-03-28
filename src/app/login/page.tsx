@@ -116,8 +116,16 @@ export default function LoginPage() {
           </div>
         )}
 
+        {/* Browse without login */}
+        <Link
+          href="/talk"
+          className="block w-full text-center mt-4 py-3 text-[13px] font-medium text-[var(--color-primary)] hover:underline transition-colors"
+        >
+          ログインせずに見てみる →
+        </Link>
+
         {/* Safety Box */}
-        <div className="mt-6 p-4 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+        <div className="mt-4 p-4 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
           <h3 className="text-xs font-semibold text-[var(--color-text)] mb-2">🔒 安心してご利用ください</h3>
           <ul className="text-[11px] text-[var(--color-subtle)] space-y-1.5 leading-relaxed">
             <li>• LINEの友だちリストへのアクセスは行いません</li>

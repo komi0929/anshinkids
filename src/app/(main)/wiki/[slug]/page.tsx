@@ -328,7 +328,7 @@ export default function WikiDetailPage() {
             <div className="flex items-center justify-center gap-2">
               <Plus className="w-4 h-4 text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors" />
               <span className="text-[13px] font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">
-                この記事に情報を追加する ✨
+              あなたの体験・情報を追加する ✍️
               </span>
             </div>
           </button>

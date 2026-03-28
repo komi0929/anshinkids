@@ -62,7 +62,7 @@ export default function ConciergePage() {
               AI相談 ✨
             </h1>
             <p className="text-[11px] text-[var(--color-subtle)]">
-              みんなの知恵をもとに、やさしくお答えします
+              食物アレルギーについてAIに相談できます
             </p>
           </div>
         </div>
