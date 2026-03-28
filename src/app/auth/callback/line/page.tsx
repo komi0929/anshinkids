@@ -73,10 +73,11 @@ export default function LineCallbackPage() {
 
         setStatus("ログイン完了！リダイレクト中...");
 
-        // Small delay to ensure cookies are set
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Full page reload to ensure proxy processes session cookies
+        // (router.push uses soft navigation which skips the proxy)
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-        router.push("/talk");
+        window.location.href = "/talk";
       } catch (err) {
         console.error("LINE callback error:", err);
         const message = err instanceof Error ? err.message : "認証に失敗しました";

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   display_name TEXT NOT NULL DEFAULT 'あんしんユーザー',
   avatar_url TEXT,
+  line_user_id TEXT,
   trust_score NUMERIC(5,2) DEFAULT 0.00,
   total_contributions INTEGER DEFAULT 0,
   total_thanks_received INTEGER DEFAULT 0,
@@ -22,6 +23,8 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Users can insert their own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+-- Allow service role to insert profiles for LINE auth
+CREATE POLICY "Service role can manage profiles" ON profiles FOR ALL USING (auth.role() = 'service_role');
 
 -- ========================================
 -- TALK ROOMS (細分化カテゴリールーム)
@@ -34,25 +37,41 @@ CREATE TABLE IF NOT EXISTS talk_rooms (
   icon_emoji TEXT DEFAULT '💬',
   sort_order INTEGER DEFAULT 0,
   is_active BOOLEAN DEFAULT true,
+  conversation_prompts JSONB DEFAULT '[]',
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
 ALTER TABLE talk_rooms ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Talk rooms are viewable by everyone" ON talk_rooms FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert rooms" ON talk_rooms FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- Seed default rooms
-INSERT INTO talk_rooms (slug, name, description, icon_emoji, sort_order) VALUES
-  ('egg-challenge', '卵負荷試験', '卵の負荷試験の体験談、進め方、病院情報など', '🥚', 1),
-  ('milk-challenge', '乳負荷試験', '牛乳・乳製品の負荷試験について', '🥛', 2),
-  ('wheat-challenge', '小麦負荷試験', '小麦の負荷試験、グルテンフリー生活について', '🌾', 3),
-  ('snacks', '市販品おやつ', 'アレルギー対応の市販おやつ情報交換', '🍪', 4),
-  ('eating-out', '外食・チェーン店', '外食時のアレルギー対応、チェーン店情報', '🍽️', 5),
-  ('nursery', '保育園・幼稚園', '給食対応、先生とのコミュニケーション', '🏫', 6),
-  ('recipes', '代替レシピ', 'アレルゲンフリーの代替レシピ共有', '👩‍🍳', 7),
-  ('skincare', 'スキンケア', 'アトピー・湿疹のケア、保湿剤情報', '🧴', 8),
-  ('hospital', '病院・主治医', '病院選び、主治医との相談、セカンドオピニオン', '🏥', 9),
-  ('mental', 'メンタルケア', '親の心のケア、周囲の理解、孤独感の共有', '💚', 10)
-ON CONFLICT (slug) DO NOTHING;
+-- Seed default rooms (balanced categories)
+INSERT INTO talk_rooms (slug, name, description, icon_emoji, sort_order, conversation_prompts) VALUES
+  ('challenge', '負荷試験', '卵・乳・小麦などの負荷試験の体験談、進め方、病院情報', '🧪', 1,
+   '["負荷試験を受ける前、どんな準備をしましたか？不安だったことは？", "負荷試験当日の流れを教えてください！待ち時間の過ごし方は？", "負荷試験の結果を受けて、日常生活で変わったことはありますか？"]'::jsonb),
+  ('snacks', '市販品おやつ', 'アレルギー対応の市販おやつ情報交換', '🍪', 2,
+   '["最近見つけたアレルギー対応おやつ、おすすめは何ですか？", "スーパーやコンビニで買えるアレルゲンフリーのおやつを教えてください！", "子どもが喜んだアレルギー対応のおやつはどれでしたか？"]'::jsonb),
+  ('eating-out', '外食・チェーン店', '外食時のアレルギー対応、チェーン店情報', '🍽️', 3,
+   '["アレルギー対応メニューがあるチェーン店を教えてください！", "外食する時、お店にどうやってアレルギーを伝えていますか？", "旅行先での外食、どう乗り切りましたか？"]'::jsonb),
+  ('nursery', '保育園・幼稚園', '給食対応、先生とのコミュニケーション', '🏫', 4,
+   '["保育園の給食対応、どんな風にお願いしましたか？", "入園前にアレルギーについてどう説明しましたか？", "お弁当持参の場合、時短レシピはありますか？"]'::jsonb),
+  ('recipes', '代替レシピ', 'アレルゲンフリーの代替レシピ共有', '👩‍🍳', 5,
+   '["卵なしで美味しくできたお菓子レシピを教えてください！", "乳製品の代替品で一番使いやすかったものは？", "誕生日ケーキ、どうやって作りましたか？"]'::jsonb),
+  ('skincare', 'スキンケア', 'アトピー・湿疹のケア、保湿剤情報', '🧴', 6,
+   '["お子さんの保湿剤、何を使っていますか？", "お風呂上がりのスキンケアルーティンを教えてください！", "季節の変わり目の肌荒れ対策、何かしていますか？"]'::jsonb),
+  ('hospital', '病院・主治医', '病院選び、主治医との相談、セカンドオピニオン', '🏥', 7,
+   '["アレルギー専門医を見つけたきっかけは何でしたか？", "セカンドオピニオンを受けたことはありますか？どうでしたか？", "定期検診の頻度はどのくらいですか？"]'::jsonb),
+  ('mental', 'メンタルケア', '親の心のケア、周囲の理解、孤独感の共有', '💚', 8,
+   '["周りにアレルギーを理解してもらえなくて辛かった経験、ありますか？", "アレルギー育児で疲れた時、どうリフレッシュしていますか？", "同じ悩みを持つママ友とどうやって出会いましたか？"]'::jsonb)
+ON CONFLICT (slug) DO UPDATE SET 
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  icon_emoji = EXCLUDED.icon_emoji,
+  sort_order = EXCLUDED.sort_order,
+  conversation_prompts = EXCLUDED.conversation_prompts;
+
+-- Remove old individual challenge rooms if they exist
+DELETE FROM talk_rooms WHERE slug IN ('egg-challenge', 'milk-challenge', 'wheat-challenge') AND slug != 'challenge';
 
 -- ========================================
 -- MESSAGES (24h消滅トーク)
@@ -70,9 +89,9 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Active messages are viewable by authenticated users" ON messages
-  FOR SELECT USING (auth.role() = 'authenticated' AND expires_at > now());
-CREATE POLICY "Users can insert messages" ON messages
+CREATE POLICY "Messages viewable by everyone" ON messages
+  FOR SELECT USING (expires_at > now());
+CREATE POLICY "Authenticated users can insert messages" ON messages
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- ========================================
@@ -87,8 +106,8 @@ CREATE TABLE IF NOT EXISTS message_thanks (
 );
 
 ALTER TABLE message_thanks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Thanks are viewable by authenticated users" ON message_thanks
-  FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Thanks are viewable by everyone" ON message_thanks
+  FOR SELECT USING (true);
 CREATE POLICY "Users can insert thanks" ON message_thanks
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete their own thanks" ON message_thanks
@@ -171,13 +190,11 @@ CREATE TABLE IF NOT EXISTS batch_logs (
 );
 
 ALTER TABLE batch_logs ENABLE ROW LEVEL SECURITY;
--- Batch logs are admin-only (service role)
 
 -- ========================================
 -- FUNCTIONS & TRIGGERS
 -- ========================================
 
--- Auto-update updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -209,7 +226,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER on_thanks_insert AFTER INSERT ON message_thanks
   FOR EACH ROW EXECUTE FUNCTION increment_thanks_count();
 
--- Auto-decrement thanks_count on message_thanks delete
 CREATE OR REPLACE FUNCTION decrement_thanks_count()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -223,7 +239,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER on_thanks_delete AFTER DELETE ON message_thanks
   FOR EACH ROW EXECUTE FUNCTION decrement_thanks_count();
 
--- Auto-increment contributions count on message insert
 CREATE OR REPLACE FUNCTION increment_contributions()
 RETURNS TRIGGER AS $$
 BEGIN

@@ -9,7 +9,7 @@ import {
   postMessage,
   sendThanks,
   removeThanks,
-  generateRoomPrompts,
+  getRoomPrompts,
   getTalkRoomBySlug,
   getWikiCountForRoom,
 } from "@/app/actions/messages";
@@ -60,7 +60,7 @@ export default function TalkRoomPage() {
       const room = result.data as RoomInfo;
       setRoomInfo(room);
       loadMessages(room.id);
-      loadPrompts(room.name, room.description);
+      loadPrompts(room.id);
       loadWikiCount(room.id);
 
       // Set up polling with room UUID
@@ -72,24 +72,24 @@ export default function TalkRoomPage() {
     }
   }
 
-  async function loadPrompts(name: string, desc: string) {
+  async function loadPrompts(roomId: string) {
     setIsLoadingPrompts(true);
-    const result = await generateRoomPrompts(name, desc);
+    const result = await getRoomPrompts(roomId);
     if (result.success && result.data) {
       setPrompts(result.data);
     }
     setIsLoadingPrompts(false);
   }
 
+  function refreshPrompts() {
+    if (roomInfo?.id) {
+      loadPrompts(roomInfo.id);
+    }
+  }
+
   async function loadWikiCount(roomId: string) {
     const result = await getWikiCountForRoom(roomId);
     setWikiCount(result.count || 0);
-  }
-
-  async function refreshPrompts() {
-    if (roomInfo?.name) {
-      loadPrompts(roomInfo.name, roomInfo.description);
-    }
   }
 
   async function loadMessages(roomId: string) {

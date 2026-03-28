@@ -2,19 +2,53 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function generateRoomPrompts(roomName: string, roomDescription: string) {
+/**
+ * Get stored prompts from DB (no AI call).
+ * Prompts are pre-seeded and replenished after conversations start.
+ */
+export async function getRoomPrompts(roomId: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: true, data: [] };
+
+    const { data, error } = await supabase
+      .from("talk_rooms")
+      .select("conversation_prompts")
+      .eq("id", roomId)
+      .single();
+
+    if (error) throw error;
+    const prompts = (data?.conversation_prompts as string[]) || [];
+    return { success: true, data: prompts };
+  } catch (err) {
+    console.error("[getRoomPrompts]", err);
+    return { success: true, data: [] };
+  }
+}
+
+/**
+ * Replenish prompts via AI after a conversation starts.
+ * Called as a background task after posting a message.
+ * Adds new prompts without removing existing ones.
+ */
+async function replenishRoomPrompts(roomId: string, roomName: string, roomDesc: string) {
   try {
     const apiKey = process.env.GOOGLE_API_KEY;
-    if (!apiKey) {
-      return {
-        success: true,
-        data: [
-          `${roomName}について、最近の体験を教えてください`,
-          `${roomName}で困ったことはありますか？`,
-          `${roomName}のおすすめ情報があれば共有してください`,
-        ],
-      };
-    }
+    if (!apiKey) return;
+
+    const supabase = await createClient();
+    if (!supabase) return;
+
+    // Get current prompts
+    const { data: room } = await supabase
+      .from("talk_rooms")
+      .select("conversation_prompts")
+      .eq("id", roomId)
+      .single();
+
+    const currentPrompts = (room?.conversation_prompts as string[]) || [];
+    // Only replenish if we have fewer than 6 prompts
+    if (currentPrompts.length >= 6) return;
 
     const { GoogleGenerativeAI } = await import("@google/generative-ai");
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -22,48 +56,37 @@ export async function generateRoomPrompts(roomName: string, roomDescription: str
 
     const prompt = `あなたは食物アレルギーを持つ子どもの親のコミュニティのファシリテーターです。
 
-以下のトークルームで会話を始めるための「問いかけ」を3つ生成してください。
+以下のトークルームに新しい「問いかけ」を2つ追加生成してください。
 
 ルーム名: ${roomName}
-ルーム説明: ${roomDescription}
+ルーム説明: ${roomDesc}
+
+既存の問いかけ（重複しないように）:
+${currentPrompts.map((p, i) => `${i + 1}. ${p}`).join("\n")}
 
 ルール:
-- 保護者（ママ・パパ）が思わず答えたくなる、具体的で親しみやすい問いかけにする
-- 「うちはこうだった」と体験を共有したくなる質問にする
-- 堅苦しくなく、友達に聞くようなカジュアルなトーンにする
-- 各質問は40文字以内に収める
-- 医療的な判断を求める質問は避ける
+- 既存と重複しない、新鮮な切り口の問いかけにする
+- 保護者が体験を共有したくなるカジュアルなトーンにする
+- 各質問は40文字以内
+- 医療的な判断は避ける
 
 JSON形式で配列のみ返してください:
-["質問1", "質問2", "質問3"]`;
+["新しい質問1", "新しい質問2"]`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     const match = text.match(/\[[\s\S]*?\]/);
 
     if (match) {
-      const questions: string[] = JSON.parse(match[0]);
-      return { success: true, data: questions.slice(0, 3) };
+      const newPrompts: string[] = JSON.parse(match[0]);
+      const merged = [...currentPrompts, ...newPrompts.slice(0, 2)];
+      await supabase
+        .from("talk_rooms")
+        .update({ conversation_prompts: merged })
+        .eq("id", roomId);
     }
-
-    return {
-      success: true,
-      data: [
-        `${roomName}について、最近の体験を教えてください`,
-        `${roomName}で困ったことはありますか？`,
-        `${roomName}のおすすめ情報があれば共有してください`,
-      ],
-    };
   } catch (err) {
-    console.error("[generateRoomPrompts]", err);
-    return {
-      success: true,
-      data: [
-        `${roomName}について、最近の体験を教えてください`,
-        `${roomName}で困ったことはありますか？`,
-        `${roomName}のおすすめ情報があれば共有してください`,
-      ],
-    };
+    console.error("[replenishRoomPrompts]", err);
   }
 }
 
@@ -82,6 +105,17 @@ export async function postMessage(roomId: string, content: string) {
     });
 
     if (error) throw error;
+
+    // Replenish prompts in background (don't await)
+    const { data: room } = await supabase
+      .from("talk_rooms")
+      .select("name, description")
+      .eq("id", roomId)
+      .single();
+    if (room) {
+      replenishRoomPrompts(roomId, room.name, room.description || "").catch(() => {});
+    }
+
     return { success: true };
   } catch (err) {
     console.error("[postMessage]", err);
@@ -164,20 +198,18 @@ export async function getTalkRooms() {
   try {
     const supabase = await createClient();
     if (!supabase) {
-      // Demo mode with default rooms
+      // Demo mode with default rooms (8 balanced categories)
       return {
         success: true,
         data: [
-          { id: "1", slug: "egg-challenge", name: "卵負荷試験", description: "卵の負荷試験の体験談", icon_emoji: "🥚", sort_order: 1 },
-          { id: "2", slug: "milk-challenge", name: "乳負荷試験", description: "牛乳・乳製品の負荷試験", icon_emoji: "🥛", sort_order: 2 },
-          { id: "3", slug: "wheat-challenge", name: "小麦負荷試験", description: "小麦の負荷試験", icon_emoji: "🌾", sort_order: 3 },
-          { id: "4", slug: "snacks", name: "市販品おやつ", description: "アレルギー対応の市販おやつ", icon_emoji: "🍪", sort_order: 4 },
-          { id: "5", slug: "eating-out", name: "外食・チェーン店", description: "外食時のアレルギー対応", icon_emoji: "🍽️", sort_order: 5 },
-          { id: "6", slug: "nursery", name: "保育園・幼稚園", description: "給食対応", icon_emoji: "🏫", sort_order: 6 },
-          { id: "7", slug: "recipes", name: "代替レシピ", description: "アレルゲンフリーの代替レシピ", icon_emoji: "👩‍🍳", sort_order: 7 },
-          { id: "8", slug: "skincare", name: "スキンケア", description: "アトピー・湿疹のケア", icon_emoji: "🧴", sort_order: 8 },
-          { id: "9", slug: "hospital", name: "病院・主治医", description: "病院選び", icon_emoji: "🏥", sort_order: 9 },
-          { id: "10", slug: "mental", name: "メンタルケア", description: "親の心のケア", icon_emoji: "💚", sort_order: 10 },
+          { id: "1", slug: "challenge", name: "負荷試験", description: "卵・乳・小麦などの負荷試験の体験談", icon_emoji: "🧪", sort_order: 1 },
+          { id: "2", slug: "snacks", name: "市販品おやつ", description: "アレルギー対応の市販おやつ", icon_emoji: "🍪", sort_order: 2 },
+          { id: "3", slug: "eating-out", name: "外食・チェーン店", description: "外食時のアレルギー対応", icon_emoji: "🍽️", sort_order: 3 },
+          { id: "4", slug: "nursery", name: "保育園・幼稚園", description: "給食対応", icon_emoji: "🏫", sort_order: 4 },
+          { id: "5", slug: "recipes", name: "代替レシピ", description: "アレルゲンフリーの代替レシピ", icon_emoji: "👩‍🍳", sort_order: 5 },
+          { id: "6", slug: "skincare", name: "スキンケア", description: "アトピー・湿疹のケア", icon_emoji: "🧴", sort_order: 6 },
+          { id: "7", slug: "hospital", name: "病院・主治医", description: "病院選び", icon_emoji: "🏥", sort_order: 7 },
+          { id: "8", slug: "mental", name: "メンタルケア", description: "親の心のケア", icon_emoji: "💚", sort_order: 8 },
         ],
       };
     }
