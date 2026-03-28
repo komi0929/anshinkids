@@ -137,6 +137,10 @@ export default function LoginPage() {
 
         {/* Legal Links */}
         <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-[var(--color-subtle)]">
+          <Link href="/about" className="underline hover:text-[var(--color-primary)]">
+            あんしんキッズとは
+          </Link>
+          <span>|</span>
           <Link href="/terms" className="underline hover:text-[var(--color-primary)]">
             利用規約
           </Link>
