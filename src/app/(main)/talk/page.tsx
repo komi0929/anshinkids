@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, X, Sparkles, ArrowRight, Loader2, Users } from "lucide-react";
 import { getTalkRooms, findSimilarRooms, createTalkRoom } from "@/app/actions/messages";
 
 interface Room {
@@ -33,8 +32,6 @@ type ModalStep = "closed" | "input" | "checking" | "similar" | "creating";
 export default function TalkRoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Modal state
   const [step, setStep] = useState<ModalStep>("closed");
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
@@ -55,7 +52,6 @@ export default function TalkRoomsPage() {
     loadRooms();
   }, []);
 
-  // Load personalized recommendations after rooms load
   useEffect(() => {
     if (rooms.length === 0) return;
     try {
@@ -101,7 +97,6 @@ export default function TalkRoomsPage() {
 
   async function handleCreate() {
     setStep("creating");
-
     const result = await createTalkRoom(newName, newDesc, newEmoji);
     if (result.success && result.data) {
       closeModal();
@@ -114,39 +109,48 @@ export default function TalkRoomsPage() {
 
   return (
     <div className="fade-in">
-      {/* Hero Section */}
-      <div className="px-5 pt-7 pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
-              みんなの声 💬
-            </h1>
-            <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-              テーマ別に、体験や情報を気軽にシェア
-            </p>
-          </div>
+      {/* Hero Section with fluid blob */}
+      <div className="blob-bg px-5 pt-8 pb-5">
+        <div className="relative z-10">
+          {/* Hand-drawn accent */}
+          <span className="inline-block text-[13px] font-semibold tracking-wider text-[var(--color-primary)] mb-2" style={{ fontFamily: 'var(--font-mono)' }}>
+            COMMUNITY
+          </span>
+          <h1 className="text-[28px] font-black text-[var(--color-text)] tracking-tight leading-[1.3]" style={{ fontFamily: 'var(--font-display)' }}>
+            <span className="hand-underline">みんなの声</span>
+          </h1>
+          <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed max-w-[280px]">
+            食物アレルギーの実体験を<br />テーマ別にシェアする場所
+          </p>
         </div>
       </div>
 
-      {/* Subtle info line */}
-      <p className="px-5 mb-3 text-[11px] text-[var(--color-subtle)]">
-        💡 投稿は24時間で消え、AIが知恵袋に整理します
-      </p>
+      {/* Info chip */}
+      <div className="px-5 mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
+          <span className="text-[11px] text-[var(--color-text-secondary)] font-medium">
+            投稿は24h後にAIが知恵袋へ整理
+          </span>
+        </div>
+      </div>
 
       {/* Section Label */}
-      <div className="px-5 mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-[var(--color-text-secondary)]">テーマ一覧</span>
-        <span className="text-[10px] text-[var(--color-muted)]">
-          {rooms.length}テーマ
+      <div className="px-5 mb-3 flex items-center justify-between">
+        <span className="text-[11px] font-bold tracking-wider text-[var(--color-subtle)]" style={{ fontFamily: 'var(--font-mono)' }}>
+          THEMES
+        </span>
+        <span className="text-[10px] text-[var(--color-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>
+          {rooms.length} ROOMS
         </span>
       </div>
 
       {/* Room List */}
-      <div className="px-4 space-y-2.5 pb-4">
+      <div className="px-4 space-y-3 pb-4">
         {isLoading ? (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="shimmer h-[72px] rounded-2xl" />
+              <div key={i} className="shimmer h-[80px] rounded-2xl" />
             ))}
           </div>
         ) : (
@@ -156,20 +160,21 @@ export default function TalkRoomsPage() {
               <Link
                 key={room.id || index}
                 href={`/talk/${room.slug}`}
-                className={`card card-active block p-4 stagger-item ${isRecommended ? "ring-1 ring-[var(--color-primary)]/20 bg-[var(--color-success-light)]/30" : ""}`}
+                className={`card card-tilt card-active block p-4 stagger-item group ${isRecommended ? "ring-1 ring-[var(--color-primary)]/20 bg-[var(--color-surface-warm)]/30" : ""}`}
                 id={`talk-room-${room.slug}`}
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-bg-warm)] flex items-center justify-center text-[22px] flex-shrink-0 shadow-sm">
+                <div className="flex items-center gap-4">
+                  {/* Emoji container with subtle gradient */}
+                  <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[var(--color-surface-warm)] to-white flex items-center justify-center text-[24px] flex-shrink-0 shadow-sm border border-[var(--color-border-light)] group-hover:scale-105 transition-transform">
                     {room.icon_emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-[14px] text-[var(--color-text)]">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-[15px] text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
                         {room.name}
                       </h3>
                       {isRecommended && (
-                        <span className="text-[9px] font-bold text-[var(--color-primary)] bg-[var(--color-success-light)] px-1.5 py-0.5 rounded-full flex-shrink-0">
+                        <span className="text-[9px] font-bold text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] px-2 py-0.5 rounded-full flex-shrink-0">
                           おすすめ
                         </span>
                       )}
@@ -178,8 +183,11 @@ export default function TalkRoomsPage() {
                       {room.description}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center">
-                    <ArrowRight className="w-3.5 h-3.5 text-[var(--color-muted)]" />
+                  {/* Arrow with hand-drawn feel */}
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-muted)] group-hover:text-white transition-colors">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
               </Link>
@@ -191,18 +199,21 @@ export default function TalkRoomsPage() {
         <button
           onClick={openModal}
           id="propose-theme-button"
-          className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all group stagger-item"
+          className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all group stagger-item tape-accent"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-warm)] group-hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors">
-              <Plus className="w-5 h-5 text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors" />
+          <div className="flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-[var(--color-surface-warm)] group-hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors border border-[var(--color-border-light)]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
             </div>
             <div className="text-left flex-1">
               <h3 className="font-bold text-[14px] text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">
-                テーマを提案する ✨
+                テーマを提案する
               </h3>
               <p className="text-[11px] text-[var(--color-subtle)] mt-0.5">
-                「こんなテーマほしい！」をみんなと一緒に育てよう
+                「こんなテーマほしい！」をみんなと一緒に
               </p>
             </div>
           </div>
@@ -215,19 +226,21 @@ export default function TalkRoomsPage() {
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-[var(--color-text)]/40 backdrop-blur-sm" />
 
           <div className="relative w-full max-w-md mx-4 mb-0 sm:mb-0 bg-[var(--color-surface)] rounded-t-3xl sm:rounded-3xl shadow-2xl slide-up max-h-[85vh] overflow-y-auto">
             <div className="sticky top-0 bg-[var(--color-surface)] rounded-t-3xl px-6 pt-6 pb-3 flex items-center justify-between z-10">
-              <h2 className="text-lg font-extrabold text-[var(--color-text)]">
-                {step === "similar" ? "💡 似たテーマがあります" : "✨ 新しいテーマを提案"}
+              <h2 className="text-lg font-black text-[var(--color-text)]" style={{ fontFamily: 'var(--font-display)' }}>
+                {step === "similar" ? "似たテーマがあります" : "新しいテーマを提案"}
               </h2>
               <button
                 onClick={closeModal}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors"
                 id="close-modal"
               >
-                <X className="w-5 h-5 text-[var(--color-subtle)]" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -236,13 +249,13 @@ export default function TalkRoomsPage() {
                 <div className="space-y-5">
                   <p className="text-[12px] text-[var(--color-text-secondary)] -mt-1 leading-relaxed">
                     あなたが話したいテーマを教えてください。<br />
-                    みんなが集まって、一緒に知恵をつくっていく場になります。
+                    みんなが集まって、知恵をつくっていく場になります。
                   </p>
 
                   {/* Emoji Picker */}
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-2">
-                      アイコンを選んでね
+                    <label className="block text-xs font-bold text-[var(--color-text-secondary)] mb-2">
+                      アイコン
                     </label>
                     <div className="flex flex-wrap gap-1.5">
                       {EMOJI_OPTIONS.map((emoji) => (
@@ -262,7 +275,7 @@ export default function TalkRoomsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
+                    <label className="block text-xs font-bold text-[var(--color-text-secondary)] mb-1.5">
                       テーマ名 <span className="text-[var(--color-danger)]">*</span>
                     </label>
                     <input
@@ -278,7 +291,7 @@ export default function TalkRoomsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
+                    <label className="block text-xs font-bold text-[var(--color-text-secondary)] mb-1.5">
                       どんな話をしたい？
                     </label>
                     <textarea
@@ -306,14 +319,11 @@ export default function TalkRoomsPage() {
                   >
                     {step === "checking" ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        みんなのテーマと照らし合わせ中...
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4" strokeDashoffset="10" strokeLinecap="round" /></svg>
+                        照らし合わせ中...
                       </>
                     ) : (
-                      <>
-                        <Sparkles className="w-4 h-4" />
-                        このテーマをつくる
-                      </>
+                      "このテーマをつくる"
                     )}
                   </button>
                 </div>
@@ -324,7 +334,7 @@ export default function TalkRoomsPage() {
                   <div className="p-4 rounded-2xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20">
                     <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
                       「<strong>{newName}</strong>」に近いテーマが
-                      すでにあります！こちらで話してみませんか？ 😊
+                      すでにあります！こちらで話してみませんか？
                     </p>
                   </div>
 
@@ -348,7 +358,9 @@ export default function TalkRoomsPage() {
                               {room.description}
                             </p>
                           </div>
-                          <ArrowRight className="w-4 h-4 text-[var(--color-muted)] flex-shrink-0" />
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--color-muted)] flex-shrink-0">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                          </svg>
                         </div>
                       </Link>
                     ))}
@@ -356,7 +368,7 @@ export default function TalkRoomsPage() {
 
                   <div className="pt-3 border-t border-[var(--color-border-light)]">
                     <p className="text-[11px] text-[var(--color-subtle)] text-center mb-3">
-                      それでも新しくつくりたい場合はこちら 👇
+                      それでも新しくつくりたい場合 ↓
                     </p>
                     <button
                       onClick={handleCreate}
@@ -370,7 +382,7 @@ export default function TalkRoomsPage() {
 
               {step === "creating" && (
                 <div className="flex flex-col items-center justify-center py-8">
-                  <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-3" />
+                  <svg className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4" strokeDashoffset="10" strokeLinecap="round" /></svg>
                   <p className="text-sm text-[var(--color-text-secondary)]">
                     みんなの場をつくっています...
                   </p>
