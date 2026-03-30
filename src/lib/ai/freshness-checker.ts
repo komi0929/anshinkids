@@ -33,17 +33,20 @@ export async function checkFreshness() {
 
     // Find appropriate room
     const categoryToRoomSlug: Record<string, string> = {
-      "市販品": "snacks",
-      "おやつ": "snacks",
+      "商品情報": "products",
+      "市販品": "products",
+      "おやつ": "products",
       "外食": "eating-out",
       "チェーン店": "eating-out",
-      "負荷試験": "egg-challenge",
-      "レシピ": "recipes",
-      "病院": "hospital",
-      "スキンケア": "skincare",
+      "レシピ": "daily-food",
+      "負荷試験": "challenge",
+      "病院": "challenge",
+      "スキンケア": "skin-body",
+      "体験記": "milestone",
+      "基礎知識": "challenge",
     };
 
-    let targetRoomSlug = "snacks";
+    let targetRoomSlug = "products";
     for (const [keyword, slug] of Object.entries(categoryToRoomSlug)) {
       if (entry.category.includes(keyword) || entry.title.includes(keyword)) {
         targetRoomSlug = slug;

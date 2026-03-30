@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "あんしんキッズ - 食物アレルギーの一次情報プラットフォーム",
+  title: "あんしんキッズ - 食物アレルギーの知恵を、みんなでつくる",
   description:
-    "食物アレルギーを持つ子どもの親のための一次情報アセット化プラットフォーム。当事者のリアルな体験をAIが辞書化し、心理的安全性の高い空間で情報を共有できます。",
-  keywords: ["食物アレルギー", "子ども", "アレルギー対応", "負荷試験", "アレルゲンフリー"],
+    "食物アレルギーを持つ子どもの親のための知恵共有プラットフォーム。日々の会話がAIで整理され、未来の誰かの「希望の道しるべ」になります。",
+  keywords: ["食物アレルギー", "子ども", "アレルギー対応", "負荷試験", "アレルゲンフリー", "コミュニティ"],
   openGraph: {
-    title: "あんしんキッズ",
-    description: "食物アレルギーの一次情報を、安心して共有・検索できるプラットフォーム",
+    title: "あんしんキッズ - 食物アレルギーの知恵を、みんなでつくる",
+    description: "あなたの体験が、誰かの「希望の道しるべ」になります。",
     type: "website",
   },
 };
@@ -29,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>

@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "heybourn.headwind",
+    "csstools.postcss",
+    "usernamehw.errorlens",
+    "yoavbls.pretty-ts-errors",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "mikestead.dotenv",
+    "gruntfuggly.todo-tree",
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "ms-playwright.playwright",
+    "naumovs.color-highlight",
+    "dsznajder.es7-react-js-snippets",
+    "meganrogge.template-string-converter"
+  ]
+}

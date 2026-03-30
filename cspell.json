@@ -1,0 +1,24 @@
+{
+  "version": "0.2",
+  "language": "en,ja",
+  "words": [
+    "supabase",
+    "anshinkids",
+    "anshin",
+    "awmfbqvpknqhsnxknybr",
+    "ilike",
+    "PGRST",
+    "plpgsql",
+    "rgba",
+    "grayscale",
+    "Hiragino",
+    "Noto",
+    "Kaku"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build"
+  ]
+}

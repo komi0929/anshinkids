@@ -194,24 +194,25 @@ export async function getActiveMessages(roomId: string) {
   }
 }
 
+// Canonical Talk Room themes — 実体験を聞きたい軸（Single Source of Truth）
+const CANONICAL_ROOMS = [
+  { id: "1", slug: "daily-food", name: "毎日のごはん", description: "献立・代替食材・お弁当のリアルな工夫", icon_emoji: "🍚", sort_order: 1 },
+  { id: "2", slug: "products", name: "使ってよかった市販品", description: "おやつ・パン・調味料のクチコミ", icon_emoji: "🛒", sort_order: 2 },
+  { id: "3", slug: "eating-out", name: "外食・おでかけ", description: "チェーン店・旅行・イベントの対応", icon_emoji: "🍽️", sort_order: 3 },
+  { id: "4", slug: "school-life", name: "園・学校との連携", description: "給食・面談・行事の乗り切り方", icon_emoji: "🏫", sort_order: 4 },
+  { id: "5", slug: "challenge", name: "負荷試験の体験談", description: "準備・当日の流れ・結果後の変化", icon_emoji: "🧪", sort_order: 5 },
+  { id: "6", slug: "skin-body", name: "肌とからだのケア", description: "アトピー・保湿・スキンケアの工夫", icon_emoji: "🧴", sort_order: 6 },
+  { id: "7", slug: "family", name: "気持ち・家族・まわり", description: "不安・理解・パートナーや祖父母との関わり", icon_emoji: "👨‍👩‍👧", sort_order: 7 },
+  { id: "8", slug: "milestone", name: "食べられた！の記録", description: "克服・成長のうれしい報告", icon_emoji: "🌱", sort_order: 8 },
+];
+
+const CANONICAL_SLUGS = new Set(CANONICAL_ROOMS.map(r => r.slug));
+
 export async function getTalkRooms() {
   try {
     const supabase = await createClient();
     if (!supabase) {
-      // Demo mode with default rooms (8 balanced categories)
-      return {
-        success: true,
-        data: [
-          { id: "1", slug: "challenge", name: "負荷試験", description: "卵・乳・小麦などの負荷試験の体験談", icon_emoji: "🧪", sort_order: 1 },
-          { id: "2", slug: "snacks", name: "市販品おやつ", description: "アレルギー対応の市販おやつ", icon_emoji: "🍪", sort_order: 2 },
-          { id: "3", slug: "eating-out", name: "外食・チェーン店", description: "外食時のアレルギー対応", icon_emoji: "🍽️", sort_order: 3 },
-          { id: "4", slug: "nursery", name: "保育園・幼稚園", description: "給食対応", icon_emoji: "🏫", sort_order: 4 },
-          { id: "5", slug: "recipes", name: "代替レシピ", description: "アレルゲンフリーの代替レシピ", icon_emoji: "👩‍🍳", sort_order: 5 },
-          { id: "6", slug: "skincare", name: "スキンケア", description: "アトピー・湿疹のケア", icon_emoji: "🧴", sort_order: 6 },
-          { id: "7", slug: "hospital", name: "病院・主治医", description: "病院選び", icon_emoji: "🏥", sort_order: 7 },
-          { id: "8", slug: "mental", name: "メンタルケア", description: "親の心のケア", icon_emoji: "💚", sort_order: 8 },
-        ],
-      };
+      return { success: true, data: CANONICAL_ROOMS };
     }
 
     const { data, error } = await supabase
@@ -221,10 +222,21 @@ export async function getTalkRooms() {
       .order("sort_order", { ascending: true });
 
     if (error) throw error;
-    return { success: true, data: data || [] };
+
+    // DB rooms exist and match canonical slugs → use DB data
+    if (data && data.length > 0) {
+      const dbSlugs = new Set(data.map((r: { slug: string }) => r.slug));
+      const hasNewThemes = CANONICAL_SLUGS.has([...dbSlugs][0] as string);
+      if (hasNewThemes) {
+        return { success: true, data };
+      }
+    }
+
+    // DB has stale themes or is empty → use canonical list
+    return { success: true, data: CANONICAL_ROOMS };
   } catch (err) {
     console.error("[getTalkRooms]", err);
-    return { success: true, data: [] };
+    return { success: true, data: CANONICAL_ROOMS };
   }
 }
 
@@ -263,6 +275,60 @@ export async function getWikiCountForRoom(roomId: string) {
   } catch (err) {
     console.error("[getWikiCountForRoom]", err);
     return { success: true, count: 0 };
+  }
+}
+
+export async function getRelatedWikiEntries(roomId: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: true, data: [] };
+
+    // Get room info to find category matches
+    const { data: room } = await supabase
+      .from("talk_rooms")
+      .select("name, description")
+      .eq("id", roomId)
+      .single();
+
+    if (!room) return { success: true, data: [] };
+
+    // Map room name/keywords to wiki categories for matching
+    const roomName = (room.name || "").toLowerCase();
+    const roomDesc = (room.description || "").toLowerCase();
+    const keywords = `${roomName} ${roomDesc}`;
+
+    // Search wiki entries that match the room's theme
+    let queryBuilder = supabase
+      .from("wiki_entries")
+      .select("id, title, slug, source_count, avg_trust_score")
+      .order("source_count", { ascending: false })
+      .limit(5);
+
+    // Build search filter based on room keywords
+    const searchTerms: string[] = [];
+    if (keywords.includes("卵")) searchTerms.push("卵");
+    if (keywords.includes("乳")) searchTerms.push("乳");
+    if (keywords.includes("小麦")) searchTerms.push("小麦");
+    if (keywords.includes("ごはん") || keywords.includes("献立") || keywords.includes("レシピ") || keywords.includes("料理")) searchTerms.push("レシピ");
+    if (keywords.includes("市販") || keywords.includes("おやつ") || keywords.includes("クチコミ")) searchTerms.push("市販");
+    if (keywords.includes("外食") || keywords.includes("チェーン") || keywords.includes("旅行")) searchTerms.push("外食");
+    if (keywords.includes("園") || keywords.includes("保育") || keywords.includes("学校") || keywords.includes("給食")) searchTerms.push("保育");
+    if (keywords.includes("負荷") || keywords.includes("試験")) searchTerms.push("負荷", "病院");
+    if (keywords.includes("肌") || keywords.includes("スキン") || keywords.includes("アトピー")) searchTerms.push("スキンケア");
+    if (keywords.includes("家族") || keywords.includes("不安") || keywords.includes("理解")) searchTerms.push("家族");
+    if (keywords.includes("食べられ") || keywords.includes("克服") || keywords.includes("成長")) searchTerms.push("克服");
+
+    if (searchTerms.length > 0) {
+      const orFilter = searchTerms.map(t => `title.ilike.%${t}%`).join(",");
+      queryBuilder = queryBuilder.or(orFilter);
+    }
+
+    const { data, error } = await queryBuilder;
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (err) {
+    console.error("[getRelatedWikiEntries]", err);
+    return { success: true, data: [] };
   }
 }
 

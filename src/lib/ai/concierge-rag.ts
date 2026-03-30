@@ -83,9 +83,17 @@ ${question}
     .update({ messages_json: updatedMessages })
     .eq("id", session.id);
 
+  // Calculate source metrics for confidence scoring
+  const wikiSourceCount = wikiResults?.length || 0;
+  const avgTrustScore = wikiResults && wikiResults.length > 0
+    ? wikiResults.reduce((sum, w: Record<string, unknown>) => sum + ((w.avg_trust_score as number) || 0), 0) / wikiResults.length
+    : 0;
+
   return {
     sessionId: session.id,
     answer,
     messages: updatedMessages,
+    wikiSourceCount,
+    avgTrustScore,
   };
 }

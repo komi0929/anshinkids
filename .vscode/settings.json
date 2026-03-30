@@ -1,0 +1,27 @@
+{
+  // === Project-specific settings for anshin-kids ===
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "tailwindCSS.rootFontSize": 16,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "cSpell.words": [
+    "anshin",
+    "supabase",
+    "genkit",
+    "gemini",
+    "tailwindcss",
+    "clsx",
+    "lucide",
+    "shadcn",
+    "radix",
+    "zustand"
+  ]
+}

@@ -1,12 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Leaf } from "lucide-react";
-import { askConcierge } from "@/app/actions/concierge";
+import { Send, Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X } from "lucide-react";
+import { askConcierge, contributeFromConcierge } from "@/app/actions/concierge";
+import { checkContentSafety, EMERGENCY_GUIDANCE, calculateAnswerConfidence } from "@/lib/ai/safety-guard";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  confidence?: {
+    level: string;
+    label: string;
+    color: string;
+    sourceCount: number;
+  };
 }
 
 export default function ConciergePage() {
@@ -17,6 +24,14 @@ export default function ConciergePage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Gap 4: Contribution prompt
+  const [showContribPrompt, setShowContribPrompt] = useState<number | null>(null);
+  const [isContributing, setIsContributing] = useState(false);
+  const [contributedIndices, setContributedIndices] = useState<Set<number>>(new Set());
+
+  // === F2: Emergency banner ===
+  const [showEmergency, setShowEmergency] = useState(false);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -25,6 +40,13 @@ export default function ConciergePage() {
     if (!input.trim() || isLoading) return;
 
     const question = input.trim();
+
+    // === F2: Emergency detection ===
+    const safety = checkContentSafety(question);
+    if (safety.isEmergency) {
+      setShowEmergency(true);
+    }
+
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setIsLoading(true);
@@ -33,72 +55,137 @@ export default function ConciergePage() {
 
     if (result.success && result.data) {
       setSessionId(result.data.sessionId);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: result.data!.answer },
-      ]);
-    } else {
+
+      // === F4: Calculate answer confidence ===
+      const wikiSourceCount = result.data.wikiSourceCount ?? 0;
+      const avgTrustScore = result.data.avgTrustScore ?? 0;
+      const confidence = calculateAnswerConfidence(wikiSourceCount, avgTrustScore);
+
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "申し訳ございません。一時的にAIが応答できない状態です。しばらくしてからお試しください 🙇",
+          content: result.data!.answer,
+          confidence: {
+            level: confidence.level,
+            label: confidence.label,
+            color: confidence.color,
+            sourceCount: confidence.sourceCount,
+          },
         },
+      ]);
+      const nextIndex = messages.length;
+      setTimeout(() => setShowContribPrompt(nextIndex), 1500);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "申し訳ございません。一時的にAIが応答できない状態です。しばらくしてからお試しください 🙇" },
       ]);
     }
     setIsLoading(false);
   }
 
+  async function handleContributeToWiki(userMessageIndex: number) {
+    const userMsg = messages[userMessageIndex];
+    if (!userMsg || userMsg.role !== "user") return;
+    setIsContributing(true);
+    const result = await contributeFromConcierge(userMsg.content);
+    if (result.success) setContributedIndices((prev) => new Set(prev).add(userMessageIndex));
+    setIsContributing(false);
+    setShowContribPrompt(null);
+  }
+
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="page-header border-b border-[var(--color-border-light)]">
+      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-success)] to-[var(--color-primary)] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-md">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-[var(--color-text)]">
-              AI相談 ✨
-            </h1>
-            <p className="text-[11px] text-[var(--color-subtle)]">
-              食物アレルギーについてAIに相談できます
-            </p>
+            <h1 className="text-[17px] font-extrabold text-[var(--color-text)]">AI相談 ✨</h1>
+            <p className="text-[11px] text-[var(--color-subtle)]">みんなの体験をもとにAIがお答えします</p>
           </div>
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center px-8">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center mb-6">
-              <Leaf className="w-10 h-10 text-[var(--color-success)]" />
+        {/* === F2: Emergency Banner === */}
+        {showEmergency && (
+          <div className="p-4 rounded-2xl bg-red-50 border-2 border-red-300 mb-3 slide-up">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                <h3 className="text-[14px] font-extrabold text-red-700">{EMERGENCY_GUIDANCE.title}</h3>
+              </div>
+              <button onClick={() => setShowEmergency(false)} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
             </div>
-            <h2 className="text-lg font-bold text-[var(--color-text)] mb-2">
-              なんでも聞いてくださいね 🌿
-            </h2>
-            <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed mb-8 max-w-sm">
-              みんなから集まった体験をもとに、可能性のある選択肢をやさしくお伝えします。<br />
-              断定的な医療アドバイスではなく、「こんな声がありましたよ」という形でお答えします。
+            <div className="space-y-1.5 mb-3">
+              {EMERGENCY_GUIDANCE.steps.map((step, i) => (
+                <p key={i} className="text-[12px] text-red-700 font-medium">{step}</p>
+              ))}
+            </div>
+            <p className="text-[11px] text-red-600 font-bold">{EMERGENCY_GUIDANCE.important}</p>
+            <a href="tel:119" className="mt-3 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 text-white font-bold text-[14px]">
+              <Phone className="w-5 h-5" /> 119番に電話する
+            </a>
+          </div>
+        )}
+
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center px-6 fade-in">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center shadow-sm mb-4">
+              <Leaf className="w-7 h-7 text-[var(--color-success)]" />
+            </div>
+            <h2 className="text-[17px] font-extrabold text-[var(--color-text)] mb-1">なんでも聞いてね 🌿</h2>
+
+            {/* Single compact disclaimer */}
+            <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed mb-6 max-w-xs">
+              ⚠️ 医療アドバイスではありません。回答はみんなの体験に基づきます。
             </p>
 
-            {/* Suggestion chips */}
-            <div className="space-y-2 w-full max-w-sm">
-              {[
-                "卵クラス4の3歳児ですが、負荷試験はいつ頃始められますか？",
-                "乳アレルギーでも食べられる市販のパンはありますか？",
-                "保育園の給食対応をお願いするコツを教えてください",
-              ].map((suggestion) => (
+            <div className="space-y-2.5 w-full max-w-sm">
+              <p className="text-[10px] font-semibold text-[var(--color-subtle)] mb-1">💬 こんなことを聞いてみよう</p>
+              {(() => {
+                // Personalize suggestions based on onboarding preferences
+                const defaults = [
+                  "3歳の誕生日にアレルギー対応ケーキを用意したいのですが、おすすめはありますか？",
+                  "乳アレルギーでも安心して食べられるパンを教えてください",
+                  "来月から保育園で給食が始まります。先生にどう伝えればいいですか？",
+                ];
+                try {
+                  const stored = typeof window !== "undefined" ? localStorage.getItem("anshin_user_preferences") : null;
+                  if (!stored) return defaults;
+                  const prefs = JSON.parse(stored);
+                  const allergens: string[] = prefs.allergens || [];
+
+                  const personalized: string[] = [];
+                  if (allergens.includes("egg")) personalized.push("卵アレルギーの3歳児ですが、食べられるケーキはありますか？");
+                  else if (allergens.includes("milk")) personalized.push("乳アレルギーでも食べられるアイスクリームはありますか？");
+                  else personalized.push(defaults[0]);
+
+                  if (allergens.includes("wheat")) personalized.push("小麦アレルギーの子に米粉パンを作りたいのですが、おすすめのレシピは？");
+                  else personalized.push(defaults[1]);
+
+                  personalized.push(defaults[2]);
+                  return personalized;
+                } catch { return defaults; }
+              })().map((suggestion, i) => (
                 <button
                   key={suggestion}
-                  onClick={() => {
-                    setInput(suggestion);
-                    textareaRef.current?.focus();
-                  }}
-                  className="w-full text-left p-3 card text-[13px] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] transition-colors"
+                  onClick={() => { setInput(suggestion); textareaRef.current?.focus(); }}
+                  className="w-full text-left p-3.5 card text-[13px] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all group stagger-item"
+                  id={`suggestion-${i}`}
+                  aria-label={`質問例: ${suggestion}`}
                 >
-                  💬 {suggestion}
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--color-primary)]/8 to-[var(--color-primary)]/3 flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-3.5 h-3.5 text-[var(--color-primary)]" aria-hidden="true" />
+                    </div>
+                    <span className="leading-snug">{suggestion}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -106,28 +193,71 @@ export default function ConciergePage() {
         )}
 
         {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} fade-in`}
-          >
-            {msg.role === "assistant" && (
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-success)] to-[var(--color-primary)] flex items-center justify-center mr-2 mt-1 flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-white" />
+          <div key={index}>
+            <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} fade-in`}>
+              {msg.role === "assistant" && (
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center mr-2 mt-1 flex-shrink-0 shadow-sm">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+              )}
+              <div className={`chat-bubble ${msg.role}`}>
+                <p className="whitespace-pre-wrap">{msg.content}</p>
+
+                {/* === F4: AI Confidence Badge === */}
+                {msg.role === "assistant" && msg.confidence && (
+                  <div className="mt-3 pt-2.5 border-t border-[var(--color-border-light)]/50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: msg.confidence.color }} />
+                      <span className="text-[10px] font-medium" style={{ color: msg.confidence.color }}>
+                        {msg.confidence.label}
+                      </span>
+                    </div>
+                    {msg.confidence.level === "insufficient" && (
+                      <p className="text-[10px] text-amber-600 mt-1 leading-snug">
+                        ⚠️ まだ十分なデータがありません。トークルームで体験を共有すると、より正確な回答ができるようになります。
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Gap 4: Contribute prompt */}
+            {msg.role === "user" && !contributedIndices.has(index) && showContribPrompt === index && (
+              <div className="flex justify-end mt-2 fade-in">
+                <div className="max-w-[280px] p-3 rounded-2xl bg-gradient-to-r from-[var(--color-success-light)] to-[var(--color-surface-warm)] border border-[var(--color-success)]/15">
+                  <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed mb-2">
+                    💡 この相談内容を匿名で知恵袋に追加しますか？<br/>
+                    <span className="text-[10px] text-[var(--color-muted)]">他の同じ悩みの方の助けになります</span>
+                  </p>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleContributeToWiki(index)} disabled={isContributing} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-success)] text-white text-[11px] font-bold hover:opacity-90 transition-all disabled:opacity-50" id={`contrib-wiki-${index}`}>
+                      {isContributing ? <><Loader2 className="w-3 h-3 animate-spin" /> 追加中</> : <><Plus className="w-3 h-3" /> 知恵袋に追加</>}
+                    </button>
+                    <button onClick={() => setShowContribPrompt(null)} className="px-3 py-1.5 rounded-xl text-[11px] text-[var(--color-subtle)] hover:bg-[var(--color-surface)] transition-all">今回はスキップ</button>
+                  </div>
+                </div>
               </div>
             )}
-            <div className={`chat-bubble ${msg.role}`}>
-              <p className="whitespace-pre-wrap">{msg.content}</p>
-            </div>
+
+            {msg.role === "user" && contributedIndices.has(index) && (
+              <div className="flex justify-end mt-2 fade-in">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--color-success-light)] text-[var(--color-success-deep)]">
+                  <Check className="w-3 h-3" />
+                  <span className="text-[10px] font-bold">知恵袋に追加しました 🌿</span>
+                </div>
+              </div>
+            )}
           </div>
         ))}
 
         {isLoading && (
           <div className="flex items-start gap-2 fade-in">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-success)] to-[var(--color-primary)] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center flex-shrink-0 shadow-sm">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div className="chat-bubble assistant">
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 py-1">
                 <div className="w-2 h-2 rounded-full bg-[var(--color-muted)] animate-bounce" style={{ animationDelay: "0ms" }} />
                 <div className="w-2 h-2 rounded-full bg-[var(--color-muted)] animate-bounce" style={{ animationDelay: "150ms" }} />
                 <div className="w-2 h-2 rounded-full bg-[var(--color-muted)] animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -138,15 +268,10 @@ export default function ConciergePage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Disclaimer */}
-      <div className="px-4 py-1">
-        <p className="text-[10px] text-center text-[var(--color-muted)]">
-          AIの回答は医療アドバイスではありません。必ず主治医にご相談ください。
-        </p>
-      </div>
+
 
       {/* Input */}
-      <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)] p-4 pb-[max(16px,env(safe-area-inset-bottom))]">
+      <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm p-4 safe-bottom">
         <div className="flex gap-3 items-end max-w-lg mx-auto">
           <textarea
             ref={textareaRef}
@@ -155,18 +280,10 @@ export default function ConciergePage() {
             placeholder="お悩みを入力してください..."
             className="input-field flex-1 resize-none max-h-32"
             rows={1}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
+            id="concierge-input"
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
           />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-          >
+          <button onClick={handleSend} disabled={!input.trim() || isLoading} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0" id="concierge-send">
             <Send className="w-5 h-5" />
           </button>
         </div>

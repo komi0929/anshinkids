@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Shield, Clock, Plus, Loader2, Check, Users, MessageCircle, X } from "lucide-react";
+import { ArrowLeft, Shield, Clock, Plus, Loader2, Check, Users, MessageCircle, X, BookOpen } from "lucide-react";
 import { getWikiEntry, contributeToWiki } from "@/app/actions/wiki";
 
 interface WikiSource {
@@ -50,29 +50,29 @@ function renderContentJson(content: Record<string, unknown>): React.ReactNode {
 
   const sections: React.ReactNode[] = [];
 
-  // Render raw_summary
   if (content.raw_summary && typeof content.raw_summary === "string") {
     sections.push(
-      <div key="summary" className="mb-4">
-        <p className="text-[14px] leading-relaxed text-[var(--color-text)]">{content.raw_summary}</p>
+      <div key="summary" className="mb-5">
+        <p className="text-[14px] leading-[1.9] text-[var(--color-text)]">{content.raw_summary}</p>
       </div>
     );
   }
 
-  // Render items array
   if (Array.isArray(content.items)) {
     sections.push(
-      <div key="items" className="mb-4">
-        <h3 className="text-[13px] font-semibold text-[var(--color-text)] mb-2">📋 情報一覧</h3>
-        <ul className="space-y-2">
+      <div key="items" className="mb-5">
+        <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+          <span>📋</span> 情報一覧
+        </h3>
+        <ul className="space-y-2.5">
           {(content.items as Array<Record<string, unknown>>).map((item, i) => (
-            <li key={i} className="p-3 rounded-xl bg-[var(--color-surface-warm)] text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
+            <li key={i} className="p-3.5 rounded-2xl bg-[var(--color-surface-warm)] text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
               {typeof item === "string" ? item : (
                 <>
-                  {item.name && <span className="font-medium text-[var(--color-text)]">{String(item.name)}</span>}
+                  {item.name && <span className="font-bold text-[var(--color-text)] block mb-0.5">{String(item.name)}</span>}
                   {item.text && <span>{String(item.text)}</span>}
-                  {item.description && <span className="block mt-0.5 text-[12px]">{String(item.description)}</span>}
-                  {item.source && <span className="block mt-0.5 text-[10px] text-[var(--color-muted)]">出典: {String(item.source)}</span>}
+                  {item.description && <span className="block mt-1 text-[12px]">{String(item.description)}</span>}
+                  {item.source && <span className="block mt-1 text-[10px] text-[var(--color-muted)]">出典: {String(item.source)}</span>}
                 </>
               )}
             </li>
@@ -82,15 +82,16 @@ function renderContentJson(content: Record<string, unknown>): React.ReactNode {
     );
   }
 
-  // Render tips array
   if (Array.isArray(content.tips)) {
     sections.push(
-      <div key="tips" className="mb-4">
-        <h3 className="text-[13px] font-semibold text-[var(--color-text)] mb-2">💡 みんなの工夫</h3>
-        <ul className="space-y-2">
+      <div key="tips" className="mb-5">
+        <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+          <span>💡</span> みんなの工夫
+        </h3>
+        <ul className="space-y-2.5">
           {(content.tips as Array<Record<string, unknown>>).map((tip, i) => (
-            <li key={i} className="flex gap-2 p-3 rounded-xl bg-[var(--color-success-light)]/30 text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
-              <span className="text-[var(--color-success)] flex-shrink-0">✓</span>
+            <li key={i} className="flex gap-2.5 p-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-success-light)]/30 to-transparent text-[13px] text-[var(--color-text-secondary)] leading-relaxed border border-[var(--color-success)]/10">
+              <span className="text-[var(--color-success)] font-bold flex-shrink-0">✓</span>
               <span>{typeof tip === "string" ? tip : String(tip.text || JSON.stringify(tip))}</span>
             </li>
           ))}
@@ -99,13 +100,12 @@ function renderContentJson(content: Record<string, unknown>): React.ReactNode {
     );
   }
 
-  // Fallback for other keys
   const renderedKeys = new Set(["raw_summary", "items", "tips"]);
   const otherKeys = Object.keys(content).filter(k => !renderedKeys.has(k) && content[k]);
   if (otherKeys.length > 0 && sections.length === 0) {
     sections.push(
       <div key="other" className="mb-4">
-        <pre className="text-[12px] text-[var(--color-text-secondary)] whitespace-pre-wrap bg-[var(--color-surface-warm)] p-3 rounded-xl overflow-x-auto">
+        <pre className="text-[12px] text-[var(--color-text-secondary)] whitespace-pre-wrap bg-[var(--color-surface-warm)] p-4 rounded-2xl overflow-x-auto">
           {JSON.stringify(content, null, 2)}
         </pre>
       </div>
@@ -162,9 +162,9 @@ export default function WikiDetailPage() {
           <div className="shimmer h-5 w-40 rounded-lg" />
         </div>
         <div className="p-4 space-y-4">
-          <div className="shimmer h-8 rounded-lg" />
+          <div className="shimmer h-8 rounded-xl" />
           <div className="shimmer h-4 w-3/4 rounded-lg" />
-          <div className="shimmer h-40 rounded-2xl" />
+          <div className="shimmer h-48 rounded-2xl" />
         </div>
       </div>
     );
@@ -180,10 +180,12 @@ export default function WikiDetailPage() {
           <h1 className="text-[15px] font-bold text-[var(--color-text)]">記事が見つかりません</h1>
         </div>
         <div className="empty-state">
-          <div className="text-5xl mb-2">📖</div>
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2">
+            <BookOpen className="w-8 h-8 text-[var(--color-primary)]" />
+          </div>
           <h3>この記事はまだ存在しません</h3>
           <p>みんなの声で体験を共有すると、AIが自動的に記事を作成します。</p>
-          <Link href="/talk" className="btn-primary mt-6 inline-flex items-center gap-2">
+          <Link href="/talk" className="btn-primary mt-6 inline-flex items-center gap-2" id="go-to-talk-from-wiki-detail">
             💬 みんなの声で話してみる
           </Link>
         </div>
@@ -197,8 +199,8 @@ export default function WikiDetailPage() {
   return (
     <div className="fade-in pb-24">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)] sticky top-0 z-40">
-        <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors">
+      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
+        <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors" id="back-to-wiki">
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
         <div className="flex-1 min-w-0">
@@ -208,7 +210,7 @@ export default function WikiDetailPage() {
       </div>
 
       {/* Meta badges */}
-      <div className="px-4 py-4">
+      <div className="px-4 py-5">
         <div className="flex items-center flex-wrap gap-2 mb-4">
           <span className={`trust-badge ${trust.className}`}>
             <Shield className="w-3 h-3" />
@@ -219,37 +221,39 @@ export default function WikiDetailPage() {
             {freshness.label}
           </span>
           {entry.allergen_tags?.map((tag) => (
-            <span key={tag} className="px-2 py-0.5 bg-[var(--color-surface-warm)] rounded-full text-[11px] text-[var(--color-text-secondary)]">
+            <span key={tag} className="px-2.5 py-0.5 bg-[var(--color-surface-warm)] rounded-full text-[11px] font-medium text-[var(--color-text-secondary)]">
               {tag}
             </span>
           ))}
         </div>
 
         {/* Trust explanation */}
-        <div className="p-3 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)] mb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Users className="w-3.5 h-3.5 text-[var(--color-subtle)]" />
-            <span className="text-[11px] font-medium text-[var(--color-text-secondary)]">
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-bg-warm)] border border-[var(--color-border-light)] mb-5">
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-7 h-7 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
+              <Users className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+            </div>
+            <span className="text-[12px] font-bold text-[var(--color-text)]">
               {entry.source_count}件の体験にもとづく情報です
             </span>
           </div>
-          <p className="text-[10px] text-[var(--color-muted)]">{trust.desc}</p>
+          <p className="text-[10px] text-[var(--color-muted)] ml-9 leading-relaxed">{trust.desc}</p>
         </div>
 
         {/* Summary */}
         {entry.summary && (
-          <p className="text-[14px] leading-relaxed text-[var(--color-text-secondary)] mb-6">
+          <p className="text-[14px] leading-[1.9] text-[var(--color-text-secondary)] mb-6">
             {entry.summary}
           </p>
         )}
 
         {/* Content */}
-        <div className="card p-5 mb-6">
+        <div className="card-elevated p-5 mb-6">
           {renderContentJson(entry.content_json)}
         </div>
 
         {/* Medical Disclaimer */}
-        <div className="p-3 rounded-xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20 mb-6">
+        <div className="p-3.5 rounded-2xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20 mb-6">
           <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
             ⚠️ この情報は保護者の体験に基づく参考情報です。<strong>医療的な判断は必ず主治医にご相談ください。</strong>
           </p>
@@ -258,15 +262,15 @@ export default function WikiDetailPage() {
         {/* Sources Traceability */}
         {entry.wiki_sources && entry.wiki_sources.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-[13px] font-semibold text-[var(--color-text)] mb-3 flex items-center gap-2">
+            <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
               <MessageCircle className="w-4 h-4 text-[var(--color-subtle)]" />
               この知恵のもとになった声
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {entry.wiki_sources.slice(0, 5).map((source) => (
-                <div key={source.id} className="p-3 rounded-xl bg-[var(--color-surface-warm)] text-[12px] text-[var(--color-text-secondary)]">
+                <div key={source.id} className="p-3.5 rounded-2xl bg-[var(--color-surface-warm)] text-[12px] text-[var(--color-text-secondary)] border border-[var(--color-border-light)]/50">
                   <p className="leading-relaxed line-clamp-2">「{source.original_message_snippet}」</p>
-                  <p className="text-[10px] text-[var(--color-muted)] mt-1">
+                  <p className="text-[10px] text-[var(--color-muted)] mt-1.5 bg-[var(--color-bg)] inline-block px-2 py-0.5 rounded-full">
                     {new Date(source.extracted_at).toLocaleDateString("ja-JP")}に抽出
                   </p>
                 </div>
@@ -282,21 +286,21 @@ export default function WikiDetailPage() {
 
         {/* Contribute */}
         {showContrib ? (
-          <div className="card p-4 slide-up">
+          <div className="card-elevated p-5 slide-up">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[13px] font-semibold text-[var(--color-text)]">✍️ 情報を追加する</h3>
-              <button onClick={() => setShowContrib(false)} className="text-[var(--color-subtle)] hover:text-[var(--color-text)]">
+              <h3 className="text-[14px] font-extrabold text-[var(--color-text)]">✍️ 情報を追加する</h3>
+              <button onClick={() => setShowContrib(false)} className="text-[var(--color-subtle)] hover:text-[var(--color-text)] transition-colors" id="close-contrib">
                 <X className="w-4 h-4" />
               </button>
             </div>
             {submitted ? (
-              <div className="flex items-center gap-2 justify-center py-4 text-[var(--color-success)]">
+              <div className="flex items-center gap-2 justify-center py-5 text-[var(--color-success)]">
                 <Check className="w-5 h-5" />
-                <span className="text-[13px] font-medium">情報をいただきました！AIが整理して反映します 🌿</span>
+                <span className="text-[13px] font-bold">情報をいただきました！AIが整理して反映します 🌿</span>
               </div>
             ) : (
               <>
-                <p className="text-[11px] text-[var(--color-subtle)] mb-2">
+                <p className="text-[11px] text-[var(--color-subtle)] mb-2.5">
                   知っていることをざざっと書くだけでOK。AIが整理します ✨
                 </p>
                 <textarea
@@ -306,13 +310,15 @@ export default function WikiDetailPage() {
                   className="input-field resize-none w-full"
                   rows={3}
                   autoFocus
+                  id="wiki-contrib-text"
                 />
-                <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center justify-between mt-3">
                   <span className="text-[10px] text-[var(--color-muted)]">きれいに書かなくて大丈夫です</span>
                   <button
                     onClick={handleContribute}
                     disabled={!contribText.trim() || isSubmitting}
-                    className="btn-primary !py-1.5 !px-4 !text-[12px] disabled:opacity-40 flex items-center gap-1.5"
+                    className="btn-primary !py-2 !px-5 !text-[12px] disabled:opacity-40 flex items-center gap-1.5"
+                    id="submit-wiki-contrib"
                   >
                     {isSubmitting ? (<><Loader2 className="w-3 h-3 animate-spin" /> AIが整理中...</>) : (<><Plus className="w-3 h-3" /> 追加する</>)}
                   </button>
@@ -324,15 +330,40 @@ export default function WikiDetailPage() {
           <button
             onClick={() => setShowContrib(true)}
             className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all group"
+            id="open-contrib"
           >
             <div className="flex items-center justify-center gap-2">
               <Plus className="w-4 h-4 text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors" />
-              <span className="text-[13px] font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">
+              <span className="text-[13px] font-bold text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">
               あなたの体験・情報を追加する ✍️
               </span>
             </div>
           </button>
         )}
+
+        {/* === Gap 3: Reverse link from Wiki → Talk === */}
+        <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-primary)]/5 border border-[var(--color-primary)]/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-5 h-5 text-[var(--color-primary)]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[12px] text-[var(--color-text)] font-bold leading-snug">
+                この知恵をもっと充実させませんか？
+              </p>
+              <p className="text-[10px] text-[var(--color-subtle)] mt-0.5">
+                トークルームであなたの体験を共有すると、この記事が自動的に更新されます
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/talk"
+            className="block mt-3 w-full text-center btn-secondary !text-[12px] !py-2.5"
+            id="discuss-in-talk"
+          >
+            💬 みんなの声で話してみる
+          </Link>
+        </div>
       </div>
     </div>
   );

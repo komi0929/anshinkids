@@ -1,19 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Shield, Clock, Plus, Loader2, Check, X } from "lucide-react";
+import { Search, Filter, Shield, Clock, Plus, Loader2, Check, X, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { searchWiki, contributeToWiki } from "@/app/actions/wiki";
 
 const CATEGORIES = [
   "すべて",
-  "市販品",
-  "外食",
-  "負荷試験",
+  "商品情報",
+  "体験記",
+  "対処法",
   "レシピ",
-  "病院",
-  "スキンケア",
+  "基礎知識",
 ];
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  "すべて": "📖",
+  "商品情報": "🛒",
+  "体験記": "💬",
+  "対処法": "🛡️",
+  "レシピ": "👩‍🍳",
+  "基礎知識": "📚",
+};
 
 const ALLERGENS = ["卵", "乳", "小麦", "そば", "落花生", "えび", "かに"];
 
@@ -87,19 +95,19 @@ export default function WikiPage() {
 
   return (
     <div className="fade-in">
-      <div className="px-5 pt-8 pb-5">
-        <h1 className="text-[22px] font-bold text-[var(--color-text)] leading-tight">知恵袋 📖</h1>
-        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
-          保護者の体験をAIが整理した、食物アレルギーの知識ライブラリ
+      <div className="px-5 pt-7 pb-4">
+        <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
+          知恵袋 📖
+        </h1>
+        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
+          保護者の体験をAIが整理した知識ライブラリ
         </p>
       </div>
 
-      {/* Contribution CTA */}
-      <div className="mx-4 mb-4 p-3 rounded-xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-success-light)]/50 border border-[var(--color-border-light)]">
-        <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
-          ✍️ 各記事の「<strong>あなたの体験・情報を追加</strong>」から、知っていることを少し書くだけでOK。AIが整理して反映します。
-        </p>
-      </div>
+      {/* Subtle contribution hint */}
+      <p className="px-5 mb-3 text-[11px] text-[var(--color-subtle)]">
+        💡 各記事の「情報を追加」から、あなたの体験を共有できます
+      </p>
 
       {/* Search */}
       <div className="px-4 mb-3">
@@ -111,14 +119,16 @@ export default function WikiPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="商品名、症状、病院名で検索..."
             className="input-field pl-11 pr-12"
+            id="wiki-search"
           />
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${
+            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl transition-all ${
               showFilters || selectedAllergens.length > 0
-                ? "bg-[var(--color-primary)] text-white"
+                ? "bg-[var(--color-primary)] text-white shadow-sm"
                 : "text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)]"
             }`}
+            id="toggle-filters"
           >
             <Filter className="w-4 h-4" />
           </button>
@@ -129,7 +139,7 @@ export default function WikiPage() {
       {showFilters && (
         <div className="px-4 mb-4 slide-up">
           <div className="card p-4">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2">アレルゲン</p>
+            <p className="text-xs font-semibold text-[var(--color-text-secondary)] mb-2.5">アレルゲンで絞り込み</p>
             <div className="flex flex-wrap gap-2">
               {ALLERGENS.map((allergen) => (
                 <button
@@ -139,10 +149,10 @@ export default function WikiPage() {
                       prev.includes(allergen) ? prev.filter((a) => a !== allergen) : [...prev, allergen]
                     )
                   }
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     selectedAllergens.includes(allergen)
-                      ? "bg-[var(--color-accent)] text-white"
-                      : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)]"
+                      ? "bg-[var(--color-primary)] text-white shadow-sm"
+                      : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border-light)]"
                   }`}
                 >
                   {allergen}
@@ -160,13 +170,14 @@ export default function WikiPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 selectedCategory === cat
-                  ? "bg-[var(--color-primary)] text-white shadow-sm"
-                  : "bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)]"
+                  ? "bg-[var(--color-primary)] text-white shadow-md"
+                  : "bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30"
               }`}
+              id={`category-${cat}`}
             >
-              {cat}
+              {CATEGORY_EMOJI[cat] || ""} {cat}
             </button>
           ))}
         </div>
@@ -177,12 +188,14 @@ export default function WikiPage() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="shimmer h-32 rounded-2xl" />
+              <div key={i} className="shimmer h-36 rounded-2xl" />
             ))}
           </div>
         ) : entries.length === 0 ? (
           <div className="empty-state">
-            <div className="text-5xl mb-2">📖</div>
+            <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-success-light)] flex items-center justify-center mb-2 shadow-sm">
+              <BookOpen className="w-8 h-8 text-[var(--color-primary)]" />
+            </div>
             <h3>まだ記事がありません</h3>
             <p>
               トークルームで体験を共有すると、
@@ -191,18 +204,21 @@ export default function WikiPage() {
             <Link
               href="/talk"
               className="btn-primary mt-6 inline-flex items-center gap-2"
+              id="go-to-talk-from-wiki"
             >
-              💬 トークルームで話してみる
+              💬 みんなの声で話してみる
             </Link>
 
             {/* Placeholder themes */}
             <div className="mt-8 w-full max-w-sm">
-              <p className="text-[11px] text-[var(--color-subtle)] mb-3">今後こんな情報が集まる予定です</p>
+              <p className="text-[11px] text-[var(--color-subtle)] mb-3 font-medium">今後こんな情報が集まる予定です</p>
               <div className="space-y-2">
-                {["卵アレルギー対応の市販おやつ", "外食チェーン店のアレルギー対応", "保育園・幼稚園の給食対応", "負荷試験の進め方・体験談"].map((theme) => (
-                  <div key={theme} className="card p-3 text-left opacity-60">
+                {["卵不使用のおすすめ市販おやつまとめ", "乳アレルギー対応の外食チェーン情報", "保育園への生活管理指導表の書き方", "米粉でつくる簡単パンケーキレシピ"].map((theme, i) => (
+                  <div key={theme} className="card p-3.5 text-left opacity-60 stagger-item">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-[var(--color-surface-warm)] flex items-center justify-center text-sm">📖</div>
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-bg-warm)] flex items-center justify-center text-sm">
+                        {["🛒", "🍽️", "🏫", "👩‍🍳"][i]}
+                      </div>
                       <span className="text-[13px] text-[var(--color-text-secondary)]">{theme}</span>
                     </div>
                   </div>
@@ -218,10 +234,10 @@ export default function WikiPage() {
             const isSubmittedEntry = submitted === entry.id;
 
             return (
-              <div key={entry.id} className="card slide-up overflow-hidden">
-                <Link href={`/wiki/${entry.slug}`} className="block p-4 hover:bg-[var(--color-surface-warm)]/30 transition-colors">
-                  <h3 className="font-semibold text-[15px] text-[var(--color-text)] mb-2">{entry.title}</h3>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mb-3">{entry.summary}</p>
+              <div key={entry.id} className="card overflow-hidden stagger-item">
+                <Link href={`/wiki/${entry.slug}`} className="block p-4 hover:bg-[var(--color-surface-warm)]/30 transition-colors" id={`wiki-entry-${entry.slug}`}>
+                  <h3 className="font-bold text-[15px] text-[var(--color-text)] mb-2">{entry.title}</h3>
+                  <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mb-3 line-clamp-2">{entry.summary}</p>
                   <div className="flex items-center flex-wrap gap-2">
                     <span className={`trust-badge ${trust.className}`}>
                       <Shield className="w-3 h-3" />
@@ -236,23 +252,24 @@ export default function WikiPage() {
                     </span>
                   </div>
                 </Link>
-                <div className="px-4 pb-3 flex items-center justify-between">
+                <div className="px-4 pb-3 flex items-center justify-between border-t border-[var(--color-border-light)]/50 pt-2.5">
                   <div className="flex flex-wrap gap-1.5">
                     {entry.allergen_tags?.map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 bg-[var(--color-surface-warm)] rounded-full text-[11px] text-[var(--color-text-secondary)]">
+                      <span key={tag} className="px-2.5 py-0.5 bg-[var(--color-surface-warm)] rounded-full text-[11px] font-medium text-[var(--color-text-secondary)]">
                         {tag}
                       </span>
                     ))}
                   </div>
                   <button
                     onClick={(e) => { e.preventDefault(); setExpandedEntry(isExpanded ? null : entry.id); setContribText(""); }}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all ${
                       isExpanded
                         ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
                         : "text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)] hover:text-[var(--color-primary)]"
                     }`}
+                    id={`contribute-${entry.id}`}
                   >
-                    {isExpanded ? (<><X className="w-3 h-3" /> とじる</>) : (<><Plus className="w-3 h-3" /> あなたの体験・情報を追加</>)}
+                    {isExpanded ? (<><X className="w-3 h-3" /> とじる</>) : (<><Plus className="w-3 h-3" /> 情報を追加</>)}
                   </button>
                 </div>
 
@@ -260,29 +277,31 @@ export default function WikiPage() {
                   <div className="px-4 pb-4 pt-0 border-t border-[var(--color-border-light)]">
                     <div className="pt-3">
                       {isSubmittedEntry ? (
-                        <div className="flex items-center gap-2 justify-center py-4 text-[var(--color-success)]">
+                        <div className="flex items-center gap-2 justify-center py-5 text-[var(--color-success)]">
                           <Check className="w-5 h-5" />
-                          <span className="text-[13px] font-medium">情報をいただきました！AIが整理して反映します 🌿</span>
+                          <span className="text-[13px] font-semibold">情報をいただきました！AIが整理して反映します 🌿</span>
                         </div>
                       ) : (
                         <>
-                          <p className="text-[11px] text-[var(--color-subtle)] mb-2">
+                          <p className="text-[11px] text-[var(--color-subtle)] mb-2.5">
                             知っていることをざざっと書くだけでOK。AIが整理します ✨
                           </p>
                           <textarea
                             value={contribText}
                             onChange={(e) => setContribText(e.target.value)}
-                            placeholder="例: 西松屋で売ってるアンパンマンのせんべいも卵不使用だったよ！あと成城石井のグラノーラもおすすめ"
+                            placeholder="例: 西松屋で売ってるアンパンマンのせんべいも卵不使用だったよ！"
                             className="input-field resize-none w-full"
                             rows={3}
                             autoFocus
+                            id={`contrib-text-${entry.id}`}
                           />
-                          <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center justify-between mt-2.5">
                             <span className="text-[10px] text-[var(--color-muted)]">きれいに書かなくて大丈夫です</span>
                             <button
                               onClick={() => handleContribute(entry.id)}
                               disabled={!contribText.trim() || isSubmitting}
-                              className="btn-primary !py-1.5 !px-4 !text-[12px] disabled:opacity-40 flex items-center gap-1.5"
+                              className="btn-primary !py-2 !px-5 !text-[12px] disabled:opacity-40 flex items-center gap-1.5"
+                              id={`submit-contrib-${entry.id}`}
                             >
                               {isSubmitting ? (<><Loader2 className="w-3 h-3 animate-spin" /> AIが整理中...</>) : (<><Plus className="w-3 h-3" /> 追加する</>)}
                             </button>

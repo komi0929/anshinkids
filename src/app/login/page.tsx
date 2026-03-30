@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Leaf, MessageCircle, BookOpen, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { Leaf, MessageCircle, BookOpen, Sparkles, ArrowRight, Shield, Clock, Heart } from "lucide-react";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,6 @@ export default function LoginPage() {
         throw new Error("LINE Channel ID not configured");
       }
 
-      // Generate state for CSRF protection
       const state = crypto.randomUUID();
       localStorage.setItem("line_oauth_state", state);
 
@@ -46,112 +45,148 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[var(--color-bg)]">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-24 h-24 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-[var(--color-success)] to-[var(--color-primary)] flex items-center justify-center shadow-lg">
-            <Leaf className="w-12 h-12 text-white" />
+    <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
+      {/* Hero Section with Gradient */}
+      <div className="hero-gradient flex-1 flex flex-col items-center justify-center px-6 py-10">
+        <div className="w-full max-w-sm">
+          {/* Logo & Brand */}
+          <div className="text-center mb-6 fade-in">
+            <div className="relative w-20 h-20 mx-auto mb-4">
+              <div className="absolute inset-0 rounded-[24px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] shadow-lg gradient-animate" />
+              <div className="relative w-full h-full rounded-[24px] flex items-center justify-center">
+                <Leaf className="w-10 h-10 text-white drop-shadow-sm" />
+              </div>
+              {/* Glow effect */}
+              <div className="absolute -inset-2 rounded-[28px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] opacity-15 blur-lg -z-10" />
+            </div>
+            <h1 className="text-[26px] font-extrabold text-[var(--color-text)] tracking-tight">
+              あんしんキッズ
+            </h1>
+            <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed">
+              食物アレルギーの知恵を、みんなでつくる
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)]">
-            あんしんキッズ
-          </h1>
-          <p className="text-[13px] text-[var(--color-subtle)] mt-2 leading-relaxed">
-            食物アレルギーの一次情報を
-            <br />
-            安心して共有・検索できる場所
+
+          {/* Mission Statement - Emotional Core */}
+          <div className="mb-6 fade-in-delayed">
+            <div className="card-elevated p-5">
+              <p className="text-[13px] text-[var(--color-text-secondary)] leading-[1.9] text-center">
+                今日あなたが話した体験が、<br />
+                明日どこかで悩んでいる親子の<br />
+                <span className="font-bold text-[var(--color-primary)] text-[14px]">
+                  「希望の道しるべ」
+                </span>
+                <br />
+                になります
+              </p>
+            </div>
+          </div>
+
+          {/* How it Works - Visual Flow */}
+          <div className="mb-6 fade-in-delayed-2">
+            <div className="flex items-center gap-1 justify-center">
+              <div className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] flex-1">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-primary)]/5 flex items-center justify-center">
+                  <MessageCircle className="w-4.5 h-4.5 text-[var(--color-primary)]" />
+                </div>
+                <p className="text-[10px] font-bold text-[var(--color-text)]">話すだけ</p>
+                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">気軽にひとこと</p>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
+              <div className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] flex-1">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-accent)]/10 to-[var(--color-accent)]/5 flex items-center justify-center">
+                  <Sparkles className="w-4.5 h-4.5 text-[var(--color-accent)]" />
+                </div>
+                <p className="text-[10px] font-bold text-[var(--color-text)]">AIが整理</p>
+                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">自動で抽出</p>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
+              <div className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] flex-1">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-success)]/10 to-[var(--color-success)]/5 flex items-center justify-center">
+                  <BookOpen className="w-4.5 h-4.5 text-[var(--color-success)]" />
+                </div>
+                <p className="text-[10px] font-bold text-[var(--color-text)]">知恵になる</p>
+                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">未来の誰かへ</p>
+              </div>
+            </div>
+          </div>
+
+          {/* LINE Login Button */}
+          <div className="space-y-3 fade-in-delayed-2">
+            <button
+              onClick={handleLineLogin}
+              disabled={isLoading}
+              id="line-login-button"
+              className="w-full py-4 px-6 rounded-2xl font-bold text-[15px] text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              style={{ backgroundColor: "#06C755" }}
+            >
+              <svg width="26" height="26" viewBox="0 0 120 120" fill="none">
+                <path d="M60 8C30.2 8 6 28.1 6 52.7c0 22.1 19.6 40.6 46.1 44.1 1.8.4 4.2 1.2 4.8 2.7.6 1.4.4 3.5.2 4.9l-.8 4.7c-.2 1.4-1.1 5.3 4.6 2.9 5.8-2.5 31-18.3 42.3-31.3C112.3 70.7 114 62 114 52.7 114 28.1 89.8 8 60 8Z" fill="white"/>
+                <g fill="#06C755">
+                  <path d="M50.3 43.2h-3.5c-1 0-1.8.8-1.8 1.8v22.1c0 1 .8 1.8 1.8 1.8h3.5c1 0 1.8-.8 1.8-1.8V45c0-1-.8-1.8-1.8-1.8Z"/>
+                  <path d="M71.2 43.2h-3.5c-1 0-1.8.8-1.8 1.8v13.1L55.4 43.8c-.1-.2-.3-.4-.5-.5h-4.1c-1 0-1.8.8-1.8 1.8v22.1c0 1 .8 1.8 1.8 1.8h3.5c1 0 1.8-.8 1.8-1.8V54l10.6 14.4c.3.4.7.6 1.2.6h3.5c1 0 1.8-.8 1.8-1.8V45c0-1-.9-1.8-1.8-1.8Z"/>
+                  <path d="M40.6 62h-9.3V45c0-1-.8-1.8-1.8-1.8h-3.5c-1 0-1.8.8-1.8 1.8v22.1c0 .5.2.9.5 1.3.3.3.7.5 1.2.5H40.6c1 0 1.8-.8 1.8-1.8v-3.5c.1-.8-.7-1.6-1.8-1.6Z"/>
+                  <path d="M95.7 50.1c1 0 1.8-.8 1.8-1.8V45c0-1-.8-1.8-1.8-1.8H82.2c-.5 0-.9.2-1.3.5-.3.3-.5.7-.5 1.2v22.1c0 .5.2.9.5 1.3.3.3.7.5 1.2.5h13.5c1 0 1.8-.8 1.8-1.8v-3.5c0-1-.8-1.8-1.8-1.8h-9.3v-3.4h9.3c1 0 1.8-.8 1.8-1.8v-3.5c0-1-.8-1.8-1.8-1.8h-9.3v-3.4h9.4Z"/>
+                </g>
+              </svg>
+              {isLoading ? "接続中..." : "LINEでログイン"}
+            </button>
+
+            {error && (
+              <div className="text-sm text-[var(--color-danger)] bg-[var(--color-danger-light)] p-3 rounded-xl text-center" role="alert">
+                {error}
+              </div>
+            )}
+
+            {/* Browse without login */}
+            <Link
+              href="/talk"
+              id="browse-without-login"
+              className="block w-full text-center py-3 text-[13px] font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] transition-colors"
+            >
+              ログインせずに見てみる →
+            </Link>
+          </div>
+
+          {/* Safety Box - Compact & Trustworthy */}
+          <div className="mt-5 p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] shadow-sm">
+            <h3 className="text-xs font-bold text-[var(--color-text)] mb-3 flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+              安心してご利用ください
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { icon: Shield, text: "匿名で参加できます" },
+                { icon: Clock, text: "投稿は24時間で自動削除" },
+                { icon: Heart, text: "LINEの友だちリスト非アクセス" },
+                { icon: Sparkles, text: "いつでもアカウント削除可能" },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-start gap-2 p-2 rounded-xl bg-[var(--color-surface-warm)]">
+                  <Icon className="w-3 h-3 text-[var(--color-success)] mt-0.5 flex-shrink-0" />
+                  <span className="text-[10px] text-[var(--color-text-secondary)] leading-snug">{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legal Links */}
+          <div className="mt-5 flex items-center justify-center gap-4 text-[11px] text-[var(--color-subtle)]">
+            <Link href="/about" className="underline hover:text-[var(--color-primary)] transition-colors">
+              あんしんキッズとは
+            </Link>
+            <span className="text-[var(--color-border)]">|</span>
+            <Link href="/terms" className="underline hover:text-[var(--color-primary)] transition-colors">
+              利用規約
+            </Link>
+            <span className="text-[var(--color-border)]">|</span>
+            <Link href="/privacy" className="underline hover:text-[var(--color-primary)] transition-colors">
+              プライバシーポリシー
+            </Link>
+          </div>
+          <p className="mt-2 text-center text-[10px] text-[var(--color-muted)]">
+            ログインすることで、利用規約・プライバシーポリシーに同意したものとみなします
           </p>
         </div>
-
-        {/* North Star Story */}
-        <div className="mb-8 p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] shadow-sm">
-          <p className="text-[12px] text-[var(--color-text-secondary)] leading-[1.8] text-center mb-4">
-            あなたの体験が、誰かの
-            <span className="font-bold text-[var(--color-primary)]">「希望の道しるべ」</span>
-            になります
-          </p>
-          <div className="flex gap-2">
-            <div className="flex-1 p-2.5 rounded-xl bg-[var(--color-surface-warm)] text-center">
-              <MessageCircle className="w-5 h-5 mx-auto mb-1 text-[var(--color-primary)]" />
-              <p className="text-[10px] font-medium text-[var(--color-text)]">話すだけ</p>
-              <p className="text-[9px] text-[var(--color-subtle)] mt-0.5">気軽にひとこと</p>
-            </div>
-            <div className="flex items-center text-[var(--color-muted)] text-[10px]">→</div>
-            <div className="flex-1 p-2.5 rounded-xl bg-[var(--color-surface-warm)] text-center">
-              <Sparkles className="w-5 h-5 mx-auto mb-1 text-[var(--color-primary)]" />
-              <p className="text-[10px] font-medium text-[var(--color-text)]">AIが整理</p>
-              <p className="text-[9px] text-[var(--color-subtle)] mt-0.5">自動で抽出</p>
-            </div>
-            <div className="flex items-center text-[var(--color-muted)] text-[10px]">→</div>
-            <div className="flex-1 p-2.5 rounded-xl bg-[var(--color-surface-warm)] text-center">
-              <BookOpen className="w-5 h-5 mx-auto mb-1 text-[var(--color-success)]" />
-              <p className="text-[10px] font-medium text-[var(--color-text)]">知恵になる</p>
-              <p className="text-[9px] text-[var(--color-subtle)] mt-0.5">未来の誰かへ</p>
-            </div>
-          </div>
-        </div>
-
-        {/* LINE Login Button */}
-        <button
-          onClick={handleLineLogin}
-          disabled={isLoading}
-          className="w-full py-4 px-6 rounded-2xl font-bold text-base text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-          style={{ backgroundColor: "#06C755" }}
-        >
-          <svg width="28" height="28" viewBox="0 0 120 120" fill="none">
-            <path d="M60 8C30.2 8 6 28.1 6 52.7c0 22.1 19.6 40.6 46.1 44.1 1.8.4 4.2 1.2 4.8 2.7.6 1.4.4 3.5.2 4.9l-.8 4.7c-.2 1.4-1.1 5.3 4.6 2.9 5.8-2.5 31-18.3 42.3-31.3C112.3 70.7 114 62 114 52.7 114 28.1 89.8 8 60 8Z" fill="white"/>
-            <g fill="#06C755">
-              <path d="M50.3 43.2h-3.5c-1 0-1.8.8-1.8 1.8v22.1c0 1 .8 1.8 1.8 1.8h3.5c1 0 1.8-.8 1.8-1.8V45c0-1-.8-1.8-1.8-1.8Z"/>
-              <path d="M71.2 43.2h-3.5c-1 0-1.8.8-1.8 1.8v13.1L55.4 43.8c-.1-.2-.3-.4-.5-.5h-4.1c-1 0-1.8.8-1.8 1.8v22.1c0 1 .8 1.8 1.8 1.8h3.5c1 0 1.8-.8 1.8-1.8V54l10.6 14.4c.3.4.7.6 1.2.6h3.5c1 0 1.8-.8 1.8-1.8V45c0-1-.9-1.8-1.8-1.8Z"/>
-              <path d="M40.6 62h-9.3V45c0-1-.8-1.8-1.8-1.8h-3.5c-1 0-1.8.8-1.8 1.8v22.1c0 .5.2.9.5 1.3.3.3.7.5 1.2.5H40.6c1 0 1.8-.8 1.8-1.8v-3.5c.1-.8-.7-1.6-1.8-1.6Z"/>
-              <path d="M95.7 50.1c1 0 1.8-.8 1.8-1.8V45c0-1-.8-1.8-1.8-1.8H82.2c-.5 0-.9.2-1.3.5-.3.3-.5.7-.5 1.2v22.1c0 .5.2.9.5 1.3.3.3.7.5 1.2.5h13.5c1 0 1.8-.8 1.8-1.8v-3.5c0-1-.8-1.8-1.8-1.8h-9.3v-3.4h9.3c1 0 1.8-.8 1.8-1.8v-3.5c0-1-.8-1.8-1.8-1.8h-9.3v-3.4h9.4Z"/>
-            </g>
-          </svg>
-          {isLoading ? "接続中..." : "LINEでログイン"}
-        </button>
-
-        {error && (
-          <div className="mt-4 text-sm text-[var(--color-danger)] bg-red-50 p-3 rounded-xl text-center">
-            {error}
-          </div>
-        )}
-
-        {/* Browse without login */}
-        <Link
-          href="/talk"
-          className="block w-full text-center mt-4 py-3 text-[13px] font-medium text-[var(--color-primary)] hover:underline transition-colors"
-        >
-          ログインせずに見てみる →
-        </Link>
-
-        {/* Safety Box */}
-        <div className="mt-4 p-4 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
-          <h3 className="text-xs font-semibold text-[var(--color-text)] mb-2">🔒 安心してご利用ください</h3>
-          <ul className="text-[11px] text-[var(--color-subtle)] space-y-1.5 leading-relaxed">
-            <li>• LINEの友だちリストへのアクセスは行いません</li>
-            <li>• 投稿は24時間で自動的にリセットされます</li>
-            <li>• 匿名のニックネームで参加できます</li>
-            <li>• アカウント削除はいつでも可能です</li>
-          </ul>
-        </div>
-
-        {/* Legal Links */}
-        <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-[var(--color-subtle)]">
-          <Link href="/about" className="underline hover:text-[var(--color-primary)]">
-            あんしんキッズとは
-          </Link>
-          <span>|</span>
-          <Link href="/terms" className="underline hover:text-[var(--color-primary)]">
-            利用規約
-          </Link>
-          <span>|</span>
-          <Link href="/privacy" className="underline hover:text-[var(--color-primary)]">
-            プライバシーポリシー
-          </Link>
-        </div>
-        <p className="mt-3 text-center text-[10px] text-[var(--color-muted)]">
-          ログインすることで、利用規約・プライバシーポリシーに同意したものとみなします
-        </p>
       </div>
     </div>
   );

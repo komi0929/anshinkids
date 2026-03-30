@@ -45,24 +45,24 @@ ALTER TABLE talk_rooms ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Talk rooms are viewable by everyone" ON talk_rooms FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can insert rooms" ON talk_rooms FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- Seed default rooms (balanced categories)
+-- Seed default rooms — 実体験を聞きたい軸（負荷試験は1テーマに統一）
 INSERT INTO talk_rooms (slug, name, description, icon_emoji, sort_order, conversation_prompts) VALUES
-  ('challenge', '負荷試験', '卵・乳・小麦などの負荷試験の体験談、進め方、病院情報', '🧪', 1,
+  ('daily-food', '毎日のごはん', '献立・代替食材・お弁当のリアルな工夫', '🍚', 1,
+   '["今週つくった代替レシピで一番よかったものは？", "お弁当のおかず、マンネリ化しない工夫を教えてください！", "代替食材で意外と美味しかったものは何ですか？"]'::jsonb),
+  ('products', '使ってよかった市販品', 'おやつ・パン・調味料のクチコミ', '🛒', 2,
+   '["最近見つけたアレルギー対応おやつ、おすすめは？", "スーパーやコンビニで買えるアレルゲンフリー商品を教えて！", "子どもが喜んだ市販品はどれでしたか？"]'::jsonb),
+  ('eating-out', '外食・おでかけ', 'チェーン店・旅行・イベントの対応', '🍽️', 3,
+   '["アレルギー対応メニューがあるチェーン店を教えてください！", "外食時、お店にどうやってアレルギーを伝えていますか？", "旅行先での外食、どう乗り切りましたか？"]'::jsonb),
+  ('school-life', '園・学校との連携', '給食・面談・行事の乗り切り方', '🏫', 4,
+   '["給食対応、どんな風にお願いしましたか？", "入園前にアレルギーについてどう説明しましたか？", "行事（遠足・お泊り会等）の対応で工夫したことは？"]'::jsonb),
+  ('challenge', '負荷試験の体験談', '準備・当日の流れ・結果後の変化', '🧪', 5,
    '["負荷試験を受ける前、どんな準備をしましたか？不安だったことは？", "負荷試験当日の流れを教えてください！待ち時間の過ごし方は？", "負荷試験の結果を受けて、日常生活で変わったことはありますか？"]'::jsonb),
-  ('snacks', '市販品おやつ', 'アレルギー対応の市販おやつ情報交換', '🍪', 2,
-   '["最近見つけたアレルギー対応おやつ、おすすめは何ですか？", "スーパーやコンビニで買えるアレルゲンフリーのおやつを教えてください！", "子どもが喜んだアレルギー対応のおやつはどれでしたか？"]'::jsonb),
-  ('eating-out', '外食・チェーン店', '外食時のアレルギー対応、チェーン店情報', '🍽️', 3,
-   '["アレルギー対応メニューがあるチェーン店を教えてください！", "外食する時、お店にどうやってアレルギーを伝えていますか？", "旅行先での外食、どう乗り切りましたか？"]'::jsonb),
-  ('nursery', '保育園・幼稚園', '給食対応、先生とのコミュニケーション', '🏫', 4,
-   '["保育園の給食対応、どんな風にお願いしましたか？", "入園前にアレルギーについてどう説明しましたか？", "お弁当持参の場合、時短レシピはありますか？"]'::jsonb),
-  ('recipes', '代替レシピ', 'アレルゲンフリーの代替レシピ共有', '👩‍🍳', 5,
-   '["卵なしで美味しくできたお菓子レシピを教えてください！", "乳製品の代替品で一番使いやすかったものは？", "誕生日ケーキ、どうやって作りましたか？"]'::jsonb),
-  ('skincare', 'スキンケア', 'アトピー・湿疹のケア、保湿剤情報', '🧴', 6,
+  ('skin-body', '肌とからだのケア', 'アトピー・保湿・スキンケアの工夫', '🧴', 6,
    '["お子さんの保湿剤、何を使っていますか？", "お風呂上がりのスキンケアルーティンを教えてください！", "季節の変わり目の肌荒れ対策、何かしていますか？"]'::jsonb),
-  ('hospital', '病院・主治医', '病院選び、主治医との相談、セカンドオピニオン', '🏥', 7,
-   '["アレルギー専門医を見つけたきっかけは何でしたか？", "セカンドオピニオンを受けたことはありますか？どうでしたか？", "定期検診の頻度はどのくらいですか？"]'::jsonb),
-  ('mental', 'メンタルケア', '親の心のケア、周囲の理解、孤独感の共有', '💚', 8,
-   '["周りにアレルギーを理解してもらえなくて辛かった経験、ありますか？", "アレルギー育児で疲れた時、どうリフレッシュしていますか？", "同じ悩みを持つママ友とどうやって出会いましたか？"]'::jsonb)
+  ('family', '気持ち・家族・まわり', '不安・理解・パートナーや祖父母との関わり', '👨‍👩‍👧', 7,
+   '["パートナーや祖父母にアレルギーの深刻さをどう伝えましたか？", "アレルギー育児で疲れた時、どうリフレッシュしていますか？", "周囲に理解されなくて辛かった経験、どう乗り越えましたか？"]'::jsonb),
+  ('milestone', '食べられた！の記録', '克服・成長のうれしい報告', '🌱', 8,
+   '["お子さんが初めて食べられた時のエピソードを教えてください！", "アレルギーが改善してきた兆しを感じた瞬間は？", "克服までの道のり、振り返って一番大変だったことは？"]'::jsonb)
 ON CONFLICT (slug) DO UPDATE SET 
   name = EXCLUDED.name,
   description = EXCLUDED.description,
@@ -70,8 +70,8 @@ ON CONFLICT (slug) DO UPDATE SET
   sort_order = EXCLUDED.sort_order,
   conversation_prompts = EXCLUDED.conversation_prompts;
 
--- Remove old individual challenge rooms if they exist
-DELETE FROM talk_rooms WHERE slug IN ('egg-challenge', 'milk-challenge', 'wheat-challenge') AND slug != 'challenge';
+-- Remove all old theme rooms that are no longer in the new structure
+DELETE FROM talk_rooms WHERE slug IN ('egg-challenge', 'milk-challenge', 'wheat-challenge', 'snacks', 'nursery', 'recipes', 'skincare', 'hospital', 'mental', 'shopping', 'medical', 'concern') AND slug NOT IN ('daily-food', 'products', 'eating-out', 'school-life', 'challenge', 'skin-body', 'family', 'milestone');
 
 -- ========================================
 -- MESSAGES (24h消滅トーク)
