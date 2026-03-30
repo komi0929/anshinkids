@@ -223,12 +223,16 @@ export async function getTalkRooms() {
 
     if (error) throw error;
 
-    // DB rooms exist and match canonical slugs → use DB data
+    // DB rooms exist and ALL canonical slugs are present → use DB data
     if (data && data.length > 0) {
       const dbSlugs = new Set(data.map((r: { slug: string }) => r.slug));
-      const hasNewThemes = CANONICAL_SLUGS.has([...dbSlugs][0] as string);
-      if (hasNewThemes) {
-        return { success: true, data };
+      const allCanonicalPresent = [...CANONICAL_SLUGS].every(s => dbSlugs.has(s));
+      if (allCanonicalPresent) {
+        // Filter to only canonical slugs and sort correctly
+        const canonicalData = data
+          .filter((r: { slug: string }) => CANONICAL_SLUGS.has(r.slug))
+          .sort((a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order);
+        return { success: true, data: canonicalData };
       }
     }
 
