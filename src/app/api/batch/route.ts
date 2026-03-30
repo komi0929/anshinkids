@@ -3,6 +3,8 @@ import { runBatchExtraction } from "@/lib/ai/batch-processor";
 import { recalculateTrustScores } from "@/lib/ai/trust-calculator";
 import { checkFreshness } from "@/lib/ai/freshness-checker";
 
+import { updateTalkRoomThemes } from "@/app/actions/seed";
+
 export async function POST(request: Request) {
   try {
     // Verify batch secret
@@ -27,6 +29,9 @@ export async function POST(request: Request) {
         break;
       case "freshness":
         result = await checkFreshness();
+        break;
+      case "seed-themes":
+        result = await updateTalkRoomThemes();
         break;
       case "all":
         const extraction = await runBatchExtraction();
