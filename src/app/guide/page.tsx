@@ -1,6 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Leaf, ArrowLeft, MessageCircle, BookOpen, Sparkles, ArrowRight } from "lucide-react";
+const _ip = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const Leaf = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s-1.5 7-5.5 11c-2 2-5 3-5 3" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>;
+const ArrowLeft = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>;
+const MessageCircle = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
+const BookOpen = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>;
+const Sparkles = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M12 3l1.5 4.5H18l-3.5 2.7 1.3 4.3L12 12l-3.8 2.5 1.3-4.3L6 7.5h4.5z" /></svg>;
+const ArrowRight = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
 
 export const metadata = {
   title: "使い方ガイド | あんしんキッズ",

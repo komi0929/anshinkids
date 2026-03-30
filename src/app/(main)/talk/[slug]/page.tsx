@@ -3,7 +3,23 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, Heart, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X } from "lucide-react";
+// Inline SVG icons (replaces lucide-react)
+const iconProps = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const ArrowLeft = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>;
+const Send = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>;
+const Heart = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>;
+const MessageCircle = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
+const Sparkles = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M12 3l1.5 4.5H18l-3.5 2.7 1.3 4.3L12 12l-3.8 2.5 1.3-4.3L6 7.5h4.5z" /></svg>;
+const RefreshCw = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>;
+const BookOpen = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>;
+const Clock = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
+const ArrowRight = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
+const Leaf = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s-1.5 7-5.5 11c-2 2-5 3-5 3" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>;
+const Check = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><polyline points="20 6 9 17 4 12" /></svg>;
+const AlertTriangle = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
+const Phone = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>;
+const ShieldCheck = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg>;
+const X = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
 import {
   getActiveMessages,
   postMessage,

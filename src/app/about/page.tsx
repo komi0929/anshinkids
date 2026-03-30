@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, MessageCircle, BookOpen, Sparkles, Shield, Clock, Heart, ArrowRight, Users, Leaf } from "lucide-react";
+const _ip = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const ArrowLeft = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>;
+const MessageCircle = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
+const BookOpen = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>;
+const Sparkles = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M12 3l1.5 4.5H18l-3.5 2.7 1.3 4.3L12 12l-3.8 2.5 1.3-4.3L6 7.5h4.5z" /></svg>;
+const ArrowRight = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
+const Leaf = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s-1.5 7-5.5 11c-2 2-5 3-5 3" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>;
 
 export default function AboutPage() {
   return (
@@ -187,14 +193,14 @@ export default function AboutPage() {
           </h3>
           <div className="space-y-4">
             {[
-              { icon: Shield, color: "var(--color-success)", bg: "var(--color-success-light)", title: "匿名で参加できます", desc: "ニックネームで投稿。本名は出ません。" },
-              { icon: Clock, color: "var(--color-accent)", bg: "var(--color-warning-light)", title: "投稿は24時間で自動削除", desc: "発言が永遠に残る心配がありません。" },
-              { icon: Heart, color: "var(--color-heart)", bg: "var(--color-heart-light)", title: "信頼できる情報づくり", desc: "多くの体験に基づく情報ほど信頼度が高く表示されます。" },
-              { icon: Users, color: "var(--color-primary)", bg: "var(--color-surface-warm)", title: "当事者だけの安心空間", desc: "同じ悩みを持つ保護者同士で情報を共有します。" },
-            ].map(({ icon: Icon, color, bg, title, desc }) => (
+              { emoji: "🛡️", title: "匿名で参加できます", desc: "ニックネームで投稿。本名は出ません。", bg: "var(--color-success-light)" },
+              { emoji: "⏰", title: "投稿は24時間で自動削除", desc: "発言が永遠に残る心配がありません。", bg: "var(--color-warning-light)" },
+              { emoji: "💖", title: "信頼できる情報づくり", desc: "多くの体験に基づく情報ほど信頼度が高く表示されます。", bg: "var(--color-heart-light)" },
+              { emoji: "👥", title: "当事者だけの安心空間", desc: "同じ悩みを持つ保護者同士で情報を共有します。", bg: "var(--color-surface-warm)" },
+            ].map(({ emoji, bg, title, desc }) => (
               <div key={title} className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
-                  <Icon className="w-5 h-5" style={{ color }} />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg" style={{ background: bg }}>
+                  {emoji}
                 </div>
                 <div>
                   <h4 className="text-[13px] font-bold text-[var(--color-text)]">{title}</h4>
