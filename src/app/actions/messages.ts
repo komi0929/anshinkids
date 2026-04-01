@@ -245,10 +245,22 @@ export async function getTalkRooms() {
 }
 
 export async function getTalkRoomBySlug(slug: string) {
+  const CANONICAL_ROOMS: Record<string, { name: string; description: string; icon_emoji: string }> = {
+    "daily-food": { name: "毎日のごはん", description: "献立・代替食材・お弁当のリアルな工夫", icon_emoji: "🍚" },
+    "products": { name: "使ってよかった市販品", description: "おやつ・パン・調味料のクチコミ", icon_emoji: "🛒" },
+    "eating-out": { name: "外食・おでかけ", description: "チェーン店・旅行・イベントの対応", icon_emoji: "🍽️" },
+    "school-life": { name: "園・学校との連携", description: "給食・面談・行事の乗り切り方", icon_emoji: "🏫" },
+    "challenge": { name: "負荷試験の体験談", description: "準備・当日の流れ・結果後の変化", icon_emoji: "🧪" },
+    "skin-body": { name: "肌とからだのケア", description: "アトピー・保湿・スキンケアの工夫", icon_emoji: "🧴" },
+    "family": { name: "気持ち・家族・まわり", description: "不安・理解・パートナーや祖父母との関わり", icon_emoji: "👨‍👩‍👧" },
+    "milestone": { name: "食べられた！の記録", description: "克服・成長のうれしい報告", icon_emoji: "🌱" },
+  };
+
   try {
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続", data: null };
 
+    // Try to find existing room
     const { data, error } = await supabase
       .from("talk_rooms")
       .select("id, slug, name, description, icon_emoji")
@@ -256,8 +268,46 @@ export async function getTalkRoomBySlug(slug: string) {
       .eq("is_active", true)
       .single();
 
-    if (error) throw error;
-    return { success: true, data };
+    if (!error && data) {
+      return { success: true, data };
+    }
+
+    // Room not found — auto-create if it's a canonical room
+    const canonical = CANONICAL_ROOMS[slug];
+    if (canonical) {
+      const { data: newRoom, error: insertError } = await supabase
+        .from("talk_rooms")
+        .insert({
+          slug,
+          name: canonical.name,
+          description: canonical.description,
+          icon_emoji: canonical.icon_emoji,
+          is_active: true,
+          conversation_prompts: [],
+        })
+        .select("id, slug, name, description, icon_emoji")
+        .single();
+
+      if (!insertError && newRoom) {
+        console.log(`[getTalkRoomBySlug] Auto-created room: ${slug}`);
+        return { success: true, data: newRoom };
+      }
+
+      // Insert might fail due to race condition (another request created it)
+      // Try to fetch again
+      const { data: retryData } = await supabase
+        .from("talk_rooms")
+        .select("id, slug, name, description, icon_emoji")
+        .eq("slug", slug)
+        .eq("is_active", true)
+        .single();
+
+      if (retryData) {
+        return { success: true, data: retryData };
+      }
+    }
+
+    return { success: false, error: "ルームが見つかりません", data: null };
   } catch (err) {
     console.error("[getTalkRoomBySlug]", err);
     return { success: false, error: "ルームが見つかりません", data: null };
