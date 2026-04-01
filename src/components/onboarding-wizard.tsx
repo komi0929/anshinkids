@@ -81,7 +81,30 @@ export function getUserPreferences(): UserPreferences | null {
   if (typeof window === "undefined") return null;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    
+    // Legacy mapping for users who had old 'allergens' and 'childAgeMonths'
+    if (!parsed.children && parsed.allergens) {
+      let ageGroup = "";
+      if (parsed.childAgeMonths !== undefined) {
+        if (parsed.childAgeMonths >= 72) ageGroup = "6-12";
+        else if (parsed.childAgeMonths >= 36) ageGroup = "3-6";
+        else if (parsed.childAgeMonths >= 12) ageGroup = "1-3";
+        else ageGroup = "0-1";
+      }
+      return {
+        children: [{
+          id: Date.now().toString(),
+          name: "1人目",
+          allergens: parsed.allergens || [],
+          customAllergens: [],
+          ageGroup
+        }],
+        interests: parsed.interests || []
+      };
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -102,7 +125,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
   const existingPrefs = typeof window !== "undefined" ? (initialPrefs || getUserPreferences()) : null;
 
   const [step, setStep] = useState(0);
-  const [children, setChildren] = useState<ChildProfile[]>(
+  const [children, setChildren] = useState<ChildProfile[]>(() => 
     existingPrefs?.children?.length ? existingPrefs.children : [
       { id: Date.now().toString(), name: "1人目", allergens: [], customAllergens: [], ageGroup: "" }
     ]

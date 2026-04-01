@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, X, Loader2, Sparkles, Eye, MessageCircle } from "@/components/icons";
-import { getMyProfile, updateMyProfile, getMyContributions, getMyImpact, deleteMyAccount } from "@/app/actions/mypage";
+import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Eye, MessageCircle } from "@/components/icons";
+import { getMyProfile, getMyContributions, getMyImpact, deleteMyAccount } from "@/app/actions/mypage";
 import { getContributionStreak } from "@/app/actions/discover";
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
-
-const ALLERGEN_OPTIONS = ["卵", "乳", "小麦", "そば", "落花生", "えび", "かに", "ナッツ", "大豆", "ごま", "果物"];
+import OnboardingWizard, { UserPreferences, ChildProfile } from "@/components/onboarding-wizard";
 
 interface Profile {
   id: string;
@@ -18,6 +17,7 @@ interface Profile {
   total_thanks_received: number;
   allergen_tags: string[];
   child_age_months: number | null;
+  children_profiles?: ChildProfile[];
 }
 
 interface Contribution {
@@ -40,10 +40,6 @@ export default function MyPage() {
   const [impact, setImpact] = useState<ImpactData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editAllergens, setEditAllergens] = useState<string[]>([]);
-  const [editAge, setEditAge] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   // === F6: Privacy controls ===
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -61,9 +57,6 @@ export default function MyPage() {
     if (profileResult.success && profileResult.data) {
       const p = profileResult.data as Profile;
       setProfile(p);
-      setEditName(p.display_name);
-      setEditAllergens(p.allergen_tags || []);
-      setEditAge(p.child_age_months ? String(p.child_age_months) : "");
     }
 
     if (contribResult.success && contribResult.data) {
@@ -83,19 +76,38 @@ export default function MyPage() {
     getContributionStreak().then(r => { if (r.success && r.data) setStreakData(r.data); });
   }, []);
 
-  async function handleSave() {
-    if (!editName.trim()) return;
-    setIsSaving(true);
-    const result = await updateMyProfile({
-      display_name: editName.trim(),
-      allergen_tags: editAllergens,
-      child_age_months: editAge ? parseInt(editAge) : null,
-    });
-    if (result.success) {
-      setIsEditing(false);
-      await loadData();
+  // Save function is now handled purely inside OnboardingWizard, we just need to reload
+  async function handleWizardComplete() {
+    setIsEditing(false);
+    await loadData();
+  }
+
+  function getMigratedInitialPrefs(): UserPreferences {
+    if (!profile) return { children: [], interests: [] };
+    if (profile.children_profiles && profile.children_profiles.length > 0) {
+      return { children: profile.children_profiles, interests: [] }; /* interests typically mapped elsewhere or locally */
     }
-    setIsSaving(false);
+    // Migrate legacy tags
+    if (profile.allergen_tags && profile.allergen_tags.length > 0) {
+      let ageGroup = "";
+      if (profile.child_age_months !== null) {
+        if (profile.child_age_months >= 72) ageGroup = "6-12";
+        else if (profile.child_age_months >= 36) ageGroup = "3-6";
+        else if (profile.child_age_months >= 12) ageGroup = "1-3";
+        else ageGroup = "0-1";
+      }
+      return {
+        children: [{
+          id: "child-migrated",
+          name: "1人目",
+          allergens: profile.allergen_tags,
+          customAllergens: [],
+          ageGroup
+        }],
+        interests: []
+      };
+    }
+    return { children: [], interests: [] };
   }
 
   async function handleLogout() {
@@ -176,43 +188,11 @@ export default function MyPage() {
       <div className="px-4 mb-4">
         <div className="card-elevated p-6">
           {isEditing ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-[14px] font-extrabold text-[var(--color-text)]">プロフィール編集</h3>
-                <button onClick={() => setIsEditing(false)} className="text-[var(--color-subtle)] hover:text-[var(--color-text)] transition-colors" id="cancel-edit">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">ニックネーム</label>
-                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="input-field" maxLength={20} id="edit-nickname" />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">お子さまのアレルゲン</label>
-                <div className="flex flex-wrap gap-2">
-                  {ALLERGEN_OPTIONS.map((allergen) => (
-                    <button
-                      key={allergen}
-                      onClick={() => setEditAllergens((prev) => prev.includes(allergen) ? prev.filter((a) => a !== allergen) : [...prev, allergen])}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${editAllergens.includes(allergen) ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border-light)]"}`}
-                    >
-                      {allergen}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">お子さまの月齢（月）</label>
-                <input type="number" value={editAge} onChange={(e) => setEditAge(e.target.value)} className="input-field" min={0} max={216} placeholder="例: 36（3歳の場合）" id="edit-age" />
-              </div>
-
-              <button onClick={handleSave} disabled={!editName.trim() || isSaving} className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50" id="save-profile">
-                {isSaving ? (<><Loader2 className="w-4 h-4 animate-spin" /> 保存中...</>) : (<><Check className="w-4 h-4" /> 保存する</>)}
-              </button>
-            </div>
+            <OnboardingWizard
+              initialPrefs={getMigratedInitialPrefs()}
+              onSkip={() => setIsEditing(false)}
+              onComplete={handleWizardComplete}
+            />
           ) : (
             <>
               <div className="flex items-center gap-4 mb-5">
@@ -277,22 +257,32 @@ export default function MyPage() {
                 </div>
               )}
 
-              {/* Allergen Tags */}
-              {(profile.allergen_tags?.length > 0 || profile.child_age_months) && (
-                <div className="mt-5 pt-5 border-t border-[var(--color-border-light)]">
-                  <p className="text-xs font-semibold text-[var(--color-subtle)] mb-2.5">お子さまのアレルゲン</p>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.allergen_tags?.map((tag) => (
-                      <span key={tag} className="px-3 py-1 bg-[var(--color-surface-warm)] rounded-full text-xs font-semibold text-[var(--color-text-secondary)]">{tag}</span>
-                    ))}
-                    {profile.child_age_months && (
-                      <span className="px-3 py-1 bg-[var(--color-surface-warm)] rounded-full text-xs text-[var(--color-subtle)]">
-                        {Math.floor(profile.child_age_months / 12)}歳{profile.child_age_months % 12}ヶ月
-                      </span>
-                    )}
+              {/* Multi-Child Allergen Tags */}
+              <div className="mt-5 pt-5 border-t border-[var(--color-border-light)] space-y-3">
+                <p className="text-xs font-semibold text-[var(--color-subtle)] mb-1">登録されているお子さま情報</p>
+                {getMigratedInitialPrefs().children.length === 0 && (
+                  <p className="text-[12px] text-[var(--color-muted)]">アレルゲン情報が未設定です。右上のボタンから設定してください。</p>
+                )}
+                {getMigratedInitialPrefs().children.map((child, idx) => (
+                  <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-xl p-3 border border-[var(--color-border-light)]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-bold text-[13px] text-[var(--color-text)]">{child.name}</span>
+                      {child.ageGroup && <span className="text-[10px] bg-white border border-[var(--color-border-light)] px-2 py-0.5 rounded-full text-[var(--color-subtle)]">{child.ageGroup}</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {child.allergens.map(tag => (
+                        <span key={tag} className="px-2.5 py-1 bg-white border border-[var(--color-border-light)] rounded-md text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
+                      ))}
+                      {child.customAllergens.map(tag => (
+                        <span key={tag} className="px-2.5 py-1 bg-white border border-dashed border-[var(--color-border)] rounded-md text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
+                      ))}
+                      {child.allergens.length === 0 && child.customAllergens.length === 0 && (
+                        <span className="text-[11px] text-[var(--color-muted)]">アレルゲン設定なし</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </>
           )}
         </div>
