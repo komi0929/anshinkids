@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Leaf } from "@/components/icons";
+import { ArrowLeft, Leaf, Check, Shield, ChevronRight } from "@/components/icons";
 
 const STEPS = [
   {
@@ -110,10 +110,7 @@ export default function AboutPage() {
           <ul className="space-y-4">
             {USE_CASES.map((text, i) => (
               <li key={i} className="flex gap-3 text-[14px] font-medium leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0"
-                  style={{ color: "var(--color-primary)" }}>
-                  <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <Check size={18} className="mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary)" }} />
                 <span>{text}</span>
               </li>
             ))}
@@ -147,10 +144,7 @@ export default function AboutPage() {
               <ul className="space-y-2">
                 {step.points.map((point, j) => (
                   <li key={j} className="flex items-start gap-2 text-[13px] font-semibold" style={{ color: "var(--color-text-secondary)" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0"
-                      style={{ color: "var(--color-primary)" }}>
-                      <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary)" }} />
                     {point}
                   </li>
                 ))}
@@ -158,10 +152,7 @@ export default function AboutPage() {
             </div>
             {i < STEPS.length - 1 && (
               <div className="flex justify-center py-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
-                  style={{ color: "var(--color-muted)" }}>
-                  <path d="M12 5v14M5 12l7 7 7-7" />
-                </svg>
+                <ChevronRight size={16} className="rotate-90" style={{ color: "var(--color-muted)" }} />
               </div>
             )}
           </div>
@@ -179,9 +170,7 @@ export default function AboutPage() {
               <div key={title} className="flex gap-3.5">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: "var(--color-primary-bg)" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: "var(--color-primary)" }}>
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <Shield size={18} style={{ color: "var(--color-primary)" }} />
                 </div>
                 <div>
                   <h4 className="text-[14px] font-bold" style={{ color: "var(--color-text)" }}>{title}</h4>

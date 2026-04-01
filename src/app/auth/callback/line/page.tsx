@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { X } from "@/components/icons";
 
 export default function LineCallbackPage() {
   const router = useRouter();
@@ -98,10 +99,7 @@ export default function LineCallbackPage() {
         }`}
       >
         {hasError ? (
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}>
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <X size={40} className="text-white" />
         ) : (
           <svg width="40" height="40" viewBox="0 0 120 120" fill="none">
             <path

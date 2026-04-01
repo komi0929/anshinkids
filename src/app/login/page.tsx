@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Leaf, MessageCircle, BookOpen, Sparkles, Shield } from "@/components/icons";
+import { Leaf, MessageCircle, BookOpen, Sparkles, Shield, ArrowRight, Check } from "@/components/icons";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -96,10 +96,7 @@ export default function LoginPage() {
                     <p className="text-[11px] font-medium" style={{ color: "var(--color-subtle)" }}>{step.sub}</p>
                   </div>
                   {i < 2 && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
-                      className="flex-shrink-0 mx-0.5" style={{ color: "var(--color-muted)" }}>
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+                    <ArrowRight size={12} className="flex-shrink-0 mx-0.5" style={{ color: "var(--color-muted)" }} />
                   )}
                 </div>
               ))}
@@ -161,10 +158,7 @@ export default function LoginPage() {
               ].map((text) => (
                 <div key={text} className="flex items-start gap-2 p-3 rounded-xl"
                   style={{ background: "var(--color-surface-soft)" }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0"
-                    style={{ color: "var(--color-primary)" }}>
-                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary)" }} />
                   <span className="text-[12px] font-semibold leading-snug" style={{ color: "var(--color-text-secondary)" }}>{text}</span>
                 </div>
               ))}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { MessageCircle, ArrowRight, Plus, X, Loader2 } from "@/components/icons";
 import { getTalkRooms, findSimilarRooms, createTalkRoom } from "@/app/actions/messages";
 import { getTrendingTopics, getPersonalizedWikiEntries, getContributionStreak, getWeeklyDigest } from "@/app/actions/discover";
 
@@ -263,9 +264,7 @@ export default function TalkRoomsPage() {
       {/* Section Header */}
       <div className="px-5 mb-3 section-header">
         <h2>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-primary)]">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
+          <MessageCircle size={16} className="text-[var(--color-primary)]" />
           トークルーム
         </h2>
         {rooms.length > 0 && (
@@ -313,9 +312,7 @@ export default function TalkRoomsPage() {
                   </div>
                   {/* Clean arrow */}
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-muted)] group-hover:text-white transition-colors">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+                    <ArrowRight size={14} className="text-[var(--color-muted)] group-hover:text-white transition-colors" />
                   </div>
                 </div>
               </Link>
@@ -331,10 +328,7 @@ export default function TalkRoomsPage() {
         >
           <div className="flex items-center gap-4">
             <div className="w-13 h-13 rounded-2xl bg-[var(--color-surface-warm)] group-hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors border border-[var(--color-border-light)]">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
+              <Plus size={20} className="text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors" />
             </div>
             <div className="text-left flex-1">
               <h3 className="font-bold text-[14px] text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">
@@ -399,9 +393,7 @@ export default function TalkRoomsPage() {
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors"
                 id="close-modal"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={18} />
               </button>
             </div>
 
@@ -480,7 +472,7 @@ export default function TalkRoomsPage() {
                   >
                     {step === "checking" ? (
                       <>
-                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4" strokeDashoffset="10" strokeLinecap="round" /></svg>
+                        <Loader2 size={16} className="animate-spin" />
                         照らし合わせ中...
                       </>
                     ) : (
@@ -519,9 +511,7 @@ export default function TalkRoomsPage() {
                               {room.description}
                             </p>
                           </div>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--color-muted)] flex-shrink-0">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
+                          <ArrowRight size={16} className="text-[var(--color-muted)] flex-shrink-0" />
                         </div>
                       </Link>
                     ))}
@@ -543,7 +533,7 @@ export default function TalkRoomsPage() {
 
               {step === "creating" && (
                 <div className="flex flex-col items-center justify-center py-8">
-                  <svg className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4" strokeDashoffset="10" strokeLinecap="round" /></svg>
+                  <Loader2 size={32} className="text-[var(--color-primary)] animate-spin mb-3" />
                   <p className="text-sm text-[var(--color-text-secondary)]">
                     みんなの場をつくっています...
                   </p>
