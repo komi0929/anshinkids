@@ -193,3 +193,31 @@ ${JSON.stringify(currentContent).slice(0, 500)}`;
     return { success: false, error: "情報の追加に失敗しました" };
   }
 }
+
+export async function voteWikiHelpful(entryId: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "ログインが必要です" };
+
+    const { error } = await supabase
+      .from("wiki_helpful_votes")
+      .insert({
+        wiki_entry_id: entryId,
+        user_id: user.id,
+      });
+
+    // code 23505 is unique violation (already voted)
+    if (error && error.code === '23505') {
+      return { success: false, error: "既に「役に立った」を押しています" };
+    }
+    if (error) throw error;
+
+    return { success: true };
+  } catch (err) {
+    console.error("[voteWikiHelpful]", err);
+    return { success: false, error: "投票に失敗しました" };
+  }
+}

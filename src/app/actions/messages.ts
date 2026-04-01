@@ -140,6 +140,23 @@ export async function sendThanks(messageId: string) {
   }
 }
 
+export async function deleteMessage(messageId: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "ログインが必要です" };
+
+    const { error } = await supabase.from("messages").delete().eq("id", messageId).eq("user_id", user.id);
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error("[deleteMessage]", err);
+    return { success: false, error: "削除に失敗しました" };
+  }
+}
+
 export async function removeThanks(messageId: string) {
   try {
     const supabase = await createClient();
@@ -227,6 +244,7 @@ export async function getTalkRoomBySlug(slug: string) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getWikiCountForRoom(_roomId: string) {
   return { success: true, count: 1 }; // In Mega-Wiki model, there's exactly 1 Mega-Wiki per room
 }

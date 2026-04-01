@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X } from "@/components/icons";
+import { Send, Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw } from "@/components/icons";
 import { askConcierge, contributeFromConcierge } from "@/app/actions/concierge";
 import { checkContentSafety, EMERGENCY_GUIDANCE, calculateAnswerConfidence } from "@/lib/ai/safety-guard";
 
@@ -60,6 +60,16 @@ export default function ConciergePage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  function handleReset() {
+    if (!confirm("相談履歴をリセットして、新しい話題を始めますか？")) return;
+    setMessages([]);
+    setSessionId(null);
+    setContributedIndices(new Set());
+    setShowContribPrompt(null);
+    sessionStorage.removeItem("anshin_concierge_messages");
+    sessionStorage.removeItem("anshin_concierge_session");
+  }
 
   async function handleSend() {
     if (!input.trim() || isLoading) return;
@@ -124,7 +134,7 @@ export default function ConciergePage() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm">
+      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-md">
             <Sparkles className="w-5 h-5 text-white" />
@@ -134,6 +144,12 @@ export default function ConciergePage() {
             <p className="text-[11px] text-[var(--color-subtle)]">みんなの体験をもとにAIがお答えします</p>
           </div>
         </div>
+        
+        {messages.length > 0 && (
+          <button onClick={handleReset} className="w-9 h-9 flex justify-center items-center rounded-xl bg-[var(--color-surface-warm)] text-[var(--color-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-colors" title="最初から相談する" aria-label="セッションをリセット">
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}

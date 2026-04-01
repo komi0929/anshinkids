@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Send, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X } from "@/components/icons";
+import { ArrowLeft, Send, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X, Trash2, Reply } from "@/components/icons";
 import {
   getActiveMessages,
   postMessage,
+  deleteMessage,
   sendThanks,
   removeThanks,
   getRoomPrompts,
@@ -24,6 +25,7 @@ import { getImpactFeedback } from "@/app/actions/discover";
 
 interface Message {
   id: string;
+  user_id: string;
   content: string;
   is_system_bot: boolean;
   thanks_count: number;
@@ -58,6 +60,7 @@ export default function TalkRoomPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [thankedIds, setThankedIds] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [prompts, setPrompts] = useState<string[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(true);
@@ -85,11 +88,35 @@ export default function TalkRoomPage() {
   const [milestoneToast, setMilestoneToast] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if guidelines were already accepted (must be in useEffect to avoid hydration mismatch)
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const summon = sp.get("summon");
+      if (summon) {
+        setNewMessage(summon);
+        // auto-focus textarea
+        setTimeout(() => {
+          document.querySelector("textarea")?.focus();
+        }, 100);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Check if guidelines were already accepted and load persisted thanks
     if (typeof window !== "undefined") {
       const accepted = localStorage.getItem("anshin_guidelines_accepted");
       if (accepted) setGuidelinesAccepted(true);
+
+      const storedThanks = localStorage.getItem("anshin_thanked_ids");
+      if (storedThanks) {
+        try { setThankedIds(new Set(JSON.parse(storedThanks))); } catch {}
+      }
     }
+    
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user) setCurrentUserId(data.user.id);
+    });
+
     loadRoom();
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -306,6 +333,19 @@ export default function TalkRoomPage() {
     textarea?.focus();
   }
 
+  function handleReply(msg: Message) {
+    const preview = msg.content.slice(0, 15).replace(/\n/g, " ");
+    setNewMessage(`> ${preview}...\n`);
+    const textarea = document.querySelector("textarea");
+    textarea?.focus();
+  }
+
+  async function handleDelete(messageId: string) {
+    if (!confirm("本当にこの投稿を削除しますか？")) return;
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+    await deleteMessage(messageId);
+  }
+
   async function handleThanks(messageId: string) {
     // Optimistic UI: update immediately, then sync with server
     if (thankedIds.has(messageId)) {
@@ -350,6 +390,12 @@ export default function TalkRoomPage() {
     const colors = ["from-[#7FA77A] to-[#5C8B56]", "from-[#B8956A] to-[#9A7A52]", "from-[#8B9EBF] to-[#6A7FA0]", "from-[#C2917A] to-[#A87060]", "from-[#9BB88F] to-[#7A9E6E]", "from-[#B8A07A] to-[#9A8560]"];
     const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
     return colors[hash % colors.length];
+  }
+
+  function renderMessageAvatar(avatarUrl: string | null | undefined, name: string) {
+    if (avatarUrl && avatarUrl.startsWith("http")) return <img src={avatarUrl} alt="" className="w-full h-full object-cover rounded-full" />;
+    if (avatarUrl && avatarUrl.length <= 4) return <span className="text-[14px]">{avatarUrl}</span>;
+    return <span className="text-[13px] text-white font-bold">{name?.[0] || "👤"}</span>;
   }
 
   const assetMessages = [
@@ -526,8 +572,8 @@ export default function TalkRoomPage() {
               ) : (
                 <div className="card p-4">
                   <div className="flex items-start gap-3">
-                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(msg.profiles?.display_name || "匿名")} flex items-center justify-center text-[13px] text-white font-bold flex-shrink-0 shadow-sm`}>
-                      {msg.profiles?.display_name?.[0] || "👤"}
+                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(msg.profiles?.display_name || "匿名")} flex items-center justify-center flex-shrink-0 shadow-sm relative overflow-hidden`}>
+                      {renderMessageAvatar(msg.profiles?.avatar_url, msg.profiles?.display_name || "匿名")}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -539,26 +585,40 @@ export default function TalkRoomPage() {
                       </div>
                       <p className="text-[14px] leading-[1.8] text-[var(--color-text)] whitespace-pre-wrap">{msg.content}</p>
 
-                      {/* Thanks button — the only real reaction */}
-                      <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 mt-3 flex-wrap">
+                        {currentUserId !== msg.user_id && (
+                          <button
+                            onClick={() => handleThanks(msg.id)}
+                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border ${
+                              thankedIds.has(msg.id)
+                                ? "bg-[var(--color-heart-light)] border-[var(--color-heart)]/30 text-[var(--color-heart)]"
+                                : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-surface-warm)]"
+                            }`}
+                            id={`reaction-thanks-${msg.id}`}
+                          >
+                            <span>❤️</span>
+                            <span className="font-medium">ありがとう</span>
+                            {msg.thanks_count > 0 && (
+                              <span className="font-bold text-[var(--color-heart)]">{msg.thanks_count}</span>
+                            )}
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleThanks(msg.id)}
-                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border ${
-                            thankedIds.has(msg.id)
-                              ? "bg-[var(--color-heart-light)] border-[var(--color-heart)]/30 text-[var(--color-heart)]"
-                              : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-surface-warm)]"
-                          }`}
-                          id={`reaction-thanks-${msg.id}`}
+                          onClick={() => handleReply(msg)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-warm)]"
                         >
-                          <span>❤️</span>
-                          <span className="font-medium">ありがとう</span>
-                          {msg.thanks_count > 0 && (
-                            <span className="font-bold text-[var(--color-heart)]">{msg.thanks_count}</span>
-                          )}
+                          <Reply className="w-3 h-3" />
+                          <span className="font-medium">返信</span>
                         </button>
                         <span className="ml-auto text-[10px] text-[var(--color-muted)] flex items-center gap-1">
                           <Clock className="w-2.5 h-2.5" /> {getExpiresIn(msg.expires_at)}
                         </span>
+                        {currentUserId === msg.user_id && (
+                          <button onClick={() => handleDelete(msg.id)} className="p-1.5 ml-1 text-[var(--color-muted)] hover:text-[var(--color-danger)] transition-colors rounded-full hover:bg-red-50" aria-label="投稿を削除">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

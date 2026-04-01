@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Eye, MessageCircle } from "@/components/icons";
-import { getMyProfile, getMyContributions, getMyImpact, deleteMyAccount } from "@/app/actions/mypage";
+import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Eye, MessageCircle, Settings, Bell, X } from "@/components/icons";
+import { getMyProfile, getMyContributions, getMyImpact, deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
 import { getContributionStreak } from "@/app/actions/discover";
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
 import OnboardingWizard, { UserPreferences, ChildProfile } from "@/components/onboarding-wizard";
+
+function renderAvatar(avatar_url: string | null, name: string) {
+  if (avatar_url && avatar_url.startsWith("http")) return <img src={avatar_url} alt="" className="w-full h-full object-cover rounded-2xl" />;
+  if (avatar_url && avatar_url.length <= 4) return <span className="text-3xl">{avatar_url}</span>;
+  const colors = ["from-[#7FA77A] to-[#5C8B56]", "from-[#B8956A] to-[#9A7A52]", "from-[#8B9EBF] to-[#6A7FA0]", "from-[#C2917A] to-[#A87060]", "from-[#9BB88F] to-[#7A9E6E]", "from-[#B8A07A] to-[#9A8560]"];
+  const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const bg = colors[hash % colors.length];
+  return <div className={`w-full h-full bg-gradient-to-br ${bg} text-white font-extrabold flex items-center justify-center text-3xl rounded-2xl`}>{name?.[0] || "👤"}</div>;
+}
 
 interface Profile {
   id: string;
@@ -29,8 +38,7 @@ interface Contribution {
 
 interface ImpactData {
   articlesContributed: number;
-  totalReaders: number;
-  aiAnswersReferenced: number;
+  totalHelpfulVotes: number;
   trustDelta: number;
 }
 
@@ -46,6 +54,12 @@ export default function MyPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [streakData, setStreakData] = useState<{ currentStreak: number; longestStreak: number; totalDays: number } | null>(null);
 
+  // Profile Basic Info Edit Modal
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editAvatar, setEditAvatar] = useState<string | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   async function loadData() {
     setIsLoading(true);
     const [profileResult, contribResult, impactResult] = await Promise.all([
@@ -57,6 +71,8 @@ export default function MyPage() {
     if (profileResult.success && profileResult.data) {
       const p = profileResult.data as Profile;
       setProfile(p);
+      setEditName(p.display_name);
+      setEditAvatar(p.avatar_url);
     }
 
     if (contribResult.success && contribResult.data) {
@@ -72,8 +88,13 @@ export default function MyPage() {
   }
 
   useEffect(() => {
-    loadData();
-    getContributionStreak().then(r => { if (r.success && r.data) setStreakData(r.data); });
+    let mounted = true;
+    setTimeout(() => {
+      if (!mounted) return;
+      loadData();
+      getContributionStreak().then(r => { if (r.success && r.data && mounted) setStreakData(r.data); });
+    }, 0);
+    return () => { mounted = false; };
   }, []);
 
   // Save function is now handled purely inside OnboardingWizard, we just need to reload
@@ -108,6 +129,17 @@ export default function MyPage() {
       };
     }
     return { children: [], interests: [] };
+  }
+
+  async function handleSaveProfileInfo() {
+    if (!editName.trim()) return;
+    setIsSavingProfile(true);
+    const result = await updateMyProfile({ display_name: editName.trim(), avatar_url: editAvatar });
+    if (result.success) {
+      await loadData();
+      setShowProfileEdit(false);
+    }
+    setIsSavingProfile(false);
   }
 
   async function handleLogout() {
@@ -175,13 +207,22 @@ export default function MyPage() {
 
   return (
     <div className="fade-in pb-4">
-      <div className="px-5 pt-7 pb-4">
-        <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
-          マイページ
-        </h1>
-        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-          あなたの貢献は、ちゃんとみんなの役に立っています
-        </p>
+      {/* Top action bar */}
+      <div className="flex justify-between items-center px-5 pt-6 pb-2">
+        <div>
+          <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
+            マイページ
+          </h1>
+          <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
+            あなたの貢献は、ちゃんとみんなの役に立っています
+          </p>
+        </div>
+        <Link href="/notifications" className="w-10 h-10 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-border-light)] transition-colors relative" aria-label="通知を見る">
+          <Bell className="w-5 h-5 text-[var(--color-text)]" />
+          {(impact && (impact.totalHelpfulVotes > 0 || impact.trustDelta > 0)) && (
+            <span className="absolute top-0 right-0 w-3 h-3 bg-[var(--color-heart)] rounded-full border-2 border-[var(--color-surface)] animate-pulse"></span>
+          )}
+        </Link>
       </div>
 
       {/* Profile Card */}
@@ -196,15 +237,15 @@ export default function MyPage() {
           ) : (
             <>
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center text-2xl text-white font-extrabold shadow-md">
-                  {profile.display_name[0]}
+                <div className="w-16 h-16 shadow-md relative group shrink-0">
+                  {renderAvatar(profile.avatar_url, profile.display_name)}
+                  <button onClick={() => setShowProfileEdit(true)} className="absolute bottom-[-6px] right-[-6px] w-7 h-7 bg-white rounded-full flex items-center justify-center border border-[var(--color-border)] shadow-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-all">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-[18px] font-extrabold text-[var(--color-text)]">{profile.display_name}</h2>
-                    <button onClick={() => setIsEditing(true)} className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)] transition-colors" id="edit-profile">
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
+                    <h2 className="text-[18px] font-extrabold text-[var(--color-text)] truncate">{profile.display_name}</h2>
                   </div>
                   <div className="flex items-center gap-2 mt-1.5">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${trustInfo.color} ${trustInfo.bg} border ${trustInfo.borderColor}`}>
@@ -259,7 +300,12 @@ export default function MyPage() {
 
               {/* Multi-Child Allergen Tags */}
               <div className="mt-5 pt-5 border-t border-[var(--color-border-light)] space-y-3">
-                <p className="text-xs font-semibold text-[var(--color-subtle)] mb-1">登録されているお子さま情報</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-semibold text-[var(--color-subtle)]">登録されているお子さま情報</p>
+                  <button onClick={() => setIsEditing(true)} className="flex items-center gap-1 text-[11px] font-bold text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-colors bg-[var(--color-surface-warm)] px-2.5 py-1.5 rounded-lg">
+                    <Settings className="w-3.5 h-3.5" /> 変更
+                  </button>
+                </div>
                 {getMigratedInitialPrefs().children.length === 0 && (
                   <p className="text-[12px] text-[var(--color-muted)]">アレルゲン情報が未設定です。右上のボタンから設定してください。</p>
                 )}
@@ -289,7 +335,7 @@ export default function MyPage() {
       </div>
 
       {/* === Gap 5: Impact Visualization === */}
-      {impact && (impact.totalReaders > 0 || impact.aiAnswersReferenced > 0) && (
+      {impact && (impact.totalHelpfulVotes > 0) && (
         <div className="px-4 mb-6">
           <div className="card-elevated p-5 contrib-highlight">
             <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
@@ -297,23 +343,13 @@ export default function MyPage() {
               あなたの声のインパクト
             </h3>
             <div className="space-y-3">
-              {impact.totalReaders > 0 && (
+              {impact.totalHelpfulVotes > 0 && (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[var(--color-surface-warm)] to-transparent">
                   <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
                     <Eye className="w-4 h-4 text-[var(--color-primary)]" />
                   </div>
                   <p className="text-[13px] text-[var(--color-text-secondary)] leading-snug">
-                    あなたの体験が <strong className="text-[var(--color-text)]">{impact.totalReaders}人</strong> の親に読まれました
-                  </p>
-                </div>
-              )}
-              {impact.aiAnswersReferenced > 0 && (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[var(--color-success-light)]/50 to-transparent">
-                  <div className="w-9 h-9 rounded-xl bg-[var(--color-success)]/10 flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="w-4 h-4 text-[var(--color-success)]" />
-                  </div>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] leading-snug">
-                    AIコンシェルジュが <strong className="text-[var(--color-text)]">{impact.aiAnswersReferenced}件</strong> の相談であなたの知恵を引用しました
+                    あなたの体験が <strong className="text-[var(--color-text)]">{impact.totalHelpfulVotes}人</strong> の親の役に立ちました
                   </p>
                 </div>
               )}
@@ -508,6 +544,65 @@ export default function MyPage() {
           {isLoggingOut ? "ログアウト中..." : "ログアウト"}
         </button>
       </div>
+
+      {/* Profile Basic Auth Edit Modal */}
+      {showProfileEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={(e) => { if (e.target === e.currentTarget) setShowProfileEdit(false); }}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="relative w-full max-w-sm bg-[var(--color-surface)] rounded-3xl shadow-2xl slide-up p-6">
+            <h2 className="text-[18px] font-extrabold text-[var(--color-text)] mb-5 text-center">プロフィール編集</h2>
+            
+            <div className="mb-5">
+              <label className="block text-[12px] font-bold text-[var(--color-subtle)] mb-2">アイコン</label>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-16 h-16 shrink-0 shadow-sm relative">
+                  {renderAvatar(editAvatar, editName || profile?.display_name || "👤")}
+                  {editAvatar && (
+                    <button onClick={() => setEditAvatar(null)} className="absolute top-[-4px] right-[-4px] w-5 h-5 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] hover:text-red-500">
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1 text-[11px] text-[var(--color-muted)] leading-relaxed">
+                  下のリストから選ぶか、そのままにしてLINEのアイコン（取得済みの場合）を表示します。
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {["👦", "👧", "👨", "👩", "🐻", "🐶", "🐱", "🐰", "🐼", "🐨"].map(emoji => (
+                  <button key={emoji} onClick={() => setEditAvatar(emoji)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${editAvatar === emoji ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10" : "border-[var(--color-border-light)] bg-white hover:bg-[var(--color-surface-warm)]"}`}>
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-[12px] font-bold text-[var(--color-subtle)] mb-2">表示名</label>
+              <input
+                type="text"
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                maxLength={20}
+                className="w-full text-[14px] px-4 py-3 rounded-xl border border-[var(--color-border-light)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                placeholder="あんしんユーザー"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleSaveProfileInfo}
+                disabled={isSavingProfile || !editName.trim()}
+                className="btn-primary flex-1 flex items-center justify-center gap-2 !py-3 disabled:opacity-50"
+              >
+                {isSavingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : "保存する"}
+              </button>
+              <button onClick={() => setShowProfileEdit(false)} className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-[13px] font-bold text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)]">
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

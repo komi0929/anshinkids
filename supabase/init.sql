@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   trust_score NUMERIC(5,2) DEFAULT 0.00,
   total_contributions INTEGER DEFAULT 0,
   total_thanks_received INTEGER DEFAULT 0,
+  total_helpful_votes INTEGER DEFAULT 0,
   allergen_tags TEXT[] DEFAULT '{}',
   child_age_months INTEGER,
   created_at TIMESTAMPTZ DEFAULT now(),
@@ -125,6 +126,7 @@ CREATE TABLE IF NOT EXISTS wiki_entries (
   summary TEXT,
   allergen_tags TEXT[] DEFAULT '{}',
   source_count INTEGER DEFAULT 0,
+  helpful_count INTEGER DEFAULT 0,
   avg_trust_score NUMERIC(5,2) DEFAULT 0.00,
   is_public BOOLEAN DEFAULT false,
   last_updated_from_batch TIMESTAMPTZ,
@@ -138,6 +140,23 @@ CREATE POLICY "Public wiki entries are viewable by everyone" ON wiki_entries
   FOR SELECT USING (is_public = true);
 CREATE POLICY "All wiki entries viewable by authenticated" ON wiki_entries
   FOR SELECT USING (auth.role() = 'authenticated');
+
+-- ========================================
+-- WIKI HELPFUL VOTES (知識の永続的な感謝と複利)
+-- ========================================
+CREATE TABLE IF NOT EXISTS wiki_helpful_votes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  wiki_entry_id UUID REFERENCES wiki_entries(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(wiki_entry_id, user_id)
+);
+
+ALTER TABLE wiki_helpful_votes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Helpful votes are viewable by everyone" ON wiki_helpful_votes
+  FOR SELECT USING (true);
+CREATE POLICY "Users can insert helpful votes" ON wiki_helpful_votes
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- ========================================
 -- WIKI SOURCES (情報ソーストレーサビリティ)
@@ -252,6 +271,32 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER on_message_insert AFTER INSERT ON messages
   FOR EACH ROW EXECUTE FUNCTION increment_contributions();
+
+-- ========================================
+-- WIKI HELPFUL VOTE COMPOUND DISTRIBUTION (複利還元)
+-- ========================================
+CREATE OR REPLACE FUNCTION process_wiki_helpful_vote()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- 1. 記事自体のhelpful_countをインクリメント
+  UPDATE wiki_entries SET helpful_count = helpful_count + 1 WHERE id = NEW.wiki_entry_id;
+  
+  -- 2. その記事のソースを提供した全貢献者のプロフィールへ恩恵を複利分配
+  UPDATE profiles 
+  SET total_helpful_votes = total_helpful_votes + 1
+  WHERE id IN (
+    SELECT DISTINCT contributor_id 
+    FROM wiki_sources 
+    WHERE wiki_entry_id = NEW.wiki_entry_id 
+    AND contributor_id IS NOT NULL
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_wiki_helpful_vote AFTER INSERT ON wiki_helpful_votes
+  FOR EACH ROW EXECUTE FUNCTION process_wiki_helpful_vote();
 
 -- ========================================
 -- CONTRIBUTION DAYS (ストリーク計算用の永続ログ)

@@ -33,6 +33,9 @@ export const ArrowLeft = ({ className, style, size = 20 }: IconProps) => (
 export const ArrowRight = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
 );
+export const ArrowUpRight = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" /></svg>
+);
 export const ChevronRight = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><polyline points="9 18 15 12 9 6" /></svg>
 );
@@ -43,6 +46,9 @@ export const MessageCircle = ({ className, style, size = 20 }: IconProps) => (
 );
 export const Send = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+);
+export const Reply = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>
 );
 
 // ── Content ──
@@ -126,6 +132,16 @@ export const LogOut = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
 );
 
+// ── Settings & UI Controls ──
+export const Settings = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
+);
+export const Bell = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+);
+export const Trash2 = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
+);
 // ── Emergency ──
 export const Phone = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>

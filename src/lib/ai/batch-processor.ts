@@ -171,7 +171,7 @@ export async function runBatchExtraction() {
       .eq("id", batchLog?.id);
 
     // 6. Compound Trust Scores
-    const { data: allProfiles } = await supabase.from("profiles").select("id, total_contributions, total_thanks_received");
+    const { data: allProfiles } = await supabase.from("profiles").select("id, total_contributions, total_thanks_received, total_helpful_votes");
     const userStreaks: Record<string, number> = {};
     const { data: streakData } = await supabase
       .from("contribution_days")
@@ -193,8 +193,9 @@ export async function runBatchExtraction() {
       for (const profile of allProfiles) {
         const contribs = profile.total_contributions || 0;
         const thanks = profile.total_thanks_received || 0;
+        const helpfulVotes = profile.total_helpful_votes || 0;
         const activeDays = userStreaks[profile.id] || 0;
-        const rawScore = (contribs * 2) + (thanks * 3) + (activeDays * 1.5);
+        const rawScore = (contribs * 2) + (thanks * 3) + (helpfulVotes * 5) + (activeDays * 1.5);
         const trustScore = Math.min(100, Math.round(rawScore * 100) / 100);
 
         await supabase.from("profiles").update({ trust_score: trustScore }).eq("id", profile.id);

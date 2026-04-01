@@ -59,6 +59,7 @@ export async function getMyProfile() {
 
 export async function updateMyProfile(updates: {
   display_name?: string;
+  avatar_url?: string | null;
   allergen_tags?: string[];
   child_age_months?: number | null;
   children_profiles?: Record<string, unknown>[];
@@ -154,41 +155,21 @@ export async function getMyImpact() {
       (sources || []).map((s) => s.wiki_entry_id).filter(Boolean)
     ).size;
 
-    // Estimate readers: count based on source_count as a proxy for engagement
-    // Each wiki entry's source_count indicates how many people engaged with it
-    const entryIds = [...new Set((sources || []).map((s) => s.wiki_entry_id).filter(Boolean))];
-    let totalReaders = 0;
-    let aiAnswersReferenced = 0;
-
-    if (entryIds.length > 0) {
-      const { data: entries } = await supabase
-        .from("wiki_entries")
-        .select("source_count, avg_trust_score")
-        .in("id", entryIds);
-
-      if (entries) {
-        // Estimate readers: source_count × 5 (conservative multiplier)
-        totalReaders = entries.reduce((sum, e) => sum + ((e.source_count || 1) * 5), 0);
-        // Estimate AI references: based on entries with trust score > 30
-        aiAnswersReferenced = entries.filter(e => (e.avg_trust_score || 0) > 30).length * 2;
-      }
-    }
-
-    // Get trust score delta (compare current to base)
+    // True compound impact: real helpful votes
     const { data: profile } = await supabase
       .from("profiles")
-      .select("trust_score, total_contributions, total_thanks_received")
+      .select("trust_score, total_contributions, total_thanks_received, total_helpful_votes")
       .eq("id", user.id)
       .single();
 
+    const totalHelpfulVotes = profile?.total_helpful_votes || 0;
     const trustDelta = Math.round((profile?.trust_score || 0));
 
     return {
       success: true,
       data: {
         articlesContributed,
-        totalReaders,
-        aiAnswersReferenced,
+        totalHelpfulVotes,
         trustDelta,
       },
     };

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Shield, Clock, Plus, Loader2, Check, User, MessageCircle, X, BookOpen } from "@/components/icons";
 // Users icon (not in shared yet, alias User)
 const Users = User;
-import { getWikiEntry, contributeToWiki } from "@/app/actions/wiki";
+import { getWikiEntry, contributeToWiki, voteWikiHelpful } from "@/app/actions/wiki";
 import { getKnowledgeRipple } from "@/app/actions/discover";
 
 export interface MegaWikiItem {
@@ -41,6 +41,7 @@ interface WikiEntryData {
   allergen_tags: string[];
   avg_trust_score: number;
   source_count: number;
+  helpful_count: number;
   updated_at: string;
   created_at: string;
   wiki_sources: WikiSource[];
@@ -392,6 +393,9 @@ export default function WikiDetailPage() {
     contributors: Array<{ displayName: string; extractedAt: string }>;
   } | null>(null);
 
+  const [hasVotedHelpful, setHasVotedHelpful] = useState(false);
+  const [helpfulCount, setHelpfulCount] = useState(0);
+
   useEffect(() => {
     loadEntry();
     getKnowledgeRipple(slug).then(r => {
@@ -405,9 +409,23 @@ export default function WikiDetailPage() {
   async function loadEntry() {
     const result = await getWikiEntry(slug);
     if (result.success && result.data) {
-      setEntry(result.data as unknown as WikiEntryData);
+      const data = result.data as unknown as WikiEntryData;
+      setEntry(data);
+      setHelpfulCount(data.helpful_count || 0);
     }
     setIsLoading(false);
+  }
+
+  async function handleVoteHelpful() {
+    if (hasVotedHelpful || !entry) return;
+    setHasVotedHelpful(true);
+    setHelpfulCount(c => c + 1);
+    const res = await voteWikiHelpful(entry.id);
+    if (!res.success && res.error === "ログインが必要です") {
+      alert("「役に立った」を送信するにはログインが必要です");
+      setHasVotedHelpful(false);
+      setHelpfulCount(c => Math.max(0, c - 1));
+    }
   }
 
   if (isLoading) {
@@ -600,6 +618,14 @@ export default function WikiDetailPage() {
                         }
                         return null;
                       })}
+                      
+                      {/* Topic Summoning Button */}
+                      <Link 
+                        href={`/talk/${talkSlug}?summon=${encodeURIComponent("【知恵袋から】" + sec.heading + "の「" + item.title + "」について、最新の体験や工夫を教えてください！")}`}
+                        className="mt-4 block w-full py-2.5 rounded-xl bg-white text-[12px] font-bold text-center text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors shadow-sm"
+                      >
+                        💬 この項目について最新の体験を聞く
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -611,6 +637,30 @@ export default function WikiDetailPage() {
             {renderContentJson(entry.content_json, entry.category)}
           </div>
         )}
+
+        {/* === Helpful Vote Button === */}
+        <div className="mb-8 flex flex-col items-center">
+          <button
+            onClick={handleVoteHelpful}
+            disabled={hasVotedHelpful}
+            className={`flex items-center gap-2.5 px-6 py-3.5 rounded-full font-bold shadow-sm transition-all ${
+              hasVotedHelpful
+                ? "bg-rose-50 text-rose-500 border border-rose-200"
+                : "bg-white text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] active:scale-95"
+            }`}
+          >
+            <span className="text-lg leading-none mt-[-2px]">👍</span>
+            {hasVotedHelpful ? "役に立った！" : "この記事は役に立ちましたか？"}
+            <span className={`ml-1 px-2.5 py-0.5 rounded-full text-[11px] ${hasVotedHelpful ? 'bg-rose-100 text-rose-600' : 'bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)]'}`}>
+              {helpfulCount}
+            </span>
+          </button>
+          {!hasVotedHelpful && (
+            <p className="text-[10px] text-[var(--color-subtle)] mt-2.5">
+              「役に立った」を押すと、情報を提供してくれた保護者のトラストスコアに還元されます ✨
+            </p>
+          )}
+        </div>
 
         {/* Medical Disclaimer */}
         <div className="p-3.5 rounded-2xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20 mb-6">

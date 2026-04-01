@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, MessageCircle, Shield, User, Heart, Leaf, BookOpen, Check, TrendingUp, ShieldCheck, RefreshCw, Clock, Search, Plus } from "@/components/icons";
+import { Sparkles, MessageCircle, Shield, User, Heart, Leaf, BookOpen, Check, TrendingUp, ShieldCheck, RefreshCw, Clock, Search, Plus, Trash2, Bell } from "@/components/icons";
 
 const Cloud = ({ className }: { className?: string }) => <Sparkles className={className} />;
 
@@ -61,6 +61,36 @@ const CATEGORIES: Category[] = [
     desc: "複雑なアレルギー管理を、直感的に楽しく入力させるためのユーザー体験",
     colorClass: "from-amber-100/50 to-orange-50 border-orange-200 text-orange-700 bg-orange-500/10",
     features: [
+      {
+        title: "自己修復型セッション初期化",
+        desc: "AIによるコンテキスト維持の限界に達した場合、直感的に記憶をクリア（RefreshCw）して新しい話題の精度を確保",
+        icon: <RefreshCw className="w-5 h-5" />,
+        tags: ["RAG", "相談"]
+      },
+      {
+        title: "投稿の引用返信 (Quoted Reply)",
+        desc: "気になる体験談をワンタップで引用し、コンテキスト付きでスムーズにトークを継続できるシステム",
+        icon: <MessageCircle className="w-5 h-5" />,
+        tags: ["みんなの声"]
+      },
+      {
+        title: "自身の発言の取り消し・削除",
+        desc: "リアルタイムな削除権限の検証を行い、誤った投稿や後悔した投稿を即座に削除できる安心安全機能",
+        icon: <Trash2 className="w-5 h-5" />,
+        tags: ["みんなの声"]
+      },
+      {
+        title: "統合通知フィード",
+        desc: "記事の閲覧数アップ、感謝リアクションの獲得、知恵袋への採用などのポジティブなアクションをひとまとめに確認",
+        icon: <Bell className="w-5 h-5" />,
+        tags: ["インセンティブ"]
+      },
+      {
+        title: "プロフィールカスタマイズ",
+        desc: "表示名とアイコンの変更に対応。実名を隠しつつ10種類のアバター（またはLINEアイコン）で個性を表現可能",
+        icon: <User className="w-5 h-5" />,
+        tags: ["プロフィール"]
+      },
       { title: "特定原材料8品目の視覚化", desc: "厚労省が定める最新の義務8品目を、直感的な絵文字と大きく押しやすいボタンで表示。", icon: <Leaf className="w-5 h-5" />, tags: ["UI/UX"] },
       { title: "準ずるもの20品目のチップ選択", desc: "通知対象となる20品目の中から、タグ（チップ）形式でサクサクと選択できる軽量UI。", icon: <Check className="w-5 h-5" /> },
       { title: "「その他のアレルゲン」エンター追加入力", desc: "一覧にない珍しい食材アレルギーでも、エンターキー（またはスマホの確定）で自由に無制限に追加できるTag Inputシステム。", icon: <Plus className="w-5 h-5" /> },
