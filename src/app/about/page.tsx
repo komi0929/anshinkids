@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Leaf, Check, Shield, ChevronRight } from "@/components/icons";
+import { ArrowLeft, Leaf, Check, Shield, ChevronRight, Sparkles } from "@/components/icons";
 
 const STEPS = [
   {
@@ -215,6 +215,24 @@ export default function AboutPage() {
         <p className="text-[12px] font-medium text-center mt-4" style={{ color: "var(--color-subtle)" }}>
           ログインしなくても閲覧・AI相談はご利用いただけます
         </p>
+      </div>
+
+      {/* Collaboration CTA */}
+      <div className="px-5 mb-8">
+        <div className="card p-6 text-center border-2 border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all bg-[var(--color-surface)]">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-[16px] bg-[var(--color-primary)]/10 flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
+          </div>
+          <h3 className="text-[17px] font-extrabold text-[var(--color-text)] mb-2">
+            開発者・協力者の方へ
+          </h3>
+          <p className="text-[13px] font-medium text-[var(--color-text-secondary)] leading-relaxed mb-5">
+            あんしんキッズをより強力な「保護者の味方」へと進化させるため、私たちの実装したSNS的アプローチや自律AIループなど、<strong>約50の機能仕様をすべてオープン</strong>にしています。
+          </p>
+          <Link href="/features" className="w-full text-center flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[14px] border border-[var(--color-border)] hover:bg-[var(--color-border-light)] transition-colors">
+            <Sparkles className="w-4 h-4" /> オープンな開発・機能仕様を見る
+          </Link>
+        </div>
       </div>
 
       {/* Footer */}
