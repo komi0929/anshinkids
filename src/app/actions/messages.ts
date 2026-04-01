@@ -223,12 +223,11 @@ export async function getTalkRooms() {
 
     if (error) throw error;
 
-    // DB rooms exist and ALL canonical slugs are present → use DB data
+    // Check if all canonical rooms exist in DB
     if (data && data.length > 0) {
       const dbSlugs = new Set(data.map((r: { slug: string }) => r.slug));
       const allCanonicalPresent = [...CANONICAL_SLUGS].every(s => dbSlugs.has(s));
       if (allCanonicalPresent) {
-        // Filter to only canonical slugs and sort correctly
         const canonicalData = data
           .filter((r: { slug: string }) => CANONICAL_SLUGS.has(r.slug))
           .sort((a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order);
@@ -236,7 +235,43 @@ export async function getTalkRooms() {
       }
     }
 
-    // DB has stale themes or is empty → use canonical list
+    // Missing rooms — seed them using admin client to bypass RLS
+    try {
+      const { createAdminClient } = await import("@/lib/supabase/admin");
+      const admin = createAdminClient();
+      const existingSlugs = new Set((data || []).map((r: { slug: string }) => r.slug));
+      const toInsert = CANONICAL_ROOMS
+        .filter(r => !existingSlugs.has(r.slug))
+        .map(({ slug, name, description, icon_emoji, sort_order }) => ({
+          slug,
+          name,
+          description,
+          icon_emoji,
+          sort_order,
+          is_active: true,
+          conversation_prompts: [],
+        }));
+
+      if (toInsert.length > 0) {
+        await admin.from("talk_rooms").insert(toInsert);
+        console.log(`[getTalkRooms] Seeded ${toInsert.length} canonical rooms`);
+      }
+
+      // Re-fetch with real UUIDs
+      const { data: seededData } = await supabase
+        .from("talk_rooms")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+
+      if (seededData && seededData.length > 0) {
+        return { success: true, data: seededData };
+      }
+    } catch (seedErr) {
+      console.error("[getTalkRooms] Seeding failed:", seedErr);
+    }
+
+    // Final fallback
     return { success: true, data: CANONICAL_ROOMS };
   } catch (err) {
     console.error("[getTalkRooms]", err);
@@ -272,25 +307,31 @@ export async function getTalkRoomBySlug(slug: string) {
       return { success: true, data };
     }
 
-    // Room not found — auto-create if it's a canonical room
+    // Room not found — auto-create if it's a canonical room (using admin to bypass RLS)
     const canonical = CANONICAL_ROOMS[slug];
     if (canonical) {
-      const { data: newRoom, error: insertError } = await supabase
-        .from("talk_rooms")
-        .insert({
-          slug,
-          name: canonical.name,
-          description: canonical.description,
-          icon_emoji: canonical.icon_emoji,
-          is_active: true,
-          conversation_prompts: [],
-        })
-        .select("id, slug, name, description, icon_emoji")
-        .single();
+      try {
+        const { createAdminClient } = await import("@/lib/supabase/admin");
+        const admin = createAdminClient();
+        const { data: newRoom, error: insertError } = await admin
+          .from("talk_rooms")
+          .insert({
+            slug,
+            name: canonical.name,
+            description: canonical.description,
+            icon_emoji: canonical.icon_emoji,
+            is_active: true,
+            conversation_prompts: [],
+          })
+          .select("id, slug, name, description, icon_emoji")
+          .single();
 
-      if (!insertError && newRoom) {
-        console.log(`[getTalkRoomBySlug] Auto-created room: ${slug}`);
-        return { success: true, data: newRoom };
+        if (!insertError && newRoom) {
+          console.log(`[getTalkRoomBySlug] Auto-created room: ${slug}`);
+          return { success: true, data: newRoom };
+        }
+      } catch (adminErr) {
+        console.error("[getTalkRoomBySlug] Admin insert failed:", adminErr);
       }
 
       // Insert might fail due to race condition (another request created it)
