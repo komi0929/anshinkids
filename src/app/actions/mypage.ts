@@ -39,20 +39,21 @@ export async function getMyProfile() {
 
     if (error) throw error;
     
-    // Polyfill children_profiles and interests from serialized allergen_tags to bypass missing DB column
+    // Legacy Data Migration on Read (Polyfill for users who haven't updated yet)
     if (profile && profile.allergen_tags && Array.isArray(profile.allergen_tags)) {
       const firstTag = profile.allergen_tags[0];
-      if (firstTag && typeof firstTag === "string") {
+      if (firstTag && typeof firstTag === "string" && firstTag.startsWith("JSON_PAYLOAD_")) {
         try {
           if (firstTag.startsWith("JSON_PAYLOAD_V3:")) {
             const parsed = JSON.parse(firstTag.replace("JSON_PAYLOAD_V3:", ""));
-            profile.children_profiles = parsed.children || [];
-            profile.interests = parsed.interests || [];
+            // Only polyfill if DB columns are empty
+            if (!profile.children_profiles || profile.children_profiles.length === 0) profile.children_profiles = parsed.children || [];
+            if (!profile.interests || profile.interests.length === 0) profile.interests = parsed.interests || [];
             profile.allergen_tags = profile.allergen_tags.slice(1);
           } else if (firstTag.startsWith("JSON_PAYLOAD_V2:")) {
-            profile.children_profiles = JSON.parse(firstTag.replace("JSON_PAYLOAD_V2:", ""));
+            if (!profile.children_profiles || profile.children_profiles.length === 0) profile.children_profiles = JSON.parse(firstTag.replace("JSON_PAYLOAD_V2:", ""));
             profile.allergen_tags = profile.allergen_tags.slice(1);
-            profile.interests = [];
+            if (!profile.interests) profile.interests = [];
           }
         } catch { /* ignore */ }
       }
@@ -81,23 +82,16 @@ export async function updateMyProfile(updates: {
     if (!user) return { success: false, error: "ログインが必要です" };
 
     const payload = { ...updates };
-    
-    if (payload.children_profiles || payload.interests) {
+    if (payload.children_profiles) {
+      // Collect all allergens from children into the parent allergen_tags
       const flatAllergens = new Set<string>();
-      if (payload.children_profiles) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        payload.children_profiles.forEach((c: any) => {
-          if (Array.isArray(c.allergens)) c.allergens.forEach((a: string) => flatAllergens.add(a));
-        });
-      }
-      const tags = Array.from(flatAllergens);
-      tags.unshift("JSON_PAYLOAD_V3:" + JSON.stringify({
-        children: payload.children_profiles || [],
-        interests: payload.interests || [],
-      }));
-      payload.allergen_tags = tags;
-      delete payload.children_profiles;
-      delete payload.interests;
+      if (payload.allergen_tags) payload.allergen_tags.forEach(a => flatAllergens.add(a));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payload.children_profiles.forEach((c: any) => {
+        if (Array.isArray(c.allergens)) c.allergens.forEach((a: string) => flatAllergens.add(a));
+        if (Array.isArray(c.customAllergens)) c.customAllergens.forEach((a: string) => flatAllergens.add(a));
+      });
+      payload.allergen_tags = Array.from(flatAllergens);
     }
 
     const { error } = await supabase
