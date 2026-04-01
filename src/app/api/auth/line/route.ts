@@ -69,72 +69,99 @@ export async function POST(request: Request) {
     let userId: string;
     let isNewUser = false;
 
-    // Find existing user by email using listUsers
-    // (getUserByEmail was removed in supabase-js v2.100+)
-    const { data: allUsersData } = await supabaseAdmin.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000,
-    });
-    const existingUser = allUsersData?.users?.find((u) => u.email === dummyEmail);
-
-    if (existingUser) {
-      // Existing user found
-      userId = existingUser.id;
-
-      // Update profile with latest LINE data
-      const updateData: Record<string, string> = { display_name: displayName };
-      if (pictureUrl) {
-        updateData.picture_url = pictureUrl;
-        updateData.avatar_url = pictureUrl;
-      }
-      await supabaseAdmin.from("profiles").update(updateData).eq("id", userId);
-    } else {
-      // User doesn't exist - create new one
-      isNewUser = true;
-
-      const { data: authData, error: createError } =
-        await supabaseAdmin.auth.admin.createUser({
-          email: dummyEmail,
-          password: deterministicPassword,
-          email_confirm: true,
-          user_metadata: {
-            line_user_id: lineUserId,
-            display_name: displayName,
-            picture: pictureUrl || null,
-          },
-        });
-
-      if (createError) {
-        // Handle race condition: user might have been created between check and create
-        if (createError.message?.includes("already been registered")) {
-          const { data: retryData } =
-            await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-          const retryUser = retryData?.users?.find((u) => u.email === dummyEmail);
-          if (retryUser) {
-            userId = retryUser.id;
-          } else {
-            console.error("Supabase user creation race condition:", createError);
-            return Response.json({ error: `Failed to create user: ${createError.message}` }, { status: 500 });
-          }
-        } else {
-          console.error("Supabase user creation error:", JSON.stringify(createError));
-          return Response.json({ error: `Failed to create user: ${createError.message}` }, { status: 500 });
-        }
-      } else {
-        userId = authData.user.id;
-      }
-
-      // Create profile
-      await supabaseAdmin.from("profiles").upsert(
-        {
-          id: userId!,
+    // Strategy: Try to create the user first. If already exists, sign in directly.
+    const { data: authData, error: createError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email: dummyEmail,
+        password: deterministicPassword,
+        email_confirm: true,
+        user_metadata: {
           line_user_id: lineUserId,
           display_name: displayName,
-          avatar_url: pictureUrl || null,
+          picture: pictureUrl || null,
         },
-        { onConflict: "id" }
-      );
+      });
+
+    if (createError) {
+      if (createError.message?.includes("already been registered")) {
+        // User already exists — that's fine, we'll sign in below.
+        // Try to find user ID via admin API for profile update
+        isNewUser = false;
+
+        // Use signInWithPassword to get user ID reliably
+        const { createClient } = await import("@supabase/supabase-js");
+        const tempClient = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: signInData, error: signInError } =
+          await tempClient.auth.signInWithPassword({
+            email: dummyEmail,
+            password: deterministicPassword,
+          });
+
+        if (signInError || !signInData.session) {
+          // Password might have changed — reset it and retry
+          // Find user via listing (paginated)
+          let foundUser = null;
+          for (let page = 1; page <= 10; page++) {
+            const { data: pageData } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 100 });
+            foundUser = pageData?.users?.find((u) => u.email === dummyEmail);
+            if (foundUser) break;
+            if (!pageData?.users?.length || pageData.users.length < 100) break;
+          }
+
+          if (foundUser) {
+            await supabaseAdmin.auth.admin.updateUserById(foundUser.id, {
+              password: deterministicPassword,
+            });
+            userId = foundUser.id;
+          } else {
+            console.error("Cannot find existing user:", dummyEmail);
+            return Response.json({ error: "ユーザーが見つかりませんでした。再度お試しください。" }, { status: 500 });
+          }
+        } else {
+          userId = signInData.session.user.id;
+
+          // Update profile with latest LINE data
+          const updateData: Record<string, string> = { display_name: displayName };
+          if (pictureUrl) {
+            updateData.picture_url = pictureUrl;
+            updateData.avatar_url = pictureUrl;
+          }
+          await supabaseAdmin.from("profiles").update(updateData).eq("id", userId);
+
+          // Already signed in — return session directly
+          return Response.json({
+            success: true,
+            userId,
+            isNewUser: false,
+            session: {
+              access_token: signInData.session.access_token,
+              refresh_token: signInData.session.refresh_token,
+            },
+          });
+        }
+      } else {
+        console.error("Supabase user creation error:", JSON.stringify(createError));
+        return Response.json({ error: `ユーザー作成エラー: ${createError.message}` }, { status: 500 });
+      }
+    } else {
+      userId = authData.user.id;
+      isNewUser = true;
     }
+
+    // Upsert profile (for new users or password-reset users)
+    await supabaseAdmin.from("profiles").upsert(
+      {
+        id: userId!,
+        line_user_id: lineUserId,
+        display_name: displayName,
+        avatar_url: pictureUrl || null,
+      },
+      { onConflict: "id" }
+    );
 
     // Step 4: Sign in with password to get a real session
     const { createClient } = await import("@supabase/supabase-js");
