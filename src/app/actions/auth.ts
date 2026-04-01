@@ -1,28 +1,23 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-export async function loginWithLine() {
-  const supabase = await createClient();
-  if (!supabase) return { success: false, error: "DB未接続" };
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google" as "google", // placeholder - LINE configured via Supabase Dashboard
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
-    },
-  });
-
-  if (error) return { success: false, error: error.message };
-  if (data.url) redirect(data.url);
-
-  return { success: false, error: "認証URLの生成に失敗しました" };
-}
+/**
+ * LINE Login is handled entirely client-side via the LINE OAuth flow.
+ * See: /login/page.tsx → handleLineLogin()
+ * See: /auth/callback/line/page.tsx → exchanges code for session
+ * See: /api/auth/line/route.ts → server-side token exchange
+ * 
+ * This server action is only used for logout.
+ */
 
 export async function logoutAction() {
+  const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
-  if (!supabase) return;
+  if (!supabase) {
+    redirect("/login");
+    return;
+  }
 
   await supabase.auth.signOut();
   redirect("/login");

@@ -5,9 +5,9 @@ export function createClient() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    return createBrowserClient(
-      "https://placeholder.supabase.co",
-      "placeholder-key"
+    throw new Error(
+      "Supabase環境変数が設定されていません。" +
+      "NEXT_PUBLIC_SUPABASE_URL と NEXT_PUBLIC_SUPABASE_ANON_KEY を .env.local に設定してください。"
     );
   }
 

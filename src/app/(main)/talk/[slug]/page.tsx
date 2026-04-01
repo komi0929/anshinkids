@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 // Inline SVG icons (replaces lucide-react)
 const iconProps = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 const ArrowLeft = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>;
 const Send = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>;
-const Heart = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>;
 const MessageCircle = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
 const Sparkles = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><path d="M12 3l1.5 4.5H18l-3.5 2.7 1.3 4.3L12 12l-3.8 2.5 1.3-4.3L6 7.5h4.5z" /></svg>;
 const RefreshCw = ({ className = "" }: { className?: string }) => <svg {...iconProps} className={className}><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>;
@@ -33,9 +33,9 @@ import {
 import {
   checkContentSafety,
   EMERGENCY_GUIDANCE,
-  MICRO_REACTIONS,
   COMMUNITY_GUIDELINES,
 } from "@/lib/ai/safety-guard";
+import { getImpactFeedback } from "@/app/actions/discover";
 
 interface Message {
   id: string;
@@ -83,6 +83,7 @@ export default function TalkRoomPage() {
   // Gap 1: Post-send feedback toast
   const [showAssetToast, setShowAssetToast] = useState(false);
   const [postCount, setPostCount] = useState(0);
+  const [impactMessage, setImpactMessage] = useState<string | null>(null);
 
   // === F2: Emergency banner ===
   const [showEmergency, setShowEmergency] = useState(false);
@@ -105,6 +106,41 @@ export default function TalkRoomPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  // Supabase Realtime subscription
+  useEffect(() => {
+    if (!roomInfo?.id) return;
+    let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
+    try {
+      const supabase = createClient();
+      channel = supabase
+        .channel(`room-${roomInfo.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `room_id=eq.${roomInfo.id}`,
+          },
+          () => {
+            // Reload messages when a new one is inserted
+            loadMessages(roomInfo.id);
+          }
+        )
+        .subscribe();
+    } catch {
+      // Realtime not available (env not configured), fall back to polling only
+    }
+    return () => {
+      if (channel) {
+        try {
+          const supabase = createClient();
+          supabase.removeChannel(channel);
+        } catch { /* cleanup */ }
+      }
+    };
+  }, [roomInfo?.id]);
+
   async function loadRoom() {
     const result = await getTalkRoomBySlug(slug);
     if (result.success && result.data) {
@@ -114,7 +150,8 @@ export default function TalkRoomPage() {
       loadPrompts(room.id);
       loadWikiCount(room.id);
       loadRelatedWiki(room.id);
-      const interval = setInterval(() => loadMessages(room.id), 15000);
+      // Fallback polling (supplements Realtime for reliability)
+      const interval = setInterval(() => loadMessages(room.id), 30000);
       return () => clearInterval(interval);
     } else {
       // Canonical slug-to-name fallback
@@ -212,11 +249,18 @@ export default function TalkRoomPage() {
       await loadMessages(roomInfo.id);
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-      // Gap 1: Asset toast
+      // Gap 1: Asset toast with Impact Feedback
       const count = postCount + 1;
       setPostCount(count);
       setShowAssetToast(true);
-      setTimeout(() => setShowAssetToast(false), 4000);
+
+      // Fetch real impact data to show instead of generic message
+      getImpactFeedback().then(r => {
+        if (r.success && r.data?.message) {
+          setImpactMessage(r.data.message);
+        }
+      });
+      setTimeout(() => { setShowAssetToast(false); setImpactMessage(null); }, 5000);
 
       // === F7: Milestone celebrations ===
       const stored = parseInt(localStorage.getItem("anshin_post_count") || "0");
@@ -252,14 +296,24 @@ export default function TalkRoomPage() {
   }
 
   async function handleThanks(messageId: string) {
+    // Optimistic UI: update immediately, then sync with server
     if (thankedIds.has(messageId)) {
-      await removeThanks(messageId);
       setThankedIds((prev) => { const n = new Set(prev); n.delete(messageId); return n; });
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, thanks_count: Math.max(0, m.thanks_count - 1) } : m));
+      removeThanks(messageId).catch(() => {
+        // Revert on error
+        setThankedIds(prev => new Set(prev).add(messageId));
+        if (roomInfo?.id) loadMessages(roomInfo.id);
+      });
     } else {
-      await sendThanks(messageId);
       setThankedIds((prev) => new Set(prev).add(messageId));
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, thanks_count: m.thanks_count + 1 } : m));
+      sendThanks(messageId).catch(() => {
+        // Revert on error
+        setThankedIds(prev => { const n = new Set(prev); n.delete(messageId); return n; });
+        if (roomInfo?.id) loadMessages(roomInfo.id);
+      });
     }
-    if (roomInfo?.id) await loadMessages(roomInfo.id);
   }
 
   function getTimeAgo(dateStr: string) {
@@ -474,26 +528,23 @@ export default function TalkRoomPage() {
                       </div>
                       <p className="text-[14px] leading-[1.8] text-[var(--color-text)] whitespace-pre-wrap">{msg.content}</p>
 
-                      {/* === F3: Micro-reactions (#3 90-9-1 countermeasure) === */}
+                      {/* Thanks button — the only real reaction */}
                       <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-                        {MICRO_REACTIONS.map((reaction) => (
-                          <button
-                            key={reaction.key}
-                            onClick={() => reaction.key === "thanks" ? handleThanks(msg.id) : undefined}
-                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border ${
-                              reaction.key === "thanks" && thankedIds.has(msg.id)
-                                ? "bg-[var(--color-heart-light)] border-[var(--color-heart)]/30 text-[var(--color-heart)]"
-                                : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-surface-warm)]"
-                            }`}
-                            id={`reaction-${reaction.key}-${msg.id}`}
-                          >
-                            <span>{reaction.emoji}</span>
-                            <span className="font-medium">{reaction.label}</span>
-                            {reaction.key === "thanks" && msg.thanks_count > 0 && (
-                              <span className="font-bold text-[var(--color-heart)]">{msg.thanks_count}</span>
-                            )}
-                          </button>
-                        ))}
+                        <button
+                          onClick={() => handleThanks(msg.id)}
+                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border ${
+                            thankedIds.has(msg.id)
+                              ? "bg-[var(--color-heart-light)] border-[var(--color-heart)]/30 text-[var(--color-heart)]"
+                              : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-surface-warm)]"
+                          }`}
+                          id={`reaction-thanks-${msg.id}`}
+                        >
+                          <span>❤️</span>
+                          <span className="font-medium">ありがとう</span>
+                          {msg.thanks_count > 0 && (
+                            <span className="font-bold text-[var(--color-heart)]">{msg.thanks_count}</span>
+                          )}
+                        </button>
                         <span className="ml-auto text-[10px] text-[var(--color-muted)] flex items-center gap-1">
                           <Clock className="w-2.5 h-2.5" /> {getExpiresIn(msg.expires_at)}
                         </span>
@@ -508,7 +559,7 @@ export default function TalkRoomPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Gap 1: Asset-building Toast */}
+      {/* Gap 1: Impact Feedback Toast */}
       {showAssetToast && (
         <div className="fixed top-16 left-4 right-4 z-50 slide-up">
           <div className="max-w-md mx-auto p-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-success)] text-white shadow-lg">
@@ -516,7 +567,9 @@ export default function TalkRoomPage() {
               <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0"><Check className="w-4 h-4 text-white" /></div>
               <div className="flex-1">
                 <p className="text-[12px] font-bold">投稿しました！</p>
-                <p className="text-[11px] text-white/90 leading-snug mt-0.5">{assetMessages[postCount % assetMessages.length]}</p>
+                <p className="text-[11px] text-white/90 leading-snug mt-0.5">
+                  {impactMessage || assetMessages[postCount % assetMessages.length]}
+                </p>
               </div>
             </div>
           </div>

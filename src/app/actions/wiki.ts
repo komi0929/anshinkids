@@ -78,58 +78,74 @@ export async function contributeToWiki(entryId: string, rawText: string) {
 
     if (fetchError || !entry) return { success: false, error: "記事が見つかりません" };
 
-    // Use AI to structure the raw input and merge with existing content
+    // Gather all existing sources for full resynthesis
+    const { data: allSources } = await supabase
+      .from("wiki_sources")
+      .select("original_message_snippet")
+      .eq("wiki_entry_id", entryId)
+      .order("extracted_at", { ascending: true });
+
+    const sourceSnippets = [
+      ...(allSources || []).map(s => s.original_message_snippet),
+      rawText, // New contribution
+    ];
+
+    // AI resynthesis with all sources + new contribution
     const apiKey = process.env.GOOGLE_API_KEY;
     const currentContent = entry.content_json || {};
 
-    let structuredAddition: Record<string, unknown>;
+    let newContent: Record<string, unknown>;
 
     if (apiKey) {
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
-      const prompt = `あなたは食物アレルギー情報の整理AIです。
+      const prompt = `あなたは食物アレルギー知恵袋の編集者です。
+以下のソース（保護者の投稿）を元に、この記事を再構成してください。
 
-既存の記事:
-タイトル: ${entry.title}
-カテゴリ: ${entry.category}
-現在の内容: ${JSON.stringify(currentContent)}
+## 記事タイトル: ${entry.title}
+## カテゴリ: ${entry.category}
 
-ユーザーからの新しい情報（カジュアルに書かれた生テキスト）:
-「${rawText}」
+## 既存の記事内容:
+${JSON.stringify(currentContent).slice(0, 1500)}
 
-タスク:
-1. ユーザーの生テキストから有用な情報を抽出してください
-2. 既存の内容と重複しない新しい情報を特定してください
-3. 既存のcontent_jsonの構造に合わせて、新しい情報をマージした完全なJSONを返してください
+## 全ソース一覧（${sourceSnippets.length}件の投稿に基づく）:
+${sourceSnippets.map((s, i) => `[${i + 1}] ${s}`).join("\n")}
 
-ルール:
-- 既存の情報は絶対に消さない（追加のみ）
-- ユーザーの言葉を尊重しつつ、読みやすく整理する
-- 新しい項目は "items" 配列や "tips" 配列に追加する
-- 情報源として「ユーザー投稿」であることを明記する
-- 必ず有効なJSONオブジェクトのみを返す（説明不要）`;
+## 編集方針:
+1. 傾斜をつける: 複数の言及がある情報を優先表示
+2. 新着情報: 最後のソース（[${sourceSnippets.length}]）の情報に「🆕」マークをつける
+3. 信頼度: 言及が多い情報ほど自信を持って記述
+4. 既存の情報は消さない（追加・更新のみ）
+5. 読者が「結局どれがいいの？」にすぐ答えが見つかる構成にする
+
+JSON形式で出力（説明不要）:
+${JSON.stringify(currentContent).slice(0, 500)}`;
 
       const result = await model.generateContent(prompt);
       const text = result.response.text();
       const jsonMatch = text.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
-        structuredAddition = JSON.parse(jsonMatch[0]);
+        newContent = JSON.parse(jsonMatch[0]);
       } else {
-        // Fallback: append as a new tip
-        const tips = (currentContent as Record<string, unknown[]>).tips || [];
-        structuredAddition = {
+        // Fallback: append as tip
+        const tips = Array.isArray((currentContent as Record<string, unknown[]>).tips) 
+          ? (currentContent as Record<string, unknown[]>).tips 
+          : [];
+        newContent = {
           ...currentContent,
-          tips: [...(tips as unknown[]), { text: rawText, source: "ユーザー投稿", added_at: new Date().toISOString() }],
+          tips: [...tips, `🆕 ${rawText}`],
         };
       }
     } else {
-      const tips = (currentContent as Record<string, unknown[]>).tips || [];
-      structuredAddition = {
+      const tips = Array.isArray((currentContent as Record<string, unknown[]>).tips) 
+        ? (currentContent as Record<string, unknown[]>).tips 
+        : [];
+      newContent = {
         ...currentContent,
-        tips: [...(tips as unknown[]), { text: rawText, source: "ユーザー投稿", added_at: new Date().toISOString() }],
+        tips: [...tips, `🆕 ${rawText}`],
       };
     }
 
@@ -137,7 +153,8 @@ export async function contributeToWiki(entryId: string, rawText: string) {
     const { error: updateError } = await supabase
       .from("wiki_entries")
       .update({
-        content_json: structuredAddition,
+        content_json: newContent,
+        summary: String((newContent as Record<string, string>).raw_summary || entry.summary || "").slice(0, 300),
         source_count: (entry.source_count || 0) + 1,
         updated_at: new Date().toISOString(),
       })
@@ -153,14 +170,21 @@ export async function contributeToWiki(entryId: string, rawText: string) {
       contributor_trust_score: 0,
     });
 
-    // Increment user contributions (best effort)
+    // Increment user contributions
     try {
-      await supabase
+      const { data: profile } = await supabase
         .from("profiles")
-        .update({ total_contributions: (entry.source_count || 0) + 1 })
-        .eq("id", user.id);
+        .select("total_contributions")
+        .eq("id", user.id)
+        .single();
+      if (profile) {
+        await supabase
+          .from("profiles")
+          .update({ total_contributions: (profile.total_contributions || 0) + 1 })
+          .eq("id", user.id);
+      }
     } catch {
-      // ignore
+      // Non-critical
     }
 
     return { success: true };

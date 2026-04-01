@@ -164,7 +164,7 @@ export async function contributeFromConcierge(questionText: string) {
               content_json: { tips: (parsed.tips || []).map((t: string) => ({ text: t, source: "AI相談から" })) },
               allergen_tags: parsed.allergen_tags || [],
               source_count: 1,
-              is_public: false,
+              is_public: true,
             })
             .select()
             .single();

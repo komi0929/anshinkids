@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getTalkRooms, findSimilarRooms, createTalkRoom } from "@/app/actions/messages";
+import { getTrendingTopics, getPersonalizedWikiEntries, getContributionStreak, getWeeklyDigest } from "@/app/actions/discover";
 
 interface Room {
   id: string;
@@ -19,6 +20,36 @@ interface SimilarRoom {
   name: string;
   description: string;
   icon_emoji: string;
+}
+
+interface TrendingTopic {
+  slug: string;
+  name: string;
+  icon_emoji: string;
+  messageCount: number;
+  thanksTotal: number;
+}
+
+interface PersonalizedEntry {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  summary: string;
+  source_count: number;
+}
+
+interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  totalDays: number;
+}
+
+interface DigestData {
+  newArticles: Array<{ title: string; slug: string; summary: string }>;
+  newArticleCount: number;
+  messageCount: number;
+  uniqueContributors: number;
 }
 
 const EMOJI_OPTIONS = [
@@ -38,32 +69,43 @@ export default function TalkRoomsPage() {
   const [newEmoji, setNewEmoji] = useState("💬");
   const [similarRooms, setSimilarRooms] = useState<SimilarRoom[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [recommendedRooms, setRecommendedRooms] = useState<Room[]>([]);
 
-  const loadRooms = async () => {
-    const { data } = await getTalkRooms();
-    if (data) {
-      setRooms(data as Room[]);
-    }
-    setIsLoading(false);
-  };
+  // === v2: Self-evolving platform features ===
+  const [trending, setTrending] = useState<TrendingTopic[]>([]);
+  const [personalizedWiki, setPersonalizedWiki] = useState<PersonalizedEntry[]>([]);
+  const [isPersonalized, setIsPersonalized] = useState(false);
+  const [streak, setStreak] = useState<StreakData | null>(null);
+  const [digest, setDigest] = useState<DigestData | null>(null);
 
   useEffect(() => {
-    loadRooms();
+    // Load rooms
+    getTalkRooms().then(({ data }) => {
+      if (data) setRooms(data as Room[]);
+      setIsLoading(false);
+    });
+    // Load discovery data in parallel (non-blocking)
+    getTrendingTopics().then(r => { if (r.success) setTrending(r.data as TrendingTopic[]); });
+    getPersonalizedWikiEntries().then(r => {
+      if (r.success) {
+        setPersonalizedWiki(r.data as PersonalizedEntry[]);
+        setIsPersonalized(r.isPersonalized || false);
+      }
+    });
+    getContributionStreak().then(r => { if (r.success && r.data) setStreak(r.data); });
+    getWeeklyDigest().then(r => { if (r.success && r.data) setDigest(r.data as DigestData); });
   }, []);
 
-  useEffect(() => {
-    if (rooms.length === 0) return;
+  // Derive recommended rooms from current rooms (no setState in effect)
+  const recommendedRooms = (() => {
+    if (rooms.length === 0 || typeof window === "undefined") return [];
     try {
       const stored = localStorage.getItem("anshin_user_preferences");
-      if (!stored) return;
+      if (!stored) return [];
       const prefs = JSON.parse(stored);
-      if (!prefs.interests || prefs.interests.length === 0) return;
-      const interestSlugs: string[] = prefs.interests;
-      const rec = rooms.filter((r) => interestSlugs.includes(r.slug));
-      setRecommendedRooms(rec);
-    } catch { /* ignore */ }
-  }, [rooms]);
+      if (!prefs.interests || prefs.interests.length === 0) return [];
+      return rooms.filter((r) => (prefs.interests as string[]).includes(r.slug));
+    } catch { return []; }
+  })();
 
   function openModal() {
     setStep("input");
@@ -100,7 +142,9 @@ export default function TalkRoomsPage() {
     const result = await createTalkRoom(newName, newDesc, newEmoji);
     if (result.success && result.data) {
       closeModal();
-      await loadRooms();
+      // Reload rooms
+      const { data } = await getTalkRooms();
+      if (data) setRooms(data as Room[]);
     } else {
       setError(result.error || "作成に失敗しました");
       setStep("input");
@@ -109,40 +153,123 @@ export default function TalkRoomsPage() {
 
   return (
     <div className="fade-in">
-      {/* Hero Section with fluid blob */}
-      <div className="blob-bg px-5 pt-8 pb-5">
-        <div className="relative z-10">
-          {/* Hand-drawn accent */}
-          <span className="inline-block text-[13px] font-semibold tracking-wider text-[var(--color-primary)] mb-2" style={{ fontFamily: 'var(--font-mono)' }}>
-            COMMUNITY
-          </span>
-          <h1 className="text-[28px] font-black text-[var(--color-text)] tracking-tight leading-[1.3]" style={{ fontFamily: 'var(--font-display)' }}>
-            <span className="hand-underline">みんなの声</span>
-          </h1>
-          <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed max-w-[280px]">
-            食物アレルギーの実体験を<br />テーマ別にシェアする場所
-          </p>
-        </div>
+      {/* Clean Header */}
+      <div className="px-5 pt-8 pb-5">
+        <h1 className="text-[26px] font-black text-[var(--color-text)] tracking-tight leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+          みんなの声
+        </h1>
+        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
+          食物アレルギーの実体験をテーマ別にシェアする場所
+        </p>
       </div>
 
+      {/* === Streak Banner (logged-in users only) === */}
+      {streak && streak.currentStreak > 0 && (
+        <div className="px-4 mb-4 slide-up">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 flex items-center gap-3">
+            <div className="text-2xl">🔥</div>
+            <div className="flex-1">
+              <p className="text-[13px] font-bold text-amber-800">
+                {streak.currentStreak}日連続で貢献中！
+              </p>
+              <p className="text-[10px] text-amber-600 mt-0.5">
+                通算{streak.totalDays}日 · 最長{streak.longestStreak}日ストリーク
+              </p>
+            </div>
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: Math.min(streak.currentStreak, 7) }).map((_, i) => (
+                <div key={i} className={`w-2 h-${2 + Math.min(i, 4)} rounded-full bg-amber-400`} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* === Weekly Digest Banner === */}
+      {digest && digest.messageCount > 0 && (
+        <div className="px-4 mb-4 slide-up">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-success-light)]/30 border border-[var(--color-border-light)]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm">📊</span>
+              <span className="text-[12px] font-bold text-[var(--color-text)]">今週のコミュニティ</span>
+            </div>
+            <div className="flex gap-4 text-center">
+              <div>
+                <p className="text-[18px] font-black text-[var(--color-primary)]">{digest.messageCount}</p>
+                <p className="text-[9px] text-[var(--color-subtle)]">件の投稿</p>
+              </div>
+              <div>
+                <p className="text-[18px] font-black text-[var(--color-success)]">{digest.uniqueContributors}</p>
+                <p className="text-[9px] text-[var(--color-subtle)]">人が参加</p>
+              </div>
+              <div>
+                <p className="text-[18px] font-black text-[var(--color-accent)]">{digest.newArticleCount}</p>
+                <p className="text-[9px] text-[var(--color-subtle)]">新記事</p>
+              </div>
+            </div>
+            {digest.newArticles.length > 0 && (
+              <div className="mt-3 pt-2.5 border-t border-[var(--color-border-light)]/50">
+                <p className="text-[10px] font-semibold text-[var(--color-subtle)] mb-1.5">🆕 新しい知恵袋記事</p>
+                {digest.newArticles.slice(0, 2).map((a) => (
+                  <Link key={a.slug} href={`/wiki/${a.slug}`} className="block text-[11px] text-[var(--color-primary)] hover:underline truncate mb-0.5">
+                    → {a.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* === Trending Topics === */}
+      {trending.length > 0 && (
+        <div className="px-4 mb-5">
+          <div className="flex items-center gap-2 mb-2.5">
+            <span className="text-xs">🔥</span>
+            <h2 className="text-[12px] font-bold text-[var(--color-text)]">いま盛り上がっている</h2>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {trending.map((t) => (
+              <Link
+                key={t.slug}
+                href={`/talk/${t.slug}`}
+                className="flex-shrink-0 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/15 hover:border-[var(--color-primary)]/30 transition-all"
+                id={`trending-${t.slug}`}
+              >
+                <span className="text-base">{t.icon_emoji}</span>
+                <div>
+                  <p className="text-[12px] font-bold text-[var(--color-text)] whitespace-nowrap">{t.name}</p>
+                  <p className="text-[9px] text-[var(--color-subtle)]">
+                    {t.messageCount}件の投稿 · ❤️{t.thanksTotal}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Info chip */}
-      <div className="px-5 mb-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+      <div className="px-5 mb-5">
+        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
-          <span className="text-[11px] text-[var(--color-text-secondary)] font-medium">
+          <span className="text-[11px] text-[var(--color-text-secondary)] font-medium leading-snug">
             投稿は24h後にAIが知恵袋へ整理
           </span>
         </div>
       </div>
 
-      {/* Section Label */}
-      <div className="px-5 mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-bold tracking-wider text-[var(--color-subtle)]" style={{ fontFamily: 'var(--font-mono)' }}>
-          THEMES
-        </span>
-        <span className="text-[10px] text-[var(--color-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>
-          {rooms.length} ROOMS
-        </span>
+      {/* Section Header */}
+      <div className="px-5 mb-3 section-header">
+        <h2>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-primary)]">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          トークルーム
+        </h2>
+        {rooms.length > 0 && (
+          <span className="counter">{rooms.length}件</span>
+        )}
       </div>
 
       {/* Room List */}
@@ -183,7 +310,7 @@ export default function TalkRoomsPage() {
                       {room.description}
                     </p>
                   </div>
-                  {/* Arrow with hand-drawn feel */}
+                  {/* Clean arrow */}
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-muted)] group-hover:text-white transition-colors">
                       <path d="M5 12h14M12 5l7 7-7 7" />
@@ -195,11 +322,11 @@ export default function TalkRoomsPage() {
           })
         )}
 
-        {/* Add New Theme Button */}
+        {/* Add New Theme Button — clean card style */}
         <button
           onClick={openModal}
           id="propose-theme-button"
-          className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all group stagger-item tape-accent"
+          className="w-full p-4 card-dashed group stagger-item"
         >
           <div className="flex items-center gap-4">
             <div className="w-13 h-13 rounded-2xl bg-[var(--color-surface-warm)] group-hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors border border-[var(--color-border-light)]">
@@ -219,6 +346,39 @@ export default function TalkRoomsPage() {
           </div>
         </button>
       </div>
+
+      {/* === Personalized Wiki Recommendations === */}
+      {personalizedWiki.length > 0 && (
+        <div className="px-4 pb-4">
+          <div className="flex items-center gap-2 mb-2.5 px-1">
+            <span className="text-xs">{isPersonalized ? "✨" : "📖"}</span>
+            <h2 className="text-[12px] font-bold text-[var(--color-text)]">
+              {isPersonalized ? "あなたへのおすすめ記事" : "人気の知恵袋記事"}
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {personalizedWiki.slice(0, 3).map((entry) => (
+              <Link
+                key={entry.id}
+                href={`/wiki/${entry.slug}`}
+                className="card card-active block p-3.5 group"
+                id={`personalized-wiki-${entry.slug}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center text-sm flex-shrink-0">
+                    📖
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[13px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate">{entry.title}</h4>
+                    <p className="text-[10px] text-[var(--color-subtle)] truncate mt-0.5">{entry.summary}</p>
+                  </div>
+                  <span className="text-[9px] text-[var(--color-muted)] flex-shrink-0">{entry.source_count}件</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modal Overlay */}
       {step !== "closed" && (

@@ -27,10 +27,20 @@ interface ChatMessage {
 }
 
 export default function ConciergePage() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Restore session from sessionStorage (survives page reload within same tab)
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = sessionStorage.getItem("anshin_concierge_messages");
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return sessionStorage.getItem("anshin_concierge_session") || null;
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -41,6 +51,16 @@ export default function ConciergePage() {
 
   // === F2: Emergency banner ===
   const [showEmergency, setShowEmergency] = useState(false);
+
+  // Persist session to sessionStorage
+  useEffect(() => {
+    if (messages.length > 0) {
+      sessionStorage.setItem("anshin_concierge_messages", JSON.stringify(messages));
+    }
+    if (sessionId) {
+      sessionStorage.setItem("anshin_concierge_session", sessionId);
+    }
+  }, [messages, sessionId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

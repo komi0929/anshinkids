@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 const _ip = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 const Leaf = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s-1.5 7-5.5 11c-2 2-5 3-5 3" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>;
 const ChevronRight = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><polyline points="9 18 15 12 9 6" /></svg>;
@@ -47,6 +47,16 @@ export interface UserPreferences {
 const STORAGE_KEY = "anshin_user_preferences";
 const ONBOARDING_DONE_KEY = "anshin_onboarding_done";
 
+async function syncPreferencesToProfile(prefs: UserPreferences) {
+  const { updateMyProfile } = await import("@/app/actions/mypage");
+  const allergenMap: Record<string, string> = {
+    egg: "卵", milk: "乳", wheat: "小麦", soba: "そば", peanut: "落花生",
+    shrimp: "えび", crab: "かに", nuts: "ナッツ", soy: "大豆", sesame: "ごま", fruit: "果物",
+  };
+  const tags = prefs.allergens.map(a => allergenMap[a] || a);
+  await updateMyProfile({ allergen_tags: tags });
+}
+
 export function getUserPreferences(): UserPreferences | null {
   if (typeof window === "undefined") return null;
   try {
@@ -68,21 +78,13 @@ interface OnboardingWizardProps {
 }
 
 export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) {
+  // Initialize state from localStorage (avoids setState in useEffect)
+  const existingPrefs = typeof window !== "undefined" ? getUserPreferences() : null;
   const [step, setStep] = useState(0);
-  const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
-  const [selectedAge, setSelectedAge] = useState<string>("");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedAllergens, setSelectedAllergens] = useState<string[]>(existingPrefs?.allergens || []);
+  const [selectedAge, setSelectedAge] = useState<string>(existingPrefs?.ageGroup || "");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(existingPrefs?.interests || []);
   const [showAnimation, setShowAnimation] = useState(false);
-
-  useEffect(() => {
-    // Restore previous selections if any
-    const existing = getUserPreferences();
-    if (existing) {
-      setSelectedAllergens(existing.allergens);
-      setSelectedAge(existing.ageGroup);
-      setSelectedInterests(existing.interests);
-    }
-  }, []);
 
   function toggleAllergen(id: string) {
     setSelectedAllergens((prev) =>
@@ -108,6 +110,10 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
       localStorage.setItem(ONBOARDING_DONE_KEY, "true");
+
+      // Sync allergens to server profile (best effort, non-blocking)
+      syncPreferencesToProfile(prefs).catch(() => { /* guest/offline — skip */ });
+
       setShowAnimation(true);
       setTimeout(() => onComplete(prefs), 1200);
     }

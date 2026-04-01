@@ -148,6 +148,7 @@ CREATE TABLE IF NOT EXISTS wiki_sources (
   original_message_snippet TEXT,
   contributor_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   contributor_trust_score NUMERIC(5,2) DEFAULT 0.00,
+  source_type TEXT DEFAULT 'talk',
   extracted_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -251,3 +252,39 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER on_message_insert AFTER INSERT ON messages
   FOR EACH ROW EXECUTE FUNCTION increment_contributions();
+
+-- ========================================
+-- CONTRIBUTION DAYS (ストリーク計算用の永続ログ)
+-- messages は24h後に期限切れ、48hで物理削除されるため、
+-- 「どの日にどのユーザーが投稿したか」だけを永続保存する
+-- ========================================
+CREATE TABLE IF NOT EXISTS contribution_days (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  active_date DATE NOT NULL DEFAULT (CURRENT_DATE AT TIME ZONE 'Asia/Tokyo'),
+  post_count INTEGER DEFAULT 1,
+  UNIQUE(user_id, active_date)
+);
+
+ALTER TABLE contribution_days ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view their own contribution days" ON contribution_days
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service role can manage contribution days" ON contribution_days
+  FOR ALL USING (auth.role() = 'service_role');
+
+-- Trigger: メッセージ投稿時にcontribution_daysを自動更新
+CREATE OR REPLACE FUNCTION record_contribution_day()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.user_id IS NOT NULL AND NEW.is_system_bot = false THEN
+    INSERT INTO contribution_days (user_id, active_date, post_count)
+    VALUES (NEW.user_id, (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Tokyo')::date, 1)
+    ON CONFLICT (user_id, active_date) 
+    DO UPDATE SET post_count = contribution_days.post_count + 1;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_message_record_day AFTER INSERT ON messages
+  FOR EACH ROW EXECUTE FUNCTION record_contribution_day();

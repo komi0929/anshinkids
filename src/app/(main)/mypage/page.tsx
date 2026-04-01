@@ -15,6 +15,7 @@ const Sparkles = ({ className = "" }: { className?: string }) => <svg {..._ip} c
 const Eye = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>;
 const MessageCircle = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
 import { getMyProfile, updateMyProfile, getMyContributions, getMyImpact, deleteMyAccount } from "@/app/actions/mypage";
+import { getContributionStreak } from "@/app/actions/discover";
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
 
@@ -59,6 +60,7 @@ export default function MyPage() {
   // === F6: Privacy controls ===
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [streakData, setStreakData] = useState<{ currentStreak: number; longestStreak: number; totalDays: number } | null>(null);
 
   async function loadData() {
     setIsLoading(true);
@@ -90,6 +92,7 @@ export default function MyPage() {
 
   useEffect(() => {
     loadData();
+    getContributionStreak().then(r => { if (r.success && r.data) setStreakData(r.data); });
   }, []);
 
   async function handleSave() {
@@ -262,6 +265,29 @@ export default function MyPage() {
                   <div className="text-[10px] font-medium text-[var(--color-subtle)]">知恵に反映</div>
                 </div>
               </div>
+
+              {/* Streak */}
+              {streakData && streakData.totalDays > 0 && (
+                <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/40">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">🔥</span>
+                    <div className="flex-1">
+                      <p className="text-[12px] font-bold text-amber-800">
+                        {streakData.currentStreak > 0 ? `${streakData.currentStreak}日連続で貢献中！` : `通算${streakData.totalDays}日参加`}
+                      </p>
+                      <p className="text-[10px] text-amber-600">
+                        最長 {streakData.longestStreak}日ストリーク
+                      </p>
+                    </div>
+                    {/* Mini bar chart */}
+                    <div className="flex items-end gap-px">
+                      {Array.from({ length: 7 }).map((_, i) => (
+                        <div key={i} className={`w-1.5 rounded-full ${i < Math.min(streakData.currentStreak, 7) ? "bg-amber-400" : "bg-amber-200"}`} style={{ height: `${8 + i * 2}px` }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Allergen Tags */}
               {(profile.allergen_tags?.length > 0 || profile.child_age_months) && (

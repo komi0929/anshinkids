@@ -269,13 +269,28 @@ export async function getWikiCountForRoom(roomId: string) {
     const supabase = await createClient();
     if (!supabase) return { success: true, count: 0 };
 
-    // Count wiki sources that came from messages in this room
-    const { count, error } = await supabase
-      .from("wiki_sources")
-      .select("id", { count: "exact", head: true });
+    // Count wiki entries that were sourced from messages in this room
+    // First get messages from this room that were extracted
+    const { data: extracted } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("room_id", roomId)
+      .eq("ai_extracted", true)
+      .limit(200);
 
-    if (error) throw error;
-    return { success: true, count: count || 0 };
+    if (!extracted || extracted.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    // Count unique wiki entries linked via wiki_sources
+    const messageIds = extracted.map(m => m.id);
+    const { data: sources } = await supabase
+      .from("wiki_sources")
+      .select("wiki_entry_id")
+      .in("original_message_snippet", messageIds);
+
+    const uniqueEntries = new Set((sources || []).map(s => s.wiki_entry_id).filter(Boolean));
+    return { success: true, count: uniqueEntries.size };
   } catch (err) {
     console.error("[getWikiCountForRoom]", err);
     return { success: true, count: 0 };

@@ -200,8 +200,18 @@ export async function deleteMyAccount() {
       .delete()
       .eq("id", user.id);
 
-    // Sign out
+    // Sign out first
     await supabase.auth.signOut();
+
+    // Delete auth.users record using admin client
+    try {
+      const { createAdminClient } = await import("@/lib/supabase/admin");
+      const adminClient = createAdminClient();
+      await adminClient.auth.admin.deleteUser(user.id);
+    } catch (adminErr) {
+      console.error("[deleteMyAccount] Admin deletion failed:", adminErr);
+      // Profile and data are already deleted, so this is best-effort
+    }
 
     return { success: true };
   } catch (err) {
