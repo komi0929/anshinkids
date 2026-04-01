@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { runBatchExtraction } from "@/lib/ai/batch-processor";
 import { recalculateTrustScores } from "@/lib/ai/trust-calculator";
 import { checkFreshness } from "@/lib/ai/freshness-checker";
-
-import { updateTalkRoomThemes } from "@/app/actions/seed";
+import { purgeInactiveThreads } from "@/lib/ai/inactivity-purge";
+import { checkExtractionThresholds } from "@/lib/ai/threshold-extractor";
+import { updateTalkRoomThemes, seedMegaWikis } from "@/app/actions/seed";
 
 /**
  * Vercel Cron calls GET /api/batch?type=all
@@ -40,11 +41,22 @@ async function handleBatch(type: string) {
     case "seed-themes":
       result = await updateTalkRoomThemes();
       break;
+    case "seed-mega-wikis":
+      result = await seedMegaWikis();
+      break;
+    case "inactivity-purge":
+      result = await purgeInactiveThreads();
+      break;
+    case "threshold":
+      result = await checkExtractionThresholds();
+      break;
     case "all": {
       const extraction = await runBatchExtraction();
       const trust = await recalculateTrustScores();
       const freshness = await checkFreshness();
-      result = { extraction, trust, freshness };
+      const purge = await purgeInactiveThreads();
+      const threshold = await checkExtractionThresholds();
+      result = { extraction, trust, freshness, purge, threshold };
       break;
     }
     default:

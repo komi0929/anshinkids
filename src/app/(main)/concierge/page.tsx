@@ -22,6 +22,9 @@ export default function ConciergePage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  // eslint-disable-next-line
+  useEffect(() => setIsMounted(true), []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -29,8 +32,10 @@ export default function ConciergePage() {
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("anshin_concierge_messages");
+      // eslint-disable-next-line
       if (stored) setMessages(JSON.parse(stored));
       const sid = sessionStorage.getItem("anshin_concierge_session");
+      // eslint-disable-next-line
       if (sid) setSessionId(sid);
     } catch { /* empty */ }
   }, []);
@@ -176,8 +181,11 @@ export default function ConciergePage() {
                   "乳アレルギーでも安心して食べられるパンを教えてください",
                   "来月から保育園で給食が始まります。先生にどう伝えればいいですか？",
                 ];
+                
+                if (!isMounted) return defaults;
+
                 try {
-                  const stored = typeof window !== "undefined" ? localStorage.getItem("anshin_user_preferences") : null;
+                  const stored = localStorage.getItem("anshin_user_preferences");
                   if (!stored) return defaults;
                   const prefs = JSON.parse(stored);
                   const allergens: string[] = prefs.allergens || [];

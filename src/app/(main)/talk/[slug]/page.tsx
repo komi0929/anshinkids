@@ -355,7 +355,7 @@ export default function TalkRoomPage() {
   const assetMessages = [
     "🌱 あなたの体験が、未来の誰かの道しるべになります",
     "✨ AIが知恵として整理し、知恵袋に反映します",
-    "📖 投稿は消えても、中の知恵は永久に残ります",
+    "📖 投稿は消えても、中の5件で知恵は永久に残ります",
     "💚 同じ悩みを持つ親子を救う力になります",
     "🌿 あなたの声が、コミュニティの資産になっています",
   ];
@@ -630,7 +630,7 @@ export default function TalkRoomPage() {
               id="message-input"
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             />
-            <p className="mt-1 text-[11px] font-medium leading-snug" style={{ color: 'var(--color-muted)' }}>💬 投稿は消去 → 一次情報はAIが知恵袋に永久保存</p>
+            <p className="mt-1 text-[11px] font-medium leading-snug" style={{ color: 'var(--color-muted)' }}>💬 投稿は消去 → 5件でAIが知恵袋に永久保存</p>
           </div>
           <button onClick={() => handleSend()} disabled={!newMessage.trim() || isSending} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 mb-4" id="send-message">
             <Send className="w-5 h-5" />

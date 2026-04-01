@@ -9,6 +9,20 @@ const Users = User;
 import { getWikiEntry, contributeToWiki } from "@/app/actions/wiki";
 import { getKnowledgeRipple } from "@/app/actions/discover";
 
+export interface MegaWikiItem {
+  title: string;
+  content: string;
+  mention_count?: number;
+  heat_score?: number;
+  is_recommended?: boolean;
+  [key: string]: unknown;
+}
+
+export interface MegaWikiSection {
+  heading: string;
+  items: MegaWikiItem[];
+}
+
 interface WikiSource {
   id: string;
   original_message_snippet: string;
@@ -23,6 +37,7 @@ interface WikiEntryData {
   category: string;
   summary: string;
   content_json: Record<string, unknown>;
+  sections: MegaWikiSection[];
   allergen_tags: string[];
   avg_trust_score: number;
   source_count: number;
@@ -385,24 +400,14 @@ export default function WikiDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  const talkSlug = slug.replace("mega-", "");
+
   async function loadEntry() {
     const result = await getWikiEntry(slug);
     if (result.success && result.data) {
       setEntry(result.data as unknown as WikiEntryData);
     }
     setIsLoading(false);
-  }
-
-  async function handleContribute() {
-    if (!contribText.trim() || !entry) return;
-    setIsSubmitting(true);
-    const result = await contributeToWiki(entry.id, contribText);
-    if (result.success) {
-      setSubmitted(true);
-      setContribText("");
-      setTimeout(() => { setSubmitted(false); setShowContrib(false); loadEntry(); }, 2500);
-    }
-    setIsSubmitting(false);
   }
 
   if (isLoading) {
@@ -536,9 +541,76 @@ export default function WikiDetailPage() {
         )}
 
         {/* Content */}
-        <div className="card-elevated p-5 mb-6">
-          {renderContentJson(entry.content_json, entry.category)}
-        </div>
+        {entry.sections && entry.sections.length > 0 ? (
+          <div className="space-y-6 mb-6">
+            {entry.sections.map((sec, i) => (
+              <div key={i} className="card-elevated p-5">
+                <h2 className="text-[16px] font-black tracking-tight mb-4 flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
+                  <span className="w-1.5 h-4 bg-[var(--color-primary)] rounded-full inline-block"></span>
+                  {sec.heading}
+                </h2>
+                <div className="space-y-4">
+                  {sec.items.map((item, j) => (
+                    <div key={j} className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h3 className="text-[14px] font-bold text-[var(--color-text)] leading-tight">{item.title}</h3>
+                        {item.is_recommended && (
+                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-1 rounded-full flex-shrink-0 shadow-sm">
+                            👑 定番
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed whitespace-pre-wrap">{item.content}</p>
+                      
+                      {/* Meta stats */}
+                      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--color-border-light)]/50">
+                        {item.mention_count ? (
+                          <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: 'var(--color-muted)' }}>
+                            <span className="text-[12px]">👥</span> {item.mention_count}人の声
+                          </span>
+                        ) : null}
+                        {item.heat_score ? (
+                          <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: 'var(--color-success)' }}>
+                            <span className="text-[12px]">❤️</span> {item.heat_score}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {/* Extra context (Tips, reviews) */}
+                      {Object.keys(item).map(k => {
+                        if (['title', 'content', 'mention_count', 'heat_score', 'is_recommended'].includes(k)) return null;
+                        const val = item[k];
+                        if (Array.isArray(val) && val.length > 0) {
+                           return (
+                             <div key={k} className="mt-3 flex flex-wrap gap-2">
+                               {val.map((v, tagIdx) => (
+                                  <span key={tagIdx} className="px-2 py-1 bg-white rounded-md text-[11px] text-[var(--color-text-secondary)] border border-[var(--color-border-light)]">
+                                    {String(v)}
+                                  </span>
+                               ))}
+                             </div>
+                           )
+                        }
+                        if (typeof val === 'string' || typeof val === 'number') {
+                          return (
+                            <p key={k} className="mt-2 text-[12px] text-[var(--color-text-secondary)]">
+                              <strong className="text-[var(--color-muted)] capitalize">{k.replace(/_/g, ' ')}:</strong> {String(val)}
+                            </p>
+                          )
+                        }
+                        return null;
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="card-elevated p-5 mb-6">
+            {renderContentJson(entry.content_json, entry.category)}
+          </div>
+        )}
 
         {/* Medical Disclaimer */}
         <div className="p-3.5 rounded-2xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20 mb-6">
@@ -554,82 +626,17 @@ export default function WikiDetailPage() {
               <MessageCircle className="w-4 h-4 text-[var(--color-subtle)]" />
               この知恵のもとになった声
             </h3>
-            <div className="space-y-2.5">
-              {entry.wiki_sources.slice(0, 5).map((source) => (
-                <div key={source.id} className="p-3.5 rounded-2xl bg-[var(--color-surface-warm)] text-[12px] text-[var(--color-text-secondary)] border border-[var(--color-border-light)]/50">
-                  <p className="leading-relaxed line-clamp-2">「{source.original_message_snippet}」</p>
-                  <p className="text-[10px] text-[var(--color-muted)] mt-1.5 bg-[var(--color-bg)] inline-block px-2 py-0.5 rounded-full">
-                    {new Date(source.extracted_at).toLocaleDateString("ja-JP")}に抽出
-                  </p>
+            <div className="space-y-3">
+              {entry.wiki_sources.map((src, i) => (
+                <div key={i} className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+                   <p className="text-[13px] text-[var(--color-text)] leading-relaxed">{src.original_message_snippet}</p>
                 </div>
               ))}
-              {entry.wiki_sources.length > 5 && (
-                <p className="text-[11px] text-[var(--color-subtle)] text-center">
-                  他 {entry.wiki_sources.length - 5} 件の体験
-                </p>
-              )}
             </div>
           </div>
         )}
 
-        {/* Contribute */}
-        {showContrib ? (
-          <div className="card-elevated p-5 slide-up">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[14px] font-extrabold text-[var(--color-text)]">✍️ 情報を追加する</h3>
-              <button onClick={() => setShowContrib(false)} className="text-[var(--color-subtle)] hover:text-[var(--color-text)] transition-colors" id="close-contrib">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            {submitted ? (
-              <div className="flex items-center gap-2 justify-center py-5 text-[var(--color-success)]">
-                <Check className="w-5 h-5" />
-                <span className="text-[13px] font-bold">情報をいただきました！AIが整理して反映します 🌿</span>
-              </div>
-            ) : (
-              <>
-                <p className="text-[11px] text-[var(--color-subtle)] mb-2.5">
-                  知っていることをざざっと書くだけでOK。AIが整理します ✨
-                </p>
-                <textarea
-                  value={contribText}
-                  onChange={(e) => setContribText(e.target.value)}
-                  placeholder="例: うちの子は3歳で卵ボーロ1/8から始めました。最初は…"
-                  className="input-field resize-none w-full"
-                  rows={3}
-                  autoFocus
-                  id="wiki-contrib-text"
-                />
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-[10px] text-[var(--color-muted)]">きれいに書かなくて大丈夫です</span>
-                  <button
-                    onClick={handleContribute}
-                    disabled={!contribText.trim() || isSubmitting}
-                    className="btn-primary !py-2 !px-5 !text-[12px] disabled:opacity-40 flex items-center gap-1.5"
-                    id="submit-wiki-contrib"
-                  >
-                    {isSubmitting ? (<><Loader2 className="w-3 h-3 animate-spin" /> AIが整理中...</>) : (<><Plus className="w-3 h-3" /> 追加する</>)}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowContrib(true)}
-            className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all group"
-            id="open-contrib"
-          >
-            <div className="flex items-center justify-center gap-2">
-              <Plus className="w-4 h-4 text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors" />
-              <span className="text-[13px] font-bold text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">
-              あなたの体験・情報を追加する ✍️
-              </span>
-            </div>
-          </button>
-        )}
-
-        {/* === Gap 3: Reverse link from Wiki → Talk === */}
+        {/* Topic Summoning: Redirect explicitly to talk room */}
         <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-primary)]/5 border border-[var(--color-primary)]/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
@@ -640,16 +647,17 @@ export default function WikiDetailPage() {
                 この知恵をもっと充実させませんか？
               </p>
               <p className="text-[10px] text-[var(--color-subtle)] mt-0.5">
-                トークルームであなたの体験を共有すると、この記事が自動的に更新されます
+                トークルームで体験をシェアすると、あなたの声がここに抽出されてみんなの役に立ちます。
               </p>
             </div>
           </div>
           <Link
-            href="/talk"
-            className="block mt-3 w-full text-center btn-secondary !text-[12px] !py-2.5"
-            id="discuss-in-talk"
+            href={`/talk/${talkSlug}`}
+            className="block mt-4 w-full text-center btn-primary !text-[13px] font-black !py-3 flex items-center justify-center gap-2"
+            id="summon-topic"
           >
-            💬 みんなの声で話してみる
+            <MessageCircle className="w-4 h-4" />
+            このテーマについて話す
           </Link>
         </div>
       </div>

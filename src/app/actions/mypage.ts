@@ -49,6 +49,7 @@ export async function updateMyProfile(updates: {
   display_name?: string;
   allergen_tags?: string[];
   child_age_months?: number | null;
+  children_profiles?: Record<string, unknown>[];
 }) {
   try {
     const supabase = await createClient();
