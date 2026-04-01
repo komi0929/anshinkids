@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS talk_rooms (
   icon_emoji TEXT DEFAULT '💬',
   sort_order INTEGER DEFAULT 0,
   is_active BOOLEAN DEFAULT true,
+  extraction_threshold INTEGER DEFAULT 50,
   conversation_prompts JSONB DEFAULT '[]',
   created_at TIMESTAMPTZ DEFAULT now()
 );
