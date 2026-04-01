@@ -244,9 +244,25 @@ export async function getTalkRoomBySlug(slug: string) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getWikiCountForRoom(_roomId: string) {
-  return { success: true, count: 1 }; // In Mega-Wiki model, there's exactly 1 Mega-Wiki per room
+export async function getWikiCountForRoom(roomId: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: true, count: 0 };
+
+    const { data: room } = await supabase.from("talk_rooms").select("slug").eq("id", roomId).single();
+    if (!room || !room.slug) return { success: true, count: 0 };
+
+    const megaSlug = `mega-${room.slug}`;
+    const { count } = await supabase
+      .from("wiki_entries")
+      .select("id", { count: "exact" })
+      .eq("slug", megaSlug);
+      
+    return { success: true, count: count || 0 };
+  } catch (err) {
+    console.error("[getWikiCountForRoom]", err);
+    return { success: true, count: 0 };
+  }
 }
 
 export async function getRelatedWikiEntries(roomId: string) {
