@@ -16,30 +16,17 @@ export async function askConcierge(sessionId: string | null, question: string, c
       userId = user?.id || null;
 
       if (userId) {
-        const { data: profile } = await getMyProfile();
-        if (profile) {
+        const profileResponse = await getMyProfile();
+        if (profileResponse.success && profileResponse.data) {
+          const profile = profileResponse.data as unknown as { allergen_tags?: string[], children_profiles?: { ageGroup?: string }[], trust_score?: number };
           // 1. アレルゲンの抽出
-          let allergens: string[] = [];
-          if (profile.allergen_tags && profile.allergen_tags.length > 0) {
-            const firstTag = profile.allergen_tags[0];
-            if (typeof firstTag === "string" && firstTag.startsWith("JSON_PAYLOAD_V3:")) {
-               try {
-                 const parsed = JSON.parse(firstTag.replace("JSON_PAYLOAD_V3:", ""));
-                 const children = parsed.children || [];
-                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                 allergens = Array.from(new Set(children.flatMap((c: any) => [...(c.allergens||[]), ...(c.customAllergens||[])])));
-               } catch { /* fallback */ }
-            } else {
-               allergens = profile.allergen_tags as string[];
-            }
-          }
+          const allergens: string[] = profile.allergen_tags || [];
 
           // 2. 年齢情報の抽出
           let childrenStr = "お子様";
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const childrenProfiles = profile.children_profiles as any[];
-          if (childrenProfiles && childrenProfiles.length > 0) {
-             const groups = childrenProfiles.map(c => c.ageGroup).filter(Boolean);
+          const childrenProfiles = profile.children_profiles;
+          if (childrenProfiles && Array.isArray(childrenProfiles) && childrenProfiles.length > 0) {
+             const groups = childrenProfiles.map(c => c.ageGroup).filter(Boolean) as string[];
              if (groups.length > 0) {
                childrenStr = groups.map(g => {
                  if (g === '0-1') return '離乳食期(0-1歳)のお子様';

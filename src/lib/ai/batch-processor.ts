@@ -133,19 +133,31 @@ export async function runBatchExtraction() {
         if (!prompt) continue;
 
         try {
-          const result = await model.generateContent(prompt);
+          const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          });
           const responseText = result.response.text();
-          const jsonMatch = responseText.match(/\[[\s\S]*\]/);
           
           let extractionSuccess = false;
+          let incomingSections: MegaWikiSection[] = [];
           
-          if (jsonMatch) {
-            const incomingSections = JSON.parse(jsonMatch[0]) as MegaWikiSection[];
-            if (incomingSections.length > 0) {
-              currentSections = mergeMegaWikiSections(currentSections, incomingSections);
-              totalUpdated++;
-              roomUpdated = true;
-            }
+          try {
+             // Strip markdown if gemini accidentally added it despite mimeType
+             const cleanJson = responseText.replace(/```json\n?|\n?```/g, '').trim();
+             incomingSections = JSON.parse(cleanJson) as MegaWikiSection[];
+          } catch (e) {
+             // Fallback defensive extraction
+             const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+             if (jsonMatch) {
+               incomingSections = JSON.parse(jsonMatch[0]) as MegaWikiSection[];
+             }
+          }
+          
+          if (incomingSections && Array.isArray(incomingSections) && incomingSections.length > 0) {
+            currentSections = mergeMegaWikiSections(currentSections, incomingSections);
+            totalUpdated++;
+            roomUpdated = true;
             extractionSuccess = true;
           }
 

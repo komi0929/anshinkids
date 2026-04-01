@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
-  Sparkles, MessageCircle, BookOpen, Leaf, ShieldCheck, TrendingUp, Heart, Book, ChevronRight, Bookmark, ArrowRight, Check
+  Sparkles, MessageCircle, BookOpen, Leaf, TrendingUp, Heart, ChevronRight, Bookmark, ArrowRight
 } from "@/components/icons";
 import { getEngagementTier, getTrendingTopics, getPersonalizedWikiEntries, getImpactFeedback } from "@/app/actions/discover";
 import { getMyBookmarks } from "@/app/actions/wiki";
-import Image from "next/image";
 
 interface TrendingRoom {
   roomId: string;
@@ -18,20 +17,53 @@ interface TrendingRoom {
   thanksTotal: number;
 }
 
+export interface WikiEntryPreview {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  summary: string;
+  allergen_tags: string[];
+  avg_trust_score: number;
+  source_count: number;
+}
+
 interface RecommendedWiki {
   isPersonalized: boolean;
   personalizationLabel: string;
-  data: any[];
+  data: WikiEntryPreview[];
+}
+
+export interface BookmarkData {
+  id: string;
+  snippet_title: string;
+  snippet_content: string | null;
+  created_at: string;
+  wiki_entries: { id: string; title: string; slug: string; category: string };
+}
+export interface ImpactItem {
+  wiki_entry_id: string | null;
+  extracted_at: string | null;
+  wiki_entries: { title: string; slug: string } | null;
+}
+export interface ImpactData {
+  articlesHelped: number;
+  totalSourcesInArticles: number;
+  thanks: number;
+  trustScore: number;
+  message: string;
+  recentImpacts: ImpactItem[];
 }
 
 export default function HomePage() {
   const [tierData, setTierData] = useState<{tier: "guest"| "reader" | "contributor", postCount: number} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const [trending, setTrending] = useState<TrendingRoom[]>([]);
   const [recommended, setRecommended] = useState<RecommendedWiki | null>(null);
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
-  const [impact, setImpact] = useState<any>(null);
+  const [bookmarks, setBookmarks] = useState<BookmarkData[]>([]);
+  const [impact, setImpact] = useState<ImpactData | null>(null);
   
   useEffect(() => {
     let mounted = true;
@@ -39,27 +71,45 @@ export default function HomePage() {
       const tierRes = await getEngagementTier();
       const currentTier = (tierRes.success && tierRes.data) ? tierRes.data.tier : "guest";
       if (!mounted) return;
-      setTierData(tierRes.data as any || { tier: "guest", postCount: 0 });
+      const tierDataFromRes = tierRes.data as { tier: "guest"|"reader"|"contributor", postCount: number } | undefined;
+      setTierData(tierDataFromRes || { tier: "guest", postCount: 0 });
 
       const [trendRes, recRes, impactRes, bmRes] = await Promise.all([
-        getTrendingTopics(),
-        getPersonalizedWikiEntries(),
-        currentTier === "contributor" ? getImpactFeedback() : Promise.resolve({ success: false, data: null }),
-        currentTier !== "guest" ? getMyBookmarks() : Promise.resolve({ success: false, data: [] }),
+        getTrendingTopics().catch(e => ({ success: false, error: e.message, data: null })),
+        getPersonalizedWikiEntries().catch(e => ({ success: false, error: e.message, data: null, isPersonalized: false, personalizationLabel: "" })),
+        currentTier === "contributor" ? getImpactFeedback().catch(e => ({ success: false, error: e.message, data: null })) : Promise.resolve({ success: false, data: null }),
+        currentTier !== "guest" ? getMyBookmarks().catch(e => ({ success: false, error: e.message, data: null })) : Promise.resolve({ success: false, data: [] }),
       ]);
       
       if (!mounted) return;
 
-      if (trendRes.success) setTrending(trendRes.data as TrendingRoom[]);
-      if (recRes.success) setRecommended({ isPersonalized: recRes.isPersonalized || false, personalizationLabel: recRes.personalizationLabel as string, data: recRes.data as any[]});
-      if (impactRes.success && impactRes.data) setImpact(impactRes.data);
-      if (bmRes.success && bmRes.data) setBookmarks(bmRes.data);
+      // If both core data fetches fail, we assume an API error
+      if (!trendRes.success && !recRes.success) {
+        setErrorMsg("データの取得に失敗しました。時間をおいて再度お試しください。");
+      } else {
+        if (trendRes.success && trendRes.data) setTrending(trendRes.data as TrendingRoom[]);
+        if (recRes.success && recRes.data) setRecommended({ isPersonalized: !!recRes.isPersonalized, personalizationLabel: String(recRes.personalizationLabel || ""), data: recRes.data as WikiEntryPreview[]});
+        if (impactRes.success && impactRes.data) setImpact(impactRes.data as unknown as ImpactData);
+        if (bmRes.success && bmRes.data) setBookmarks(bmRes.data as BookmarkData[]);
+      }
       
       setIsLoading(false);
     }
     load();
     return () => { mounted = false; };
   }, []);
+
+  if (errorMsg) {
+    return (
+      <div className="fade-in px-5 pt-12 text-center text-[var(--color-danger)]">
+        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">⚠️</span>
+        </div>
+        <p className="font-bold text-sm">{errorMsg}</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-[var(--color-surface-warm)] rounded-lg text-xs font-bold text-[var(--color-text)] border border-[var(--color-border)]">再読み込み</button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

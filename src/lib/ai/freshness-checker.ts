@@ -18,8 +18,7 @@ export async function checkFreshness() {
 
   if (!staleEntries || staleEntries.length === 0) return { checked: 0 };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const entry of staleEntries as any[]) {
+  for (const entry of staleEntries as unknown as {id: string; title: string; category: string; allergen_tags: string[]}[]) {
     // Generate friendly question
     const prompt = `${SYSTEM_PROMPTS.freshnessBot}
 

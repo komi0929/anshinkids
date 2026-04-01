@@ -32,8 +32,7 @@ export default function NotificationsPage() {
         let idCounter = 1;
 
         if (profileRes.success && profileRes.data) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const p = profileRes.data as any;
+          const p = profileRes.data as unknown as { total_thanks_received: number; trust_score: number };
           if (p.total_thanks_received > 0) {
             notifs.push({
               id: `notif-${idCounter++}`,
@@ -57,8 +56,7 @@ export default function NotificationsPage() {
         }
 
         if (impactRes.success && impactRes.data) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const impact = impactRes.data as any;
+          const impact = impactRes.data as unknown as { totalHelpfulVotes: number };
           if (impact.totalHelpfulVotes > 0) {
             notifs.push({
               id: `notif-${idCounter++}`,
@@ -72,8 +70,7 @@ export default function NotificationsPage() {
         }
 
         if (contribRes.success && contribRes.data) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const contribs = contribRes.data as any[];
+          const contribs = contribRes.data as unknown as { extracted_at: string; wiki_entries?: { title: string, slug: string } }[];
           // Take the latest 3 extracted to wiki
           contribs.slice(0, 3).forEach((c) => {
             notifs.push({

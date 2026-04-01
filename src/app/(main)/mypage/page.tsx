@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Eye, MessageCircle, Settings, Bell, X } from "@/components/icons";
-import { getMyProfile, getMyContributions, getMyImpact, deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
+import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Settings, Bell, X } from "@/components/icons";
+import { getMyProfile, getMyContributions, deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
 import { getImpactFeedback, getContributionStreak } from "@/app/actions/discover";
 import { getMyBookmarks } from "@/app/actions/wiki";
 import { logoutAction } from "@/app/actions/auth";
@@ -109,8 +109,7 @@ export default function MyPage() {
     }
 
     if (contribResult.success && contribResult.data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setContributions(contribResult.data as any as Contribution[]);
+      setContributions(contribResult.data as unknown as Contribution[]);
     }
 
     if (impactResult.success && impactResult.data) {

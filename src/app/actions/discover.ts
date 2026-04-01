@@ -71,7 +71,7 @@ export async function getTrendingTopics() {
     return { success: true, data: trending };
   } catch (err) {
     console.error("[getTrendingTopics]", err);
-    return { success: false, data: [] };
+    return { success: false, error: err instanceof Error ? err.message : String(err), data: [] };
   }
 }
 
@@ -95,23 +95,15 @@ export async function getPersonalizedWikiEntries() {
     if (user) {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("allergen_tags")
+        .select("allergen_tags, children_profiles")
         .eq("id", user.id)
         .single();
         
-      if (profile && profile.allergen_tags && profile.allergen_tags.length > 0) {
-        const firstTag = profile.allergen_tags[0];
-        if (typeof firstTag === "string" && firstTag.startsWith("JSON_PAYLOAD_V3:")) {
-           try {
-             const parsed = JSON.parse(firstTag.replace("JSON_PAYLOAD_V3:", ""));
-             const children = parsed.children || [];
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             allergenTags = Array.from(new Set(children.flatMap((c: any) => [...(c.allergens||[]), ...(c.customAllergens||[])])));
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             ageGroups = Array.from(new Set(children.map((c: any) => c.ageGroup).filter(Boolean)));
-           } catch { /* fallback */ }
-        } else {
-           allergenTags = profile.allergen_tags;
+      if (profile) {
+        allergenTags = profile.allergen_tags || [];
+        const cProfile = profile.children_profiles as { ageGroup?: string }[];
+        if (cProfile && Array.isArray(cProfile)) {
+           ageGroups = Array.from(new Set(cProfile.map(c => c.ageGroup).filter(Boolean))) as string[];
         }
       }
     }
@@ -593,8 +585,7 @@ export async function getKnowledgeRipple(wikiSlug: string) {
       .order("extracted_at", { ascending: true });
 
     const contributors = (sources || []).map(s => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const prof = s.profiles as any;
+      const prof = s.profiles as unknown as { display_name?: string, trust_score?: number };
       return {
         extractedAt: s.extracted_at,
         trustScore: s.contributor_trust_score,
@@ -646,7 +637,7 @@ export async function getKnowledgeRipple(wikiSlug: string) {
 /**
  * ユーザーのエンゲージメント・ティアを取得 (Tiered Dashboard 用)
  */
-export async function getEngagementTier(): Promise<{ success: boolean; data?: { tier: "guest" | "reader" | "contributor", postCount: number } }> {
+export async function getEngagementTier(): Promise<{ success: boolean; error?: string; data?: { tier: "guest" | "reader" | "contributor", postCount: number } }> {
   try {
     const supabase = await createClient();
     if (!supabase) return { success: false };
@@ -666,6 +657,6 @@ export async function getEngagementTier(): Promise<{ success: boolean; data?: { 
     return { success: true, data: { tier, postCount } };
   } catch (err) {
     console.error("[getEngagementTier]", err);
-    return { success: false, data: { tier: "guest", postCount: 0 } };
+    return { success: false, error: err instanceof Error ? err.message : String(err), data: { tier: "guest" as const, postCount: 0 } };
   }
 }

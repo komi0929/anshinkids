@@ -58,12 +58,22 @@ ${currentPrompts.map((p, i) => `${i + 1}. ${p}`).join("\n")}
 JSON形式で配列のみ返してください:
 ["新しい質問1", "新しい質問2"]`;
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: "application/json" }
+    });
     const text = result.response.text();
-    const match = text.match(/\[[\s\S]*?\]/);
+    const cleanJson = text.replace(/```json\n?|\n?```/g, '').trim();
 
-    if (match) {
-      const newPrompts: string[] = JSON.parse(match[0]);
+    let newPrompts: string[] = [];
+    try {
+      newPrompts = JSON.parse(cleanJson);
+    } catch {
+      const match = text.match(/\[[\s\S]*?\]/);
+      if (match) newPrompts = JSON.parse(match[0]);
+    }
+
+    if (newPrompts && Array.isArray(newPrompts) && newPrompts.length > 0) {
       const merged = [...currentPrompts, ...newPrompts.slice(0, 2)];
       await supabase.from("talk_rooms").update({ conversation_prompts: merged }).eq("id", roomId);
     }

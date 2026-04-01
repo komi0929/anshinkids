@@ -23,8 +23,7 @@ export async function recalculateTrustScores() {
 
   let updated = 0;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const profile of profiles as any[]) {
+  for (const profile of profiles as unknown as {id: string, total_contributions: number, total_thanks_received: number, created_at: string}[]) {
     const contributions = profile.total_contributions || 0;
     const thanks = profile.total_thanks_received || 0;
 
