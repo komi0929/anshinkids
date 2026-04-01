@@ -52,6 +52,8 @@ const CATEGORIES: Category[] = [
       { title: "AI画面から「ワンクリック知恵保存」", desc: "AIへの質問とその回答が有用だった場合、ワンタップで匿名化して知恵袋のナレッジベースに直接追加する機能。", icon: <Check className="w-5 h-5" /> },
       { title: "バウンスアニメーションUI", desc: "AIが思考中であることを伝える、心地よくリズミカルなWaiting UIパターン。", icon: <Sparkles className="w-5 h-5" /> },
       { title: "動的JSONBスキーマ拡張対応", desc: "構造化データやJSONスキーマを用いてAPIのレスポンスを厳格に管理するフルスタックAIアーキテクチャ。", icon: <TrendingUp className="w-5 h-5" /> },
+      { title: "複数こども×アレルゲン完全考慮RAG", desc: "ユーザーが設定した複数のお子さまの年齢や複雑なアレルゲン情報（28品目＋自由記述）をすべてAIにコンテキストとして渡し、一人ひとりに寄り添った高精度の回答を動的生成します。", icon: <User className="w-5 h-5" />, tags: ["RAG", "Context Injection"] },
+      { title: "DBスキーマレス・ポリフィル機構", desc: "リモートDBのマイグレーション状況に依存せず、複雑な複数こどもJSON配列を既存のテキスト配列カラムへ安全にフォールバックして同期させる耐障害システム。", icon: <Shield className="w-5 h-5" />, tags: ["Polyfill", "Resilience"] },
     ]
   },
   {
@@ -66,9 +68,10 @@ const CATEGORIES: Category[] = [
       { title: "ステップ型オンボーディング機構", desc: "情報入力を「アレルゲン」「年齢」「悩み」の3ステップに分割し、離脱率を下げるウィザードUI。", icon: <Sparkles className="w-5 h-5" /> },
       { title: "入力状況のローカルストレージ保存", desc: "アプリを閉じてもオンボーディングの途中状態が消えず、すぐに再開できる同期機構。", icon: <Cloud className="w-5 h-5" /> },
       { title: "年齢別のコンテンツ自動出し分け", desc: "「離乳食期」「幼児食期」「園児」といった年齢グループに基づき、優先表示するコンテンツを切り替え。", icon: <TrendingUp className="w-5 h-5" /> },
-      { title: "「一番の悩み」に基づくAI例文生成", desc: "「市販品探し」「外食」などの選択に応じ、コンシェルジュ画面に「この質問をしてみよう」というサジェストを動的に提示。", icon: <MessageCircle className="w-5 h-5" /> },
+      { title: "「一番の悩み」に基づくAI例文生成", desc: "「市販品探し」「外食」などの選択に応じ、コンシェルジュ画面に「この質問をしてみよう」というサジェストを兄弟それぞれのプロファイルから動的に提示。", icon: <MessageCircle className="w-5 h-5" /> },
       { title: "Bento UIベースのマイページ", desc: "複雑な各種設定や貢献ステータスを、視覚的境界が美しい角丸（Bento）カードとして整列。", icon: <BookOpen className="w-5 h-5" />, tags: ["Nani Style"] },
       { title: "モーダル式一発再編集機能", desc: "マイページの「鉛筆アイコン」を押すと、全情報が保持された状態のウィザードがモーダルとして再展開されるシームレスな編集体験。", icon: <Check className="w-5 h-5" /> },
+      { title: "知恵袋の28品目＋フル対応フィルター", desc: "特定原材料8品目に加え、準ずる20品目で知恵（Wiki）を正確に横断検索・絞り込みできる動的タグフィルター機構。", icon: <Search className="w-5 h-5" />, tags: ["Search", "UX"] },
     ]
   },
   {

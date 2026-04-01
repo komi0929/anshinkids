@@ -38,6 +38,18 @@ export async function getMyProfile() {
     }
 
     if (error) throw error;
+    
+    // Polyfill children_profiles from serialized allergen_tags to bypass missing DB column
+    if (profile && profile.allergen_tags && Array.isArray(profile.allergen_tags)) {
+      const firstTag = profile.allergen_tags[0];
+      if (firstTag && typeof firstTag === "string" && firstTag.startsWith("JSON_PAYLOAD_V2:")) {
+        try {
+          profile.children_profiles = JSON.parse(firstTag.replace("JSON_PAYLOAD_V2:", ""));
+          profile.allergen_tags = profile.allergen_tags.slice(1);
+        } catch { /* ignore */ }
+      }
+    }
+
     return { success: true, data: profile };
   } catch (err) {
     console.error("[getMyProfile]", err);
@@ -58,9 +70,24 @@ export async function updateMyProfile(updates: {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
+    const payload = { ...updates };
+    
+    // Fallback: If children_profiles column is missing on remote, pack it into allergen_tags
+    if (payload.children_profiles) {
+      const flatAllergens = new Set<string>();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payload.children_profiles.forEach((c: any) => {
+        if (Array.isArray(c.allergens)) c.allergens.forEach((a: string) => flatAllergens.add(a));
+      });
+      const tags = Array.from(flatAllergens);
+      tags.unshift("JSON_PAYLOAD_V2:" + JSON.stringify(payload.children_profiles));
+      payload.allergen_tags = tags;
+      delete payload.children_profiles;
+    }
+
     const { error } = await supabase
       .from("profiles")
-      .update(updates)
+      .update(payload)
       .eq("id", user.id);
 
     if (error) throw error;

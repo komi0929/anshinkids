@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { askConcierge as askConciergeAI } from "@/lib/ai/concierge-rag";
 
-export async function askConcierge(sessionId: string | null, question: string) {
+export async function askConcierge(sessionId: string | null, question: string, contextPayload?: string) {
   try {
     const supabase = await createClient();
 
@@ -41,7 +41,7 @@ export async function askConcierge(sessionId: string | null, question: string) {
       };
     }
 
-    const result = await askConciergeAI(userId, sessionId, question);
+    const result = await askConciergeAI(userId, sessionId, question, contextPayload);
     return { success: true, data: result };
   } catch (err) {
     console.error("[askConcierge]", err);

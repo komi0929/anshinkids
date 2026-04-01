@@ -23,8 +23,9 @@ export default function ConciergePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  // eslint-disable-next-line
-  useEffect(() => setIsMounted(true), []);
+  useEffect(() => {
+    setTimeout(() => setIsMounted(true), 0);
+  }, []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -32,11 +33,9 @@ export default function ConciergePage() {
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("anshin_concierge_messages");
-      // eslint-disable-next-line
-      if (stored) setMessages(JSON.parse(stored));
+      if (stored) setTimeout(() => setMessages(JSON.parse(stored)), 0);
       const sid = sessionStorage.getItem("anshin_concierge_session");
-      // eslint-disable-next-line
-      if (sid) setSessionId(sid);
+      if (sid) setTimeout(() => setSessionId(sid), 0);
     } catch { /* empty */ }
   }, []);
 
@@ -77,7 +76,8 @@ export default function ConciergePage() {
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setIsLoading(true);
 
-    const result = await askConcierge(sessionId, question);
+    const contextPayload = typeof window !== "undefined" ? localStorage.getItem("anshin_user_preferences") : null;
+    const result = await askConcierge(sessionId, question, contextPayload || undefined);
 
     if (result.success && result.data) {
       setSessionId(result.data.sessionId);
@@ -188,14 +188,24 @@ export default function ConciergePage() {
                   const stored = localStorage.getItem("anshin_user_preferences");
                   if (!stored) return defaults;
                   const prefs = JSON.parse(stored);
-                  const allergens: string[] = prefs.allergens || [];
+                  
+                  const allAllergens = new Set<string>();
+                  if (prefs.children) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    prefs.children.forEach((c: any) => {
+                      (c.allergens || []).forEach((a: string) => allAllergens.add(a));
+                      (c.customAllergens || []).forEach((a: string) => allAllergens.add(a));
+                    });
+                  } else if (prefs.allergens) {
+                    prefs.allergens.forEach((a: string) => allAllergens.add(a));
+                  }
 
                   const personalized: string[] = [];
-                  if (allergens.includes("egg")) personalized.push("卵アレルギーの3歳児ですが、食べられるケーキはありますか？");
-                  else if (allergens.includes("milk")) personalized.push("乳アレルギーでも食べられるアイスクリームはありますか？");
+                  if (allAllergens.has("卵") || allAllergens.has("egg")) personalized.push("卵アレルギーの3歳児ですが、食べられるケーキはありますか？");
+                  else if (allAllergens.has("乳") || allAllergens.has("milk")) personalized.push("乳アレルギーでも食べられるアイスクリームはありますか？");
                   else personalized.push(defaults[0]);
 
-                  if (allergens.includes("wheat")) personalized.push("小麦アレルギーの子に米粉パンを作りたいのですが、おすすめのレシピは？");
+                  if (allAllergens.has("小麦") || allAllergens.has("wheat")) personalized.push("小麦アレルギーの子に米粉パンを作りたいのですが、おすすめのレシピは？");
                   else personalized.push(defaults[1]);
 
                   personalized.push(defaults[2]);

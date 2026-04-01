@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Shield, Clock, Plus, Loader2, Check, X, BookOpen } from "@/components/icons";
 import Link from "next/link";
 import { searchWiki, contributeToWiki } from "@/app/actions/wiki";
+import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20 } from "@/components/onboarding-wizard";
 
 const CATEGORIES = [
   "すべて",
@@ -29,7 +30,10 @@ const CATEGORY_EMOJI: Record<string, string> = {
   "食べられた！の記録": "🌱",
 };
 
-const ALLERGENS = ["卵", "乳", "小麦", "そば", "落花生", "えび", "かに"];
+const ALLERGEN_GROUPS = [
+  { label: "特定原材料8品目", items: ALLERGENS_RAW_8 },
+  { label: "準ずるもの20品目", items: ALLERGENS_EQUIV_20 }
+];
 
 interface WikiEntry {
   id: string;
@@ -145,26 +149,40 @@ export default function WikiPage() {
       {showFilters && (
         <div className="px-4 mb-4 slide-up">
           <div className="card p-4">
-            <p className="text-xs font-semibold text-[var(--color-text-secondary)] mb-2.5">アレルゲンで絞り込み</p>
-            <div className="flex flex-wrap gap-2">
-              {ALLERGENS.map((allergen) => (
-                <button
-                  key={allergen}
-                  onClick={() =>
-                    setSelectedAllergens((prev) =>
-                      prev.includes(allergen) ? prev.filter((a) => a !== allergen) : [...prev, allergen]
-                    )
-                  }
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    selectedAllergens.includes(allergen)
-                      ? "bg-[var(--color-primary)] text-white shadow-sm"
-                      : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border-light)]"
-                  }`}
-                >
-                  {allergen}
-                </button>
-              ))}
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[13px] font-extrabold text-[var(--color-text)]">アレルゲンで絞り込み</p>
+              {selectedAllergens.length > 0 && (
+                <button onClick={() => setSelectedAllergens([])} className="text-[11px] font-bold text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-colors">クリア</button>
+              )}
             </div>
+            
+            {ALLERGEN_GROUPS.map((group, groupIdx) => (
+              <div key={group.label} className={groupIdx > 0 ? "mt-4" : ""}>
+                <p className="text-[11px] font-semibold text-[var(--color-subtle)] mb-2 flex items-center gap-1.5">
+                  <span className={`w-1.5 h-3 rounded-full block ${groupIdx === 0 ? "bg-[var(--color-primary)]" : "bg-[var(--color-accent)]"}`}></span>
+                  {group.label}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.items.map((allergen) => (
+                    <button
+                      key={allergen.id}
+                      onClick={() =>
+                        setSelectedAllergens((prev) =>
+                          prev.includes(allergen.label) ? prev.filter((a) => a !== allergen.label) : [...prev, allergen.label]
+                        )
+                      }
+                      className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
+                        selectedAllergens.includes(allergen.label)
+                          ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm"
+                          : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border-light)] hover:border-[var(--color-primary)]/50"
+                      }`}
+                    >
+                      {allergen.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

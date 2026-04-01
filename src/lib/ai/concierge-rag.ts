@@ -9,7 +9,8 @@ interface ConciergeChatMessage {
 export async function askConcierge(
   userId: string,
   sessionId: string | null,
-  question: string
+  question: string,
+  contextPayload?: string
 ) {
   const supabase = createAdminClient();
   const model = getGeminiPro();
@@ -39,8 +40,19 @@ export async function askConcierge(
 
   const history: ConciergeChatMessage[] = (session.messages_json as ConciergeChatMessage[]) || [];
 
-  // RAG: Search wiki for relevant context using question keywords
-  const questionKeywords = question
+  // Mix context keywords gracefully
+  let combinedQuery = question;
+  if (contextPayload) {
+    try {
+      const p = JSON.parse(contextPayload);
+      if (p.children && p.children.length > 0) {
+        const algs = p.children.flatMap((c: Record<string, unknown>) => [...((c.allergens as string[]) || []), ...((c.customAllergens as string[]) || [])]);
+        if (algs.length > 0) combinedQuery += " " + algs.join(" ");
+      }
+    } catch { /* skip */ }
+  }
+
+  const questionKeywords = combinedQuery
     .replace(/[？?！!。、\s]+/g, " ")
     .split(" ")
     .filter(w => w.length >= 2)
@@ -92,6 +104,9 @@ export async function askConcierge(
     : "";
 
   const ragPrompt = `${SYSTEM_PROMPTS.concierge}
+
+## 相談者のプロフィール情報（回答のパーソナライズに活用してください）:
+${contextPayload || "未設定"}
 
 ## 参照可能な一次情報データベース（AI動的Wiki）:
 ${wikiContext || "（まだ一次情報が蓄積されていません。一般的なアドバイスで回答してください）"}
