@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-
-const _ip = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-const ArrowLeft = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>;
-const Leaf = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s-1.5 7-5.5 11c-2 2-5 3-5 3" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>;
+import { ArrowLeft, Leaf } from "@/components/icons";
 
 const STEPS = [
   {
