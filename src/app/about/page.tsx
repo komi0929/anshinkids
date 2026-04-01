@@ -110,7 +110,7 @@ export default function AboutPage() {
             </p>
             <ul className="text-[12px] text-[var(--color-subtle)] space-y-1.5">
               <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> <strong>見るだけでもOK</strong> — ログインしなくても読めます</li>
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> 書き込みは<strong>24時間で自動消去</strong> — 発言が残る心配なし</li>
+              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> 書き込みは<strong>自動消去</strong> — 知恵はAIが永久保存</li>
               <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> <strong>匿名のニックネーム</strong>で参加できます</li>
             </ul>
           </div>
@@ -194,7 +194,7 @@ export default function AboutPage() {
           <div className="space-y-4">
             {[
               { emoji: "🛡️", title: "匿名で参加できます", desc: "ニックネームで投稿。本名は出ません。", bg: "var(--color-success-light)" },
-              { emoji: "⏰", title: "投稿は24時間で自動削除", desc: "発言が永遠に残る心配がありません。", bg: "var(--color-warning-light)" },
+              { emoji: "⏰", title: "投稿は自動消去", desc: "発言が流れる心配なく、知恵はAIが永久保存します。", bg: "var(--color-warning-light)" },
               { emoji: "💖", title: "信頼できる情報づくり", desc: "多くの体験に基づく情報ほど信頼度が高く表示されます。", bg: "var(--color-heart-light)" },
               { emoji: "👥", title: "当事者だけの安心空間", desc: "同じ悩みを持つ保護者同士で情報を共有します。", bg: "var(--color-surface-warm)" },
             ].map(({ emoji, bg, title, desc }) => (

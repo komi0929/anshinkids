@@ -105,8 +105,8 @@ export default function LoginPage() {
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-accent)]/10 to-[var(--color-accent)]/5 flex items-center justify-center">
                   <Sparkles className="w-4.5 h-4.5 text-[var(--color-accent)]" />
                 </div>
-                <p className="text-[10px] font-bold text-[var(--color-text)]">AIが整理</p>
-                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">自動で抽出</p>
+                <p className="text-[10px] font-bold text-[var(--color-text)]">AIが編集</p>
+                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">会話から抽出</p>
               </div>
               <ArrowRight className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
               <div className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] flex-1">
@@ -165,7 +165,7 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { icon: Shield, text: "匿名で参加できます" },
-                { icon: Clock, text: "投稿は24時間で自動削除" },
+                { icon: Clock, text: "投稿は自動消去・知恵は残る" },
                 { icon: Heart, text: "LINEの友だちリスト非アクセス" },
                 { icon: Sparkles, text: "いつでもアカウント削除可能" },
               ].map(({ icon: Icon, text }) => (

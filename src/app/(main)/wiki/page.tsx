@@ -109,7 +109,7 @@ export default function WikiPage() {
           知恵袋 📖
         </h1>
         <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-          保護者の体験をAIが整理した知識ライブラリ
+          保護者の体験をAIが会話から抽出した知識ライブラリ
         </p>
       </div>
 

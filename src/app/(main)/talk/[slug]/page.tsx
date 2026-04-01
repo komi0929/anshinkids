@@ -406,10 +406,10 @@ export default function TalkRoomPage() {
             </div>
             <div className="flex-1">
               <p className="text-[12px] text-[var(--color-text)] leading-relaxed font-medium mb-1.5">
-                💬 投稿は24hで消えますが、<strong className="text-[var(--color-primary)]">知恵は永久に残ります</strong>
+                💬 投稿は消えますが、<strong className="text-[var(--color-primary)]">知恵は永久に残ります</strong>
               </p>
               <div className="flex items-center gap-2 text-[10px] text-[var(--color-subtle)]">
-                <span className="flex items-center gap-1 bg-[var(--color-surface)] px-2 py-0.5 rounded-full"><Clock className="w-2.5 h-2.5" /> 発言 → 24h消去</span>
+                <span className="flex items-center gap-1 bg-[var(--color-surface)] px-2 py-0.5 rounded-full"><Clock className="w-2.5 h-2.5" /> 発言 → 自動消去</span>
                 <ArrowRight className="w-2.5 h-2.5 text-[var(--color-muted)]" />
                 <span className="flex items-center gap-1 bg-[var(--color-success-light)] px-2 py-0.5 rounded-full text-[var(--color-success-deep)]"><BookOpen className="w-2.5 h-2.5" /> 一次情報 → 知恵袋に永久保存</span>
               </div>
@@ -619,7 +619,7 @@ export default function TalkRoomPage() {
               id="message-input"
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             />
-            <p className="mt-1 text-[9px] text-[var(--color-muted)] leading-snug">💬 24hで消去 → 一次情報はAIが知恵袋に永久保存</p>
+            <p className="mt-1 text-[9px] text-[var(--color-muted)] leading-snug">💬 投稿は消去 → 一次情報はAIが知恵袋に永久保存</p>
           </div>
           <button onClick={() => handleSend()} disabled={!newMessage.trim() || isSending} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 mb-4" id="send-message">
             <Send className="w-5 h-5" />

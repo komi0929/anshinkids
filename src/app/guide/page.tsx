@@ -19,7 +19,7 @@ const steps = [
     title: "みんなの声で体験をシェア",
     description:
       "テーマ別のトークルームで、日々の悩みや発見を気軽に投稿できます。「毎日のごはん」「外食・お出かけ」など、生活シーンに合ったテーマを選んでタップするだけ。",
-    tip: "あなたの投稿は24時間後に自動で消えるので、気兼ねなく書けます。",
+    tip: "あなたの投稿は一定時間で消えるので、気兼ねなく書けます。知恵はAIが知恵袋に永久保存します。",
     image: "/guide-talk.png",
     alt: "みんなの声 - テーマ一覧画面",
     color: "var(--color-primary)",
@@ -38,7 +38,7 @@ const steps = [
     number: 3,
     title: "知恵袋で知識を探す",
     description:
-      "みんなの投稿をAIが自動で整理して、検索できる知識ライブラリに。カテゴリ（商品情報・体験記・対処法・レシピ・基礎知識）で絞り込めます。",
+      "みんなの投稿をAIが会話の流れから知恵を抽出し、検索できる知識ライブラリに。カテゴリ（商品情報・体験記・対処法・レシピ・基礎知識）で絞り込めます。",
     tip: "各記事の「情報を追加」から、あなたの体験を書き足せます。みんなで記事を育てましょう。",
     image: "/guide-wiki.png",
     alt: "知恵袋 - 知識ライブラリ画面",
@@ -101,8 +101,8 @@ export default function GuidePage() {
             <div className="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-[var(--color-success)]/10 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-[var(--color-success)]" />
             </div>
-            <p className="text-[11px] font-bold text-[var(--color-text)]">AIが整理</p>
-            <p className="text-[9px] text-[var(--color-subtle)]">自動で知恵に</p>
+            <p className="text-[11px] font-bold text-[var(--color-text)]">AIが編集</p>
+            <p className="text-[9px] text-[var(--color-subtle)]">会話から知恵に</p>
           </div>
           <ArrowRight className="w-4 h-4 text-[var(--color-muted)] flex-shrink-0" />
           <div className="flex-1">

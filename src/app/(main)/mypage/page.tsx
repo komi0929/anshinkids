@@ -461,7 +461,7 @@ export default function MyPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>投稿は24時間で自動的に削除されます</span>
+              <span>投稿は自動的に消去されますが、知恵は永久に残ります</span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />

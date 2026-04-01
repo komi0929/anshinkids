@@ -254,7 +254,7 @@ export default function TalkRoomsPage() {
         <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
           <span className="text-[11px] text-[var(--color-text-secondary)] font-medium leading-snug">
-            投稿は24h後にAIが知恵袋へ整理
+            投稿は自動消去、会話の知恵はAIが知恵袋に保存
           </span>
         </div>
       </div>
