@@ -28,21 +28,22 @@ interface ChatMessage {
 
 export default function ConciergePage() {
   // Restore session from sessionStorage (survives page reload within same tab)
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const stored = sessionStorage.getItem("anshin_concierge_messages");
-      return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
-  });
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return sessionStorage.getItem("anshin_concierge_session") || null;
-  });
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Restore session from sessionStorage on mount (avoids hydration mismatch)
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("anshin_concierge_messages");
+      if (stored) setMessages(JSON.parse(stored));
+      const sid = sessionStorage.getItem("anshin_concierge_session");
+      if (sid) setSessionId(sid);
+    } catch { /* empty */ }
+  }, []);
 
   // Gap 4: Contribution prompt
   const [showContribPrompt, setShowContribPrompt] = useState<number | null>(null);
@@ -172,7 +173,7 @@ export default function ConciergePage() {
             <h2 className="text-[17px] font-extrabold text-[var(--color-text)] mb-1">なんでも聞いてね 🌿</h2>
 
             {/* Single compact disclaimer */}
-            <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed mb-6 max-w-xs">
+            <p className="text-[12px] font-medium leading-relaxed mb-6 max-w-xs" style={{ color: 'var(--color-subtle)' }}>
               ⚠️ 医療アドバイスではありません。回答はみんなの体験に基づきます。
             </p>
 

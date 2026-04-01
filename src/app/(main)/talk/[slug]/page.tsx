@@ -94,15 +94,21 @@ export default function TalkRoomPage() {
   // === F5: Community guidelines (first-time) ===
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [guidelinesAccepted, setGuidelinesAccepted] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // === F7: Milestone toast ===
   const [milestoneToast, setMilestoneToast] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if guidelines were already accepted
-    const accepted = localStorage.getItem("anshin_guidelines_accepted");
-    if (accepted) setGuidelinesAccepted(true);
+    // Check if guidelines were already accepted (must be in useEffect to avoid hydration mismatch)
+    if (typeof window !== "undefined") {
+      const accepted = localStorage.getItem("anshin_guidelines_accepted");
+      if (accepted) setGuidelinesAccepted(true);
+    }
     loadRoom();
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
@@ -151,10 +157,11 @@ export default function TalkRoomPage() {
       loadWikiCount(room.id);
       loadRelatedWiki(room.id);
       // Fallback polling (supplements Realtime for reliability)
-      const interval = setInterval(() => loadMessages(room.id), 30000);
-      return () => clearInterval(interval);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => loadMessages(room.id), 30000);
     } else {
-      // Canonical slug-to-name fallback
+      // DB lookup failed — seed the room via server action, then retry
+      // First set fallback display info immediately
       const CANONICAL_ROOMS: Record<string, { name: string; description: string; icon_emoji: string }> = {
         "daily-food": { name: "毎日のごはん", description: "献立・代替食材・お弁当のリアルな工夫", icon_emoji: "🍚" },
         "products": { name: "使ってよかった市販品", description: "おやつ・パン・調味料のクチコミ", icon_emoji: "🛒" },
@@ -173,7 +180,26 @@ export default function TalkRoomPage() {
         icon_emoji: canonical?.icon_emoji || "💬",
       });
       setIsLoading(false);
+      // Set default prompts for canonical rooms when DB is not seeded
+      if (canonical) {
+        setPrompts(getDefaultPrompts(slug));
+        setIsLoadingPrompts(false);
+      }
     }
+  }
+
+  function getDefaultPrompts(roomSlug: string): string[] {
+    const defaults: Record<string, string[]> = {
+      "daily-food": ["みんな朝ごはんは何を食べさせてる？", "代替食材で一番使えるのは？", "お弁当のアレルギー対応どうしてる？"],
+      "products": ["最近見つけたアレルギー対応おやつは？", "スーパーで買える卵不使用のパンある？", "調味料で気をつけてることは？"],
+      "eating-out": ["アレルギー対応してくれたお店教えて！", "旅行先でのごはんどうしてる？", "ファミレスで安心して頼めるメニューは？"],
+      "school-life": ["給食の対応、園にどう相談した？", "遠足のお弁当で困ったことある？", "先生への伝え方のコツは？"],
+      "challenge": ["負荷試験の前に準備したことは？", "当日の流れを教えて！", "試験後に食べられるようになったものは？"],
+      "skin-body": ["保湿剤は何を使ってる？", "お風呂の入り方で工夫してることは？", "アトピーが悪化したときどうしてる？"],
+      "family": ["周りに理解してもらうために何をした？", "祖父母への説明で困ったことは？", "不安になったときどうしてる？"],
+      "milestone": ["食べられるようになったもの教えて！", "克服までどのくらいかかった？", "成長を感じた瞬間は？"],
+    };
+    return defaults[roomSlug] || ["このテーマについて体験を教えてください", "困ったことや知りたいことは？", "おすすめの情報があれば共有してください"];
   }
 
   async function loadPrompts(roomId: string) {
@@ -263,9 +289,9 @@ export default function TalkRoomPage() {
       setTimeout(() => { setShowAssetToast(false); setImpactMessage(null); }, 5000);
 
       // === F7: Milestone celebrations ===
-      const stored = parseInt(localStorage.getItem("anshin_post_count") || "0");
+      const stored = parseInt(typeof window !== "undefined" ? (localStorage.getItem("anshin_post_count") || "0") : "0");
       const newTotal = stored + 1;
-      localStorage.setItem("anshin_post_count", String(newTotal));
+      if (typeof window !== "undefined") localStorage.setItem("anshin_post_count", String(newTotal));
       if (newTotal === 1) {
         setTimeout(() => { setMilestoneToast("🎉 初めての投稿！ あなたの声がコミュニティの力になります"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
       } else if (newTotal === 5) {
@@ -362,7 +388,7 @@ export default function TalkRoomPage() {
           </div>
           <div>
             <h1 className="text-[15px] font-bold text-[var(--color-text)]">{roomInfo?.name || ""}</h1>
-            <p className="text-[10px] text-[var(--color-subtle)]">体験や情報を気軽にシェア</p>
+            <p className="text-[12px] font-medium" style={{ color: 'var(--color-subtle)' }}>体験や情報を気軽にシェア</p>
           </div>
         </div>
       </div>
@@ -619,7 +645,7 @@ export default function TalkRoomPage() {
               id="message-input"
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             />
-            <p className="mt-1 text-[9px] text-[var(--color-muted)] leading-snug">💬 投稿は消去 → 一次情報はAIが知恵袋に永久保存</p>
+            <p className="mt-1 text-[11px] font-medium leading-snug" style={{ color: 'var(--color-muted)' }}>💬 投稿は消去 → 一次情報はAIが知恵袋に永久保存</p>
           </div>
           <button onClick={() => handleSend()} disabled={!newMessage.trim() || isSending} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 mb-4" id="send-message">
             <Send className="w-5 h-5" />

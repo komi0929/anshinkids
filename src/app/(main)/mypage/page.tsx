@@ -433,7 +433,8 @@ export default function MyPage() {
               </p>
               <p className="text-[11px] text-[var(--color-subtle)]">
                 {(() => {
-                  const count = parseInt(typeof window !== "undefined" ? localStorage.getItem("anshin_post_count") || "0" : "0");
+                  if (typeof window === "undefined") return "投稿ストリークを読み込み中...";
+                  const count = parseInt(localStorage.getItem("anshin_post_count") || "0");
                   if (count === 0) return "まだ投稿がありません。最初の一歩を踏み出しましょう！";
                   if (count < 5) return `${count}投稿 — いい調子です！5投稿で次のマイルストーン 🌱`;
                   if (count < 10) return `${count}投稿 — 素晴らしい！10投稿でスターバッジ ⭐`;
