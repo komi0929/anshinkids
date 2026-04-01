@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+
 const _ip = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 const Leaf = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s-1.5 7-5.5 11c-2 2-5 3-5 3" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>;
 const MessageCircle = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
 const BookOpen = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>;
 const Sparkles = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M12 3l1.5 4.5H18l-3.5 2.7 1.3 4.3L12 12l-3.8 2.5 1.3-4.3L6 7.5h4.5z" /></svg>;
-const ArrowRight = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
-const Shield = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>;
-const Clock = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
-const Heart = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>;
+const Shield = ({ className = "", style }: { className?: string; style?: React.CSSProperties }) => <svg {..._ip} className={className} style={style}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>;
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -53,35 +51,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
-      {/* Hero Section with Gradient */}
-      <div className="hero-gradient flex-1 flex flex-col items-center justify-center px-6 py-10">
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--color-bg)" }}>
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           {/* Logo & Brand */}
-          <div className="text-center mb-6 fade-in">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 rounded-[24px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] shadow-lg gradient-animate" />
-              <div className="relative w-full h-full rounded-[24px] flex items-center justify-center">
-                <Leaf className="w-10 h-10 text-white drop-shadow-sm" />
-              </div>
-              {/* Glow effect */}
-              <div className="absolute -inset-2 rounded-[28px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] opacity-15 blur-lg -z-10" />
+          <div className="text-center mb-10 fade-in">
+            <div className="w-20 h-20 mx-auto mb-5 rounded-[22px] flex items-center justify-center"
+              style={{ background: "var(--color-primary)" }}>
+              <Leaf className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-[26px] font-extrabold text-[var(--color-text)] tracking-tight">
+            <h1 className="text-[28px] font-black tracking-tight" style={{ color: "var(--color-text)", fontFamily: "var(--font-display)" }}>
               あんしんキッズ
             </h1>
-            <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed">
+            <p className="text-[15px] font-medium mt-2" style={{ color: "var(--color-text-secondary)" }}>
               食物アレルギーの知恵を、みんなでつくる
             </p>
           </div>
 
-          {/* Mission Statement - Emotional Core */}
-          <div className="mb-6 fade-in-delayed">
-            <div className="card-elevated p-5">
-              <p className="text-[13px] text-[var(--color-text-secondary)] leading-[1.9] text-center">
+          {/* Mission Statement */}
+          <div className="mb-8 fade-in-delayed">
+            <div className="card-elevated p-6">
+              <p className="text-[15px] font-medium leading-[2] text-center" style={{ color: "var(--color-text-secondary)" }}>
                 今日あなたが話した体験が、<br />
                 明日どこかで悩んでいる親子の<br />
-                <span className="font-bold text-[var(--color-primary)] text-[14px]">
+                <span className="font-extrabold text-[16px]" style={{ color: "var(--color-primary)" }}>
                   「希望の道しるべ」
                 </span>
                 <br />
@@ -90,43 +83,43 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* How it Works - Visual Flow */}
-          <div className="mb-6 fade-in-delayed-2">
-            <div className="flex items-center gap-1 justify-center">
-              <div className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] flex-1">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-primary)]/5 flex items-center justify-center">
-                  <MessageCircle className="w-4.5 h-4.5 text-[var(--color-primary)]" />
+          {/* How it Works - 3 Steps */}
+          <div className="mb-8 fade-in-delayed-2">
+            <div className="flex items-stretch gap-2">
+              {[
+                { icon: <MessageCircle className="w-5 h-5" />, title: "話すだけ", sub: "気軽にひとこと" },
+                { icon: <Sparkles className="w-5 h-5" />, title: "AIが編集", sub: "会話から抽出" },
+                { icon: <BookOpen className="w-5 h-5" />, title: "知恵になる", sub: "未来の誰かへ" },
+              ].map((step, i) => (
+                <div key={step.title} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center gap-2 px-3 py-4 rounded-2xl flex-1"
+                    style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)" }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ background: "var(--color-primary-bg)", color: "var(--color-primary)" }}>
+                      {step.icon}
+                    </div>
+                    <p className="text-[13px] font-bold" style={{ color: "var(--color-text)" }}>{step.title}</p>
+                    <p className="text-[11px] font-medium" style={{ color: "var(--color-subtle)" }}>{step.sub}</p>
+                  </div>
+                  {i < 2 && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+                      className="flex-shrink-0 mx-0.5" style={{ color: "var(--color-muted)" }}>
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  )}
                 </div>
-                <p className="text-[10px] font-bold text-[var(--color-text)]">話すだけ</p>
-                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">気軽にひとこと</p>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
-              <div className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] flex-1">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-accent)]/10 to-[var(--color-accent)]/5 flex items-center justify-center">
-                  <Sparkles className="w-4.5 h-4.5 text-[var(--color-accent)]" />
-                </div>
-                <p className="text-[10px] font-bold text-[var(--color-text)]">AIが編集</p>
-                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">会話から抽出</p>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
-              <div className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] flex-1">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-success)]/10 to-[var(--color-success)]/5 flex items-center justify-center">
-                  <BookOpen className="w-4.5 h-4.5 text-[var(--color-success)]" />
-                </div>
-                <p className="text-[10px] font-bold text-[var(--color-text)]">知恵になる</p>
-                <p className="text-[9px] text-[var(--color-subtle)] leading-snug">未来の誰かへ</p>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* LINE Login Button */}
-          <div className="space-y-3 fade-in-delayed-2">
+          <div className="space-y-4 fade-in-delayed-2">
             <button
               onClick={handleLineLogin}
               disabled={isLoading}
               id="line-login-button"
-              className="w-full py-4 px-6 rounded-2xl font-bold text-[15px] text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-              style={{ backgroundColor: "#06C755" }}
+              className="w-full py-4 px-6 rounded-2xl font-bold text-[16px] text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: "#06C755", boxShadow: "0 3px 12px rgba(6, 199, 85, 0.25)" }}
             >
               <svg width="26" height="26" viewBox="0 0 120 120" fill="none">
                 <path d="M60 8C30.2 8 6 28.1 6 52.7c0 22.1 19.6 40.6 46.1 44.1 1.8.4 4.2 1.2 4.8 2.7.6 1.4.4 3.5.2 4.9l-.8 4.7c-.2 1.4-1.1 5.3 4.6 2.9 5.8-2.5 31-18.3 42.3-31.3C112.3 70.7 114 62 114 52.7 114 28.1 89.8 8 60 8Z" fill="white"/>
@@ -141,7 +134,9 @@ export default function LoginPage() {
             </button>
 
             {error && (
-              <div className="text-sm text-[var(--color-danger)] bg-[var(--color-danger-light)] p-3 rounded-xl text-center" role="alert">
+              <div className="text-[14px] font-semibold p-4 rounded-xl text-center"
+                style={{ color: "var(--color-danger)", background: "var(--color-danger-light)" }}
+                role="alert">
                 {error}
               </div>
             )}
@@ -150,48 +145,53 @@ export default function LoginPage() {
             <Link
               href="/talk"
               id="browse-without-login"
-              className="block w-full text-center py-3 text-[13px] font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] transition-colors"
+              className="block w-full text-center py-3 text-[14px] font-bold transition-colors"
+              style={{ color: "var(--color-primary)" }}
             >
               ログインせずに見てみる →
             </Link>
           </div>
 
-          {/* Safety Box - Compact & Trustworthy */}
-          <div className="mt-5 p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] shadow-sm">
-            <h3 className="text-xs font-bold text-[var(--color-text)] mb-3 flex items-center gap-2">
-              <Shield className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+          {/* Safety Points */}
+          <div className="mt-6 p-5 rounded-2xl" style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)" }}>
+            <h3 className="text-[14px] font-extrabold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
+              <Shield className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
               安心してご利用ください
             </h3>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {[
-                { icon: Shield, text: "匿名で参加できます" },
-                { icon: Clock, text: "投稿は自動消去・知恵は残る" },
-                { icon: Heart, text: "LINEの友だちリスト非アクセス" },
-                { icon: Sparkles, text: "いつでもアカウント削除可能" },
-              ].map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-start gap-2 p-2 rounded-xl bg-[var(--color-surface-warm)]">
-                  <Icon className="w-3 h-3 text-[var(--color-success)] mt-0.5 flex-shrink-0" />
-                  <span className="text-[10px] text-[var(--color-text-secondary)] leading-snug">{text}</span>
+                "匿名で参加できます",
+                "投稿は自動消去・知恵は残る",
+                "LINEの友だちリスト非アクセス",
+                "いつでもアカウント削除可能",
+              ].map((text) => (
+                <div key={text} className="flex items-start gap-2 p-3 rounded-xl"
+                  style={{ background: "var(--color-surface-soft)" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0"
+                    style={{ color: "var(--color-primary)" }}>
+                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-[12px] font-semibold leading-snug" style={{ color: "var(--color-text-secondary)" }}>{text}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Legal Links */}
-          <div className="mt-5 flex items-center justify-center gap-4 text-[11px] text-[var(--color-subtle)]">
-            <Link href="/about" className="underline hover:text-[var(--color-primary)] transition-colors">
+          {/* Legal */}
+          <div className="mt-6 flex items-center justify-center gap-4 text-[12px] font-medium" style={{ color: "var(--color-subtle)" }}>
+            <Link href="/about" className="underline hover:no-underline transition-colors">
               あんしんキッズとは
             </Link>
-            <span className="text-[var(--color-border)]">|</span>
-            <Link href="/terms" className="underline hover:text-[var(--color-primary)] transition-colors">
+            <span style={{ color: "var(--color-border)" }}>|</span>
+            <Link href="/terms" className="underline hover:no-underline transition-colors">
               利用規約
             </Link>
-            <span className="text-[var(--color-border)]">|</span>
-            <Link href="/privacy" className="underline hover:text-[var(--color-primary)] transition-colors">
+            <span style={{ color: "var(--color-border)" }}>|</span>
+            <Link href="/privacy" className="underline hover:no-underline transition-colors">
               プライバシーポリシー
             </Link>
           </div>
-          <p className="mt-2 text-center text-[10px] text-[var(--color-muted)]">
+          <p className="mt-2 text-center text-[11px] font-medium" style={{ color: "var(--color-muted)" }}>
             ログインすることで、利用規約・プライバシーポリシーに同意したものとみなします
           </p>
         </div>

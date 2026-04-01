@@ -1,210 +1,194 @@
 "use client";
 
 import Link from "next/link";
+
 const _ip = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 const ArrowLeft = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>;
-const MessageCircle = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
-const BookOpen = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>;
-const Sparkles = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M12 3l1.5 4.5H18l-3.5 2.7 1.3 4.3L12 12l-3.8 2.5 1.3-4.3L6 7.5h4.5z" /></svg>;
-const ArrowRight = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
 const Leaf = ({ className = "" }: { className?: string }) => <svg {..._ip} className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s-1.5 7-5.5 11c-2 2-5 3-5 3" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>;
+
+const STEPS = [
+  {
+    num: "1",
+    title: "みんなの声で話す・見る",
+    desc: "テーマごとに分かれた部屋で、体験談やおすすめ情報を読んだり、気軽に書き込んだりできます。",
+    points: [
+      "見るだけでもOK — ログインしなくても読めます",
+      "書き込みは自動消去 — 知恵はAIが永久保存",
+      "匿名のニックネームで参加できます",
+    ],
+  },
+  {
+    num: "2",
+    title: "知恵袋で調べる",
+    desc: "みんなの投稿をAIが自動で整理して、読みやすい記事にまとめています。",
+    points: [
+      "「商品情報」「体験記」「対処法」などカテゴリ別に探せます",
+      "あなたの情報もかんたんに追加できます",
+      "情報の信頼度が表示されるので安心",
+    ],
+  },
+  {
+    num: "3",
+    title: "AIに相談する",
+    desc: "みんなの体験をもとに、AIがやさしくお答えします。",
+    points: [
+      "ログインなしでも使えます",
+      "よくある質問のサンプルが用意されています",
+      "自分の言葉で自由に質問できます",
+    ],
+  },
+];
+
+const SAFETY_POINTS = [
+  { title: "匿名で参加できます", desc: "ニックネームで投稿。本名は出ません。" },
+  { title: "投稿は自動消去", desc: "発言が流れる心配なく、知恵はAIが永久保存します。" },
+  { title: "信頼できる情報づくり", desc: "多くの体験に基づく情報ほど信頼度が高く表示されます。" },
+  { title: "当事者だけの安心空間", desc: "同じ悩みを持つ保護者同士で情報を共有します。" },
+];
+
+const USE_CASES = [
+  "「うちの子が食べられるおやつはどれ？」と市販品の情報を知りたいとき",
+  "「外食でアレルギー対応してくれるお店は？」と外食情報を探すとき",
+  "「保育園の給食、どう相談した？」と園への伝え方を知りたいとき",
+  "「血液検査のクラスってどう読むの？」と基礎知識を学びたいとき",
+  "「同じ悩みの人と話したい」と思ったとき",
+];
 
 export default function AboutPage() {
   return (
-    <div className="fade-in pb-24">
+    <div className="fade-in pb-24" style={{ background: "var(--color-bg)" }}>
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
+      <div className="px-5 py-3.5 flex items-center gap-3 sticky top-0 z-40"
+        style={{ background: "rgba(248, 246, 242, 0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--color-border)" }}>
         <Link
           href="/talk"
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors"
+          className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
           id="back-from-about"
+          style={{ color: "var(--color-text)" }}
         >
-          <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
+          <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-[15px] font-bold text-[var(--color-text)]">
+        <h1 className="text-[16px] font-extrabold" style={{ color: "var(--color-text)" }}>
           あんしんキッズとは
         </h1>
       </div>
 
       {/* Hero */}
-      <div className="hero-gradient px-5 pt-10 pb-8 text-center">
-        <div className="relative w-20 h-20 mx-auto mb-5">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] shadow-lg gradient-animate" />
-          <div className="relative w-full h-full rounded-3xl flex items-center justify-center">
-            <Leaf className="w-10 h-10 text-white drop-shadow-sm" />
-          </div>
-          <div className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] opacity-15 blur-xl -z-10" />
+      <div className="px-6 pt-10 pb-8 text-center">
+        <div className="w-20 h-20 mx-auto mb-5 rounded-[22px] flex items-center justify-center"
+          style={{ background: "var(--color-primary)" }}>
+          <Leaf className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-[22px] font-extrabold text-[var(--color-text)] leading-tight tracking-tight">
+        <h2 className="text-[22px] font-black leading-tight tracking-tight" style={{ color: "var(--color-text)" }}>
           食物アレルギーの知恵を<br />みんなで、安心して
         </h2>
-        <p className="text-[13px] text-[var(--color-text-secondary)] mt-3 leading-[1.8] max-w-sm mx-auto">
+        <p className="text-[15px] font-medium mt-3 leading-[1.9] max-w-sm mx-auto" style={{ color: "var(--color-text-secondary)" }}>
           お子さまの食物アレルギーに悩むママ・パパが
           <strong>体験や情報を気軽に共有・検索</strong>できるサービスです。
         </p>
       </div>
 
       {/* Mission Statement */}
-      <div className="px-4 -mt-3 mb-6">
-        <div className="card-elevated p-5 contrib-highlight">
-          <p className="text-[14px] text-[var(--color-text)] leading-[2] text-center font-medium">
+      <div className="px-5 -mt-2 mb-8">
+        <div className="card-elevated p-6 contrib-highlight">
+          <p className="text-[15px] font-medium leading-[2.1] text-center" style={{ color: "var(--color-text)" }}>
             今日、あなたが自分の悩みを解消するために
             した会話が、そのまま消えることなく蓄積され、
             <br />
             明日、同じ壁にぶつかったどこかの親子を
             <br />
             必ず救う
-            <span className="text-[var(--color-primary)] font-extrabold">「希望の道しるべ」</span>
+            <span className="font-extrabold" style={{ color: "var(--color-primary)" }}>「希望の道しるべ」</span>
             になります。
           </p>
         </div>
       </div>
 
       {/* こんな方に */}
-      <div className="px-4 mb-6">
-        <div className="card p-5">
-          <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-4">
-            📌 こんなとき、使ってください
+      <div className="px-5 mb-8">
+        <div className="card p-6">
+          <h3 className="text-[17px] font-extrabold mb-5" style={{ color: "var(--color-text)" }}>
+            こんなとき、使ってください
           </h3>
-          <ul className="space-y-3.5 text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
-            {[
-              { emoji: "🍪", text: "「うちの子が食べられるおやつはどれ？」と**市販品の情報**を知りたいとき" },
-              { emoji: "🍽️", text: "「外食でアレルギー対応してくれるお店は？」と**外食情報**を探すとき" },
-              { emoji: "🏫", text: "「保育園の給食、どう相談した？」と**園への伝え方**を知りたいとき" },
-              { emoji: "🏥", text: "「血液検査のクラスってどう読むの？」と**基礎知識**を学びたいとき" },
-              { emoji: "💚", text: "「同じ悩みの人と話したい」と思ったとき" },
-            ].map(({ emoji, text }) => (
-              <li key={emoji} className="flex gap-3">
-                <span className="text-lg flex-shrink-0">{emoji}</span>
-                <span dangerouslySetInnerHTML={{ __html: text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+          <ul className="space-y-4">
+            {USE_CASES.map((text, i) => (
+              <li key={i} className="flex gap-3 text-[14px] font-medium leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0"
+                  style={{ color: "var(--color-primary)" }}>
+                  <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>{text}</span>
               </li>
             ))}
           </ul>
         </div>
       </div>
 
-      {/* 3つの機能 */}
+      {/* 3 Steps */}
       <div className="px-5 mb-3">
-        <h3 className="text-[16px] font-extrabold text-[var(--color-text)]">
-          🔰 使い方はかんたん3ステップ
+        <h3 className="text-[17px] font-extrabold" style={{ color: "var(--color-text)" }}>
+          使い方はかんたん3ステップ
         </h3>
       </div>
 
-      {/* Step 1 */}
-      <div className="px-4 mb-4">
-        <div className="card overflow-hidden">
-          <div className="p-5 bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-surface)]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] flex items-center justify-center shadow-sm">
-                <MessageCircle className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded-full">STEP 1</span>
-                <h4 className="text-[15px] font-extrabold text-[var(--color-text)] mt-0.5">
-                  みんなの声で話す・見る
+      <div className="px-5 space-y-3 mb-8">
+        {STEPS.map((step, i) => (
+          <div key={step.num}>
+            <div className="card p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-[15px]"
+                  style={{ background: "var(--color-primary)", color: "white" }}>
+                  {step.num}
+                </div>
+                <h4 className="text-[16px] font-extrabold" style={{ color: "var(--color-text)" }}>
+                  {step.title}
                 </h4>
               </div>
+              <p className="text-[14px] font-medium mb-3 leading-[1.9]" style={{ color: "var(--color-text-secondary)" }}>
+                {step.desc}
+              </p>
+              <ul className="space-y-2">
+                {step.points.map((point, j) => (
+                  <li key={j} className="flex items-start gap-2 text-[13px] font-semibold" style={{ color: "var(--color-text-secondary)" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0"
+                      style={{ color: "var(--color-primary)" }}>
+                      <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {point}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <p className="text-[13px] text-[var(--color-text-secondary)] leading-[1.8] mb-3">
-              テーマごとに分かれた部屋で、体験談やおすすめ情報を読んだり、気軽に書き込んだりできます。
-            </p>
-            <ul className="text-[12px] text-[var(--color-subtle)] space-y-1.5">
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> <strong>見るだけでもOK</strong> — ログインしなくても読めます</li>
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> 書き込みは<strong>自動消去</strong> — 知恵はAIが永久保存</li>
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> <strong>匿名のニックネーム</strong>で参加できます</li>
-            </ul>
+            {i < STEPS.length - 1 && (
+              <div className="flex justify-center py-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+                  style={{ color: "var(--color-muted)" }}>
+                  <path d="M12 5v14M5 12l7 7 7-7" />
+                </svg>
+              </div>
+            )}
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Flow Arrow */}
-      <div className="flex justify-center mb-4">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border-light)] flex items-center justify-center">
-          <ArrowRight className="w-4 h-4 text-[var(--color-muted)] rotate-90" />
-        </div>
-      </div>
-
-      {/* Step 2 */}
-      <div className="px-4 mb-4">
-        <div className="card overflow-hidden">
-          <div className="p-5 bg-gradient-to-r from-[var(--color-success-light)]/50 to-[var(--color-surface)]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-success)] to-[var(--color-success-deep)] flex items-center justify-center shadow-sm">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-full">STEP 2</span>
-                <h4 className="text-[15px] font-extrabold text-[var(--color-text)] mt-0.5">
-                  知恵袋で調べる
-                </h4>
-              </div>
-            </div>
-            <p className="text-[13px] text-[var(--color-text-secondary)] leading-[1.8] mb-3">
-              みんなの投稿をAIが自動で整理して、読みやすい記事にまとめています。
-            </p>
-            <ul className="text-[12px] text-[var(--color-subtle)] space-y-1.5">
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> 「商品情報」「体験記」「対処法」などカテゴリ別に探せます</li>
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> あなたの情報も<strong>かんたんに追加</strong>できます</li>
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> 情報の<strong>信頼度</strong>が表示されるので安心</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Flow Arrow */}
-      <div className="flex justify-center mb-4">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border-light)] flex items-center justify-center">
-          <ArrowRight className="w-4 h-4 text-[var(--color-muted)] rotate-90" />
-        </div>
-      </div>
-
-      {/* Step 3 */}
-      <div className="px-4 mb-6">
-        <div className="card overflow-hidden">
-          <div className="p-5 bg-gradient-to-r from-[var(--color-warning-light)]/50 to-[var(--color-surface)]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-warm)] flex items-center justify-center shadow-sm">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-[var(--color-accent)] bg-[var(--color-accent)]/10 px-2 py-0.5 rounded-full">STEP 3</span>
-                <h4 className="text-[15px] font-extrabold text-[var(--color-text)] mt-0.5">
-                  AIに相談する
-                </h4>
-              </div>
-            </div>
-            <p className="text-[13px] text-[var(--color-text-secondary)] leading-[1.8] mb-3">
-              みんなの体験をもとに、AIがやさしくお答えします。
-            </p>
-            <ul className="text-[12px] text-[var(--color-subtle)] space-y-1.5">
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> <strong>ログインなしでも使えます</strong></li>
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> よくある質問のサンプルが用意されています</li>
-              <li className="flex items-start gap-2"><span className="text-[var(--color-success)]">✅</span> 自分の言葉で自由に質問できます</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* 安心ポイント */}
-      <div className="px-4 mb-6">
-        <div className="card p-5">
-          <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-4">
-            🔒 安心して使えるポイント
+      {/* Safety Points */}
+      <div className="px-5 mb-8">
+        <div className="card p-6">
+          <h3 className="text-[17px] font-extrabold mb-5" style={{ color: "var(--color-text)" }}>
+            安心して使えるポイント
           </h3>
           <div className="space-y-4">
-            {[
-              { emoji: "🛡️", title: "匿名で参加できます", desc: "ニックネームで投稿。本名は出ません。", bg: "var(--color-success-light)" },
-              { emoji: "⏰", title: "投稿は自動消去", desc: "発言が流れる心配なく、知恵はAIが永久保存します。", bg: "var(--color-warning-light)" },
-              { emoji: "💖", title: "信頼できる情報づくり", desc: "多くの体験に基づく情報ほど信頼度が高く表示されます。", bg: "var(--color-heart-light)" },
-              { emoji: "👥", title: "当事者だけの安心空間", desc: "同じ悩みを持つ保護者同士で情報を共有します。", bg: "var(--color-surface-warm)" },
-            ].map(({ emoji, bg, title, desc }) => (
-              <div key={title} className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg" style={{ background: bg }}>
-                  {emoji}
+            {SAFETY_POINTS.map(({ title, desc }) => (
+              <div key={title} className="flex gap-3.5">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "var(--color-primary-bg)" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: "var(--color-primary)" }}>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
                 <div>
-                  <h4 className="text-[13px] font-bold text-[var(--color-text)]">{title}</h4>
-                  <p className="text-[12px] text-[var(--color-subtle)] mt-0.5 leading-relaxed">{desc}</p>
+                  <h4 className="text-[14px] font-bold" style={{ color: "var(--color-text)" }}>{title}</h4>
+                  <p className="text-[13px] font-medium mt-0.5 leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{desc}</p>
                 </div>
               </div>
             ))}
@@ -212,10 +196,10 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* 注意書き */}
-      <div className="px-4 mb-6">
-        <div className="p-3.5 rounded-2xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20">
-          <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
+      {/* Warning */}
+      <div className="px-5 mb-8">
+        <div className="p-4 rounded-2xl" style={{ background: "var(--color-warning-light)", border: "1px solid rgba(217, 119, 6, 0.15)" }}>
+          <p className="text-[13px] font-semibold leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
             ⚠️ このサービスの情報は保護者の体験に基づく参考情報です。
             <strong>医療的な判断は必ず主治医にご相談ください。</strong>
           </p>
@@ -223,49 +207,41 @@ export default function AboutPage() {
       </div>
 
       {/* CTA */}
-      <div className="px-4 pb-8">
-        <h3 className="text-[16px] font-extrabold text-[var(--color-text)] text-center mb-4">
+      <div className="px-5 pb-8">
+        <h3 className="text-[18px] font-extrabold text-center mb-5" style={{ color: "var(--color-text)" }}>
           さっそく使ってみましょう！
         </h3>
         <div className="space-y-3 max-w-sm mx-auto">
-          <Link
-            href="/talk"
-            className="btn-primary w-full text-center block"
-            id="go-to-talk-cta"
-          >
-            💬 みんなの声を見てみる
+          <Link href="/talk" className="btn-primary w-full text-center block" id="go-to-talk-cta">
+            みんなの声を見てみる
           </Link>
-          <Link
-            href="/login"
-            className="btn-secondary w-full text-center block"
-            id="login-cta"
-          >
+          <Link href="/login" className="btn-secondary w-full text-center block" id="login-cta">
             LINEでログインして参加する
           </Link>
           <Link
             href="/guide"
-            className="w-full text-center block text-[13px] font-bold text-[var(--color-primary)] py-3 rounded-xl border border-[var(--color-primary)]/20 hover:bg-[var(--color-success-light)] transition-colors"
+            className="btn-secondary w-full text-center block"
             id="guide-cta"
           >
-            📖 使い方ガイドを見る
+            使い方ガイドを見る
           </Link>
         </div>
-        <p className="text-[11px] text-[var(--color-subtle)] text-center mt-3">
+        <p className="text-[12px] font-medium text-center mt-4" style={{ color: "var(--color-subtle)" }}>
           ログインしなくても閲覧・AI相談はご利用いただけます
         </p>
       </div>
 
-      {/* Footer links */}
-      <div className="px-4 pb-8 flex items-center justify-center gap-4 text-[11px] text-[var(--color-subtle)]">
-        <Link href="/guide" className="underline hover:text-[var(--color-primary)] transition-colors">
+      {/* Footer */}
+      <div className="px-5 pb-8 flex items-center justify-center gap-5 text-[12px] font-medium" style={{ color: "var(--color-subtle)" }}>
+        <Link href="/guide" className="underline hover:no-underline transition-colors">
           使い方ガイド
         </Link>
-        <span className="text-[var(--color-border)]">|</span>
-        <Link href="/terms" className="underline hover:text-[var(--color-primary)] transition-colors">
+        <span style={{ color: "var(--color-border)" }}>|</span>
+        <Link href="/terms" className="underline hover:no-underline transition-colors">
           利用規約
         </Link>
-        <span className="text-[var(--color-border)]">|</span>
-        <Link href="/privacy" className="underline hover:text-[var(--color-primary)] transition-colors">
+        <span style={{ color: "var(--color-border)" }}>|</span>
+        <Link href="/privacy" className="underline hover:no-underline transition-colors">
           プライバシーポリシー
         </Link>
       </div>

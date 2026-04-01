@@ -12,6 +12,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - ローカル (localhost) での確認は開発時のビルドチェックのみ
 - ブラウザ検証、UI確認、導線確認はすべて https://www.anshin.kids/ で実施
 
+## シェル（必須）
+- **OS: Windows / Shell: PowerShell**
+- **コマンド連結は `;` を使う。`&&` は絶対に使わない**
+- 例: `git add .; git commit -m "msg"; git push`
+
 ## インフラ
 - GitHub: komi0929/anshinkids (main ブランチ)
 - Vercel: 自動デプロイ（main push で反映）

@@ -155,10 +155,10 @@ export default function TalkRoomsPage() {
     <div className="fade-in">
       {/* Clean Header */}
       <div className="px-5 pt-8 pb-5">
-        <h1 className="text-[26px] font-black text-[var(--color-text)] tracking-tight leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+        <h1 className="text-[26px] font-black tracking-tight leading-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
           みんなの声
         </h1>
-        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
+        <p className="text-[14px] font-medium mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
           食物アレルギーの実体験をテーマ別にシェアする場所
         </p>
       </div>
@@ -166,13 +166,13 @@ export default function TalkRoomsPage() {
       {/* === Streak Banner (logged-in users only) === */}
       {streak && streak.currentStreak > 0 && (
         <div className="px-4 mb-4 slide-up">
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 flex items-center gap-3">
+          <div className="p-4 rounded-2xl flex items-center gap-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <div className="text-2xl">🔥</div>
             <div className="flex-1">
-              <p className="text-[13px] font-bold text-amber-800">
+              <p className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>
                 {streak.currentStreak}日連続で貢献中！
               </p>
-              <p className="text-[10px] text-amber-600 mt-0.5">
+              <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
                 通算{streak.totalDays}日 · 最長{streak.longestStreak}日ストリーク
               </p>
             </div>
@@ -188,30 +188,30 @@ export default function TalkRoomsPage() {
       {/* === Weekly Digest Banner === */}
       {digest && digest.messageCount > 0 && (
         <div className="px-4 mb-4 slide-up">
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-success-light)]/30 border border-[var(--color-border-light)]">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="card p-5">
+            <div className="flex items-center gap-2 mb-3">
               <span className="text-sm">📊</span>
-              <span className="text-[12px] font-bold text-[var(--color-text)]">今週のコミュニティ</span>
+              <span className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>今週のコミュニティ</span>
             </div>
             <div className="flex gap-4 text-center">
               <div>
-                <p className="text-[18px] font-black text-[var(--color-primary)]">{digest.messageCount}</p>
-                <p className="text-[9px] text-[var(--color-subtle)]">件の投稿</p>
+                <p className="text-[20px] font-black" style={{ color: 'var(--color-primary)' }}>{digest.messageCount}</p>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--color-subtle)' }}>件の投稿</p>
               </div>
               <div>
-                <p className="text-[18px] font-black text-[var(--color-success)]">{digest.uniqueContributors}</p>
-                <p className="text-[9px] text-[var(--color-subtle)]">人が参加</p>
+                <p className="text-[20px] font-black" style={{ color: 'var(--color-primary)' }}>{digest.uniqueContributors}</p>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--color-subtle)' }}>人が参加</p>
               </div>
               <div>
-                <p className="text-[18px] font-black text-[var(--color-accent)]">{digest.newArticleCount}</p>
-                <p className="text-[9px] text-[var(--color-subtle)]">新記事</p>
+                <p className="text-[20px] font-black" style={{ color: 'var(--color-primary)' }}>{digest.newArticleCount}</p>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--color-subtle)' }}>新記事</p>
               </div>
             </div>
             {digest.newArticles.length > 0 && (
-              <div className="mt-3 pt-2.5 border-t border-[var(--color-border-light)]/50">
-                <p className="text-[10px] font-semibold text-[var(--color-subtle)] mb-1.5">🆕 新しい知恵袋記事</p>
+              <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                <p className="text-[12px] font-bold mb-2" style={{ color: 'var(--color-subtle)' }}>🆕 新しい知恵袋記事</p>
                 {digest.newArticles.slice(0, 2).map((a) => (
-                  <Link key={a.slug} href={`/wiki/${a.slug}`} className="block text-[11px] text-[var(--color-primary)] hover:underline truncate mb-0.5">
+                  <Link key={a.slug} href={`/wiki/${a.slug}`} className="block text-[13px] font-semibold hover:underline truncate mb-1" style={{ color: 'var(--color-primary)' }}>
                     → {a.title}
                   </Link>
                 ))}
@@ -224,22 +224,23 @@ export default function TalkRoomsPage() {
       {/* === Trending Topics === */}
       {trending.length > 0 && (
         <div className="px-4 mb-5">
-          <div className="flex items-center gap-2 mb-2.5">
-            <span className="text-xs">🔥</span>
-            <h2 className="text-[12px] font-bold text-[var(--color-text)]">いま盛り上がっている</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm">🔥</span>
+            <h2 className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>いま盛り上がっている</h2>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {trending.map((t) => (
               <Link
                 key={t.slug}
                 href={`/talk/${t.slug}`}
-                className="flex-shrink-0 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/15 hover:border-[var(--color-primary)]/30 transition-all"
+                className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-2xl transition-all"
+                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
                 id={`trending-${t.slug}`}
               >
-                <span className="text-base">{t.icon_emoji}</span>
+                <span className="text-lg">{t.icon_emoji}</span>
                 <div>
-                  <p className="text-[12px] font-bold text-[var(--color-text)] whitespace-nowrap">{t.name}</p>
-                  <p className="text-[9px] text-[var(--color-subtle)]">
+                  <p className="text-[13px] font-bold whitespace-nowrap" style={{ color: 'var(--color-text)' }}>{t.name}</p>
+                  <p className="text-[11px] font-medium" style={{ color: 'var(--color-subtle)' }}>
                     {t.messageCount}件の投稿 · ❤️{t.thanksTotal}
                   </p>
                 </div>
@@ -251,9 +252,9 @@ export default function TalkRoomsPage() {
 
       {/* Info chip */}
       <div className="px-5 mb-5">
-        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] shadow-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
-          <span className="text-[11px] text-[var(--color-text-secondary)] font-medium leading-snug">
+        <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-primary)' }} />
+          <span className="text-[13px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
             投稿は自動消去、会話の知恵はAIが知恵袋に保存
           </span>
         </div>
@@ -297,7 +298,7 @@ export default function TalkRoomsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-[15px] text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+                      <h3 className="font-bold text-[15px] group-hover:text-[var(--color-primary)] transition-colors" style={{ color: 'var(--color-text)' }}>
                         {room.name}
                       </h3>
                       {isRecommended && (
@@ -306,7 +307,7 @@ export default function TalkRoomsPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-[var(--color-subtle)] mt-0.5 truncate leading-relaxed">
+                    <p className="text-[13px] font-medium mt-0.5 truncate leading-relaxed" style={{ color: 'var(--color-subtle)' }}>
                       {room.description}
                     </p>
                   </div>
@@ -351,8 +352,8 @@ export default function TalkRoomsPage() {
       {personalizedWiki.length > 0 && (
         <div className="px-4 pb-4">
           <div className="flex items-center gap-2 mb-2.5 px-1">
-            <span className="text-xs">{isPersonalized ? "✨" : "📖"}</span>
-            <h2 className="text-[12px] font-bold text-[var(--color-text)]">
+            <span className="text-sm">{isPersonalized ? "✨" : "📖"}</span>
+            <h2 className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>
               {isPersonalized ? "あなたへのおすすめ記事" : "人気の知恵袋記事"}
             </h2>
           </div>
@@ -369,10 +370,10 @@ export default function TalkRoomsPage() {
                     📖
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-[13px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate">{entry.title}</h4>
-                    <p className="text-[10px] text-[var(--color-subtle)] truncate mt-0.5">{entry.summary}</p>
+                    <h4 className="text-[14px] font-bold group-hover:text-[var(--color-primary)] transition-colors truncate" style={{ color: 'var(--color-text)' }}>{entry.title}</h4>
+                    <p className="text-[12px] font-medium truncate mt-0.5" style={{ color: 'var(--color-subtle)' }}>{entry.summary}</p>
                   </div>
-                  <span className="text-[9px] text-[var(--color-muted)] flex-shrink-0">{entry.source_count}件</span>
+                  <span className="text-[11px] font-semibold flex-shrink-0" style={{ color: 'var(--color-muted)' }}>{entry.source_count}件</span>
                 </div>
               </Link>
             ))}
