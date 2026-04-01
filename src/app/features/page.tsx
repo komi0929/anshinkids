@@ -35,6 +35,8 @@ const CATEGORIES: Category[] = [
       { title: "トークルームの共感ボタン", desc: "コメントを返さなくても、「わかる！」という共感だけを手軽に残せる機能。", icon: <Heart className="w-5 h-5" /> },
       { title: "アカウント削除と資産の匿名化", desc: "退会時には個人情報を完全消去しつつ、知恵袋に抽出されたノウハウのみをコミュニティの資産として匿名で保持するセキュアシステム。", icon: <Shield className="w-5 h-5" />, tags: ["Privacy"] },
       { title: "カテゴリ別おすすめルーム", desc: "ユーザーのアレルゲン情報から、現在最も盛り上がっている最適なトークルームを自動推薦。", icon: <Sparkles className="w-5 h-5" /> },
+      { title: "Micro-Bookmarking（スニペット保存）", desc: "長いWiki記事全体ではなく、本当に自分に役立つ一行単位の「知恵（スニペット）」だけを抽出してマイページにブックマークできる機能。", icon: <BookOpen className="w-5 h-5" />, tags: ["Engagement", "UX"] },
+      { title: "ティア別ダイナミックダッシュボード", desc: "未ログイン、閲覧のみ、投稿者の3つの階層ごとに、最適なアクション（ログイン促進、初投稿推進、影響力レポート）を自動で出し分けるパーソナライズダッシュボード。", icon: <User className="w-5 h-5" />, tags: ["Personalize", "UX"] },
     ]
   },
   {

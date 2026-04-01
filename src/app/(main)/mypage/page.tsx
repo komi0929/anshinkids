@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Eye, MessageCircle, Settings, Bell, X } from "@/components/icons";
 import { getMyProfile, getMyContributions, getMyImpact, deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
 import { getImpactFeedback, getContributionStreak } from "@/app/actions/discover";
+import { getMyBookmarks } from "@/app/actions/wiki";
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
 import Image from "next/image";
@@ -64,10 +65,19 @@ interface ImpactData {
   }[];
 }
 
+interface BookmarkData {
+  id: string;
+  snippet_title: string;
+  snippet_content: string;
+  created_at: string;
+  wiki_entries: { id: string; title: string; slug: string; category: string };
+}
+
 export default function MyPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [impact, setImpact] = useState<ImpactData | null>(null);
+  const [bookmarks, setBookmarks] = useState<BookmarkData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -84,10 +94,11 @@ export default function MyPage() {
 
   async function loadData() {
     setIsLoading(true);
-    const [profileResult, contribResult, impactResult] = await Promise.all([
+    const [profileResult, contribResult, impactResult, bookmarksResult] = await Promise.all([
       getMyProfile(),
       getMyContributions(),
       getImpactFeedback(), // Changed from getMyImpact for richer Visual Data
+      getMyBookmarks(),
     ]);
 
     if (profileResult.success && profileResult.data) {
@@ -104,6 +115,10 @@ export default function MyPage() {
 
     if (impactResult.success && impactResult.data) {
       setImpact(impactResult.data as unknown as ImpactData);
+    }
+
+    if (bookmarksResult.success && bookmarksResult.data) {
+      setBookmarks(bookmarksResult.data as unknown as BookmarkData[]);
     }
 
     setIsLoading(false);
@@ -414,6 +429,41 @@ export default function MyPage() {
                        「{imp.snippet.length > 40 ? imp.snippet.slice(0, 40) + "..." : imp.snippet}」
                      </div>
                    </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* === F9: Bookmarked Snippets (Micro-Bookmarking) === */}
+      {bookmarks.length > 0 && (
+        <div className="px-4 mb-6">
+          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+            <span className="text-xl">🔖</span>
+            お気に入り
+          </h3>
+          <p className="text-[12px] text-[var(--color-subtle)] mb-3 leading-relaxed">
+            保存した役立つ知恵にいつでもアクセスできます。
+          </p>
+          <div className="space-y-3">
+            {bookmarks.map((bm) => (
+              <Link
+                key={bm.id}
+                href={`/wiki/${bm.wiki_entries.slug}`}
+                className="block p-4 rounded-2xl bg-white border border-[var(--color-border)] hover:border-[var(--color-primary)]/40 hover:shadow-md transition-all group"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-[var(--color-subtle)] mb-1.5 flex items-center gap-1 group-hover:text-[var(--color-primary)] transition-colors">
+                    <BookOpen className="w-3 h-3" />
+                    {bm.wiki_entries.category} / {bm.wiki_entries.title}
+                  </p>
+                  <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 leading-tight">
+                    {bm.snippet_title}
+                  </h4>
+                  <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed bg-[var(--color-surface-warm)] p-2.5 rounded-xl">
+                    {bm.snippet_content}
+                  </p>
                 </div>
               </Link>
             ))}

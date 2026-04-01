@@ -89,3 +89,94 @@ export async function voteWikiHelpful(entryId: string) {
     return { success: false, error: "投票に失敗しました" };
   }
 }
+
+export async function toggleSnippetBookmark(entryId: string, snippetTitle: string, snippetContent: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "ログインが必要です" };
+
+    // Check if it already exists
+    const { data: existing } = await supabase
+      .from("user_bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("wiki_entry_id", entryId)
+      .eq("snippet_title", snippetTitle)
+      .single();
+
+    if (existing) {
+      await supabase.from("user_bookmarks").delete().eq("id", existing.id);
+      return { success: true, bookmarked: false };
+    } else {
+      await supabase.from("user_bookmarks").insert({
+        user_id: user.id,
+        wiki_entry_id: entryId,
+        snippet_title: snippetTitle,
+        snippet_content: snippetContent,
+      });
+      return { success: true, bookmarked: true };
+    }
+  } catch (err) {
+    console.error("[toggleSnippetBookmark]", err);
+    return { success: false, error: "ブックマークの切り替えに失敗しました" };
+  }
+}
+
+export async function checkBookmarkedSnippets(entryId: string): Promise<{ success: boolean; data?: string[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: true, data: [] }; // Not logged in -> no bookmarks
+
+    const { data, error } = await supabase
+      .from("user_bookmarks")
+      .select("snippet_title")
+      .eq("user_id", user.id)
+      .eq("wiki_entry_id", entryId);
+
+    if (error) throw error;
+    
+    return { success: true, data: data.map(d => d.snippet_title) };
+  } catch (err) {
+    console.error("[checkBookmarkedSnippets]", err);
+    return { success: false, error: "ブックマークの取得に失敗しました" };
+  }
+}
+
+export async function getMyBookmarks() {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "ログインが必要です" };
+
+    const { data, error } = await supabase
+      .from("user_bookmarks")
+      .select(`
+        id,
+        snippet_title,
+        snippet_content,
+        created_at,
+        wiki_entries!inner (
+          id,
+          title,
+          slug,
+          category
+        )
+      `)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error("[getMyBookmarks]", err);
+    return { success: false, error: "ブックマーク一覧の取得に失敗しました" };
+  }
+}

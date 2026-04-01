@@ -21,3 +21,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - GitHub: komi0929/anshinkids (main ブランチ)
 - Vercel: 自動デプロイ（main push で反映）
 - Supabase: awmfbqvpknqhsnxknybr.supabase.co
+
+## 【厳命】公開仕様の自動更新（Permanent Rule）
+機能追加・改善・変更を行った際は、ユーザーからの指示がなくとも **必ず** ユーザー向け公開仕様ページ（`/features`, `/guide`, `/about` 等）へ変更内容を追記・反映すること。システムが進化するたびに、ユーザーへの説明も同等に進化させなければならない。

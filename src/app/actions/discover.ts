@@ -642,3 +642,30 @@ export async function getKnowledgeRipple(wikiSlug: string) {
     return { success: false, data: null };
   }
 }
+
+/**
+ * ユーザーのエンゲージメント・ティアを取得 (Tiered Dashboard 用)
+ */
+export async function getEngagementTier(): Promise<{ success: boolean; data?: { tier: "guest" | "reader" | "contributor", postCount: number } }> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: false };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: true, data: { tier: "guest", postCount: 0 } };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("total_contributions")
+      .eq("id", user.id)
+      .single();
+
+    const postCount = profile?.total_contributions || 0;
+    const tier = postCount > 0 ? "contributor" : "reader";
+
+    return { success: true, data: { tier, postCount } };
+  } catch (err) {
+    console.error("[getEngagementTier]", err);
+    return { success: false, data: { tier: "guest", postCount: 0 } };
+  }
+}

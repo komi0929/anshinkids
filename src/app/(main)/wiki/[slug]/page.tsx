@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen } from "@/components/icons";
+import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen, Bookmark } from "@/components/icons";
 // Users icon (not in shared yet, alias User)
 const Users = User;
-import { getWikiEntry, voteWikiHelpful } from "@/app/actions/wiki";
+import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets } from "@/app/actions/wiki";
 import { getKnowledgeRipple } from "@/app/actions/discover";
 
 export interface MegaWikiItem {
@@ -79,6 +79,7 @@ export default function WikiDetailPage() {
 
   const [hasVotedHelpful, setHasVotedHelpful] = useState(false);
   const [helpfulCount, setHelpfulCount] = useState(0);
+  const [bookmarkedSnippets, setBookmarkedSnippets] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadEntry();
@@ -96,6 +97,11 @@ export default function WikiDetailPage() {
       const data = result.data as unknown as WikiEntryData;
       setEntry(data);
       setHelpfulCount(data.helpful_count || 0);
+
+      const bookmarksRes = await checkBookmarkedSnippets(data.id);
+      if (bookmarksRes.success && bookmarksRes.data) {
+        setBookmarkedSnippets(new Set(bookmarksRes.data));
+      }
     }
     setIsLoading(false);
   }
@@ -109,6 +115,32 @@ export default function WikiDetailPage() {
       alert("「役に立った」を送信するにはログインが必要です");
       setHasVotedHelpful(false);
       setHelpfulCount(c => Math.max(0, c - 1));
+    }
+  }
+
+  async function handleToggleBookmark(title: string, content: string) {
+    if (!entry) return;
+    
+    const isBookmarked = bookmarkedSnippets.has(title);
+    
+    setBookmarkedSnippets(prev => {
+      const next = new Set(prev);
+      if (isBookmarked) next.delete(title);
+      else next.add(title);
+      return next;
+    });
+
+    const res = await toggleSnippetBookmark(entry.id, title, content);
+    if (!res.success) {
+      if (res.error === "ログインが必要です") {
+        alert("ブックマークするにはログインが必要です");
+      }
+      setBookmarkedSnippets(prev => {
+        const next = new Set(prev);
+        if (isBookmarked) next.add(title);
+        else next.delete(title);
+        return next;
+      });
     }
   }
 
@@ -255,12 +287,25 @@ export default function WikiDetailPage() {
                   {sec.items.map((item, j) => (
                     <div key={j} className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
                       <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-[14px] font-bold text-[var(--color-text)] leading-tight">{item.title}</h3>
-                        {item.is_recommended && (
-                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-1 rounded-full flex-shrink-0 shadow-sm">
-                            👑 定番
-                          </span>
-                        )}
+                        <h3 className="text-[14px] font-bold text-[var(--color-text)] leading-tight flex-1 pr-2">{item.title}</h3>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {item.is_recommended && (
+                            <span className="text-[10px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-1 rounded-full shadow-sm mr-1">
+                              👑 定番
+                            </span>
+                          )}
+                          <button
+                            onClick={() => handleToggleBookmark(item.title, item.content)}
+                            className={`p-1.5 rounded-full transition-colors ${
+                              bookmarkedSnippets.has(item.title)
+                                ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                                : "bg-white text-[var(--color-subtle)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border-light)]"
+                            }`}
+                            aria-label="ブックマーク"
+                          >
+                            <Bookmark className={`w-4 h-4 ${bookmarkedSnippets.has(item.title) ? "fill-current" : ""}`} />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed whitespace-pre-wrap">{item.content}</p>
                       

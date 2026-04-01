@@ -30,6 +30,9 @@ const base = (size: number) => ({
 export const ArrowLeft = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
 );
+export const Home = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+);
 export const ArrowRight = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
 );
@@ -57,6 +60,9 @@ export const BookOpen = ({ className, style, size = 20 }: IconProps) => (
 );
 export const Book = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+);
+export const Bookmark = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
 );
 
 // ── AI & Special ──
