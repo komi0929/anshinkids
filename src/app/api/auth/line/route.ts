@@ -114,11 +114,11 @@ export async function POST(request: Request) {
             userId = retryUser.id;
           } else {
             console.error("Supabase user creation race condition:", createError);
-            return Response.json({ error: "Failed to create user" }, { status: 500 });
+            return Response.json({ error: `Failed to create user: ${createError.message}` }, { status: 500 });
           }
         } else {
-          console.error("Supabase user creation error:", createError);
-          return Response.json({ error: "Failed to create user" }, { status: 500 });
+          console.error("Supabase user creation error:", JSON.stringify(createError));
+          return Response.json({ error: `Failed to create user: ${createError.message}` }, { status: 500 });
         }
       } else {
         userId = authData.user.id;
