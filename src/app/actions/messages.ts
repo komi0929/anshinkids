@@ -93,12 +93,12 @@ export async function postMessage(roomId: string, content: string) {
 
     const { data: room } = await supabase.from("talk_rooms").select("name, description").eq("id", roomId).single();
     if (room) {
-      replenishRoomPrompts(roomId, room.name, room.description || "").catch(() => {});
+      replenishRoomPrompts(roomId, room.name, room.description || "").catch((err) => console.error("[Background Error] replenishRoomPrompts", err));
     }
 
     import("@/lib/ai/threshold-extractor")
       .then(({ checkExtractionThresholds }) => checkExtractionThresholds())
-      .catch(() => {});
+      .catch((err) => console.error("[Background Error] checkExtractionThresholds", err));
 
     return { success: true };
   } catch (err) {
@@ -131,7 +131,9 @@ export async function sendThanks(messageId: string) {
         const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
         await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", msg.room_id);
       }
-    } catch { /* non-critical */ }
+    } catch (err) {
+      console.error("[sendThanks] Expiry extension failed", err);
+    }
 
     return { success: true };
   } catch (err) {
@@ -179,6 +181,8 @@ export async function getActiveMessages(roomId: string) {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
 
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { data, error } = await supabase
       .from("messages")
       .select("*, profiles:user_id (display_name, avatar_url, trust_score)")
@@ -187,7 +191,25 @@ export async function getActiveMessages(roomId: string) {
       .order("created_at", { ascending: true });
 
     if (error) throw error;
-    return { success: true, data: data || [] };
+    
+    let thankedIds: string[] = [];
+    if (user && data && data.length > 0) {
+      const msgIds = data.map(m => m.id);
+      const { data: thanksData } = await supabase
+        .from("message_thanks")
+        .select("message_id")
+        .eq("user_id", user.id)
+        .in("message_id", msgIds);
+        
+      if (thanksData) thankedIds = thanksData.map(t => t.message_id);
+    }
+
+    const enhancedData = (data || []).map(msg => ({
+      ...msg,
+      has_thanked: thankedIds.includes(msg.id)
+    }));
+
+    return { success: true, data: enhancedData };
   } catch (err) {
     console.error("[getActiveMessages]", err);
     return { success: true, data: [] };

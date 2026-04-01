@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Shield, Clock, Plus, Loader2, Check, X, BookOpen } from "@/components/icons";
+import { Search, Filter, Shield, Clock, BookOpen } from "@/components/icons";
 import Link from "next/link";
-import { searchWiki, contributeToWiki } from "@/app/actions/wiki";
+import { searchWiki } from "@/app/actions/wiki";
 import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20 } from "@/components/onboarding-wizard";
 
 const CATEGORIES = [
@@ -69,10 +69,7 @@ export default function WikiPage() {
   const [selectedCategory, setSelectedCategory] = useState("すべて");
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
-  const [contribText, setContribText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState<string | null>(null);
+
 
   const loadEntries = async () => {
     setIsLoading(true);
@@ -91,17 +88,7 @@ export default function WikiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, selectedCategory, selectedAllergens]);
 
-  async function handleContribute(entryId: string) {
-    if (!contribText.trim()) return;
-    setIsSubmitting(true);
-    const result = await contributeToWiki(entryId, contribText);
-    if (result.success) {
-      setSubmitted(entryId);
-      setContribText("");
-      setTimeout(() => { setSubmitted(null); setExpandedEntry(null); loadEntries(); }, 2500);
-    }
-    setIsSubmitting(false);
-  }
+
 
   return (
     <div className="fade-in">
@@ -113,11 +100,6 @@ export default function WikiPage() {
           保護者の体験をAIが会話から抽出した知識ライブラリ
         </p>
       </div>
-
-      {/* Subtle contribution hint */}
-      <p className="px-5 mb-3 text-[11px] text-[var(--color-subtle)]">
-        💡 各記事の「情報を追加」から、あなたの体験を共有できます
-      </p>
 
       {/* Search */}
       <div className="px-4 mb-3">
@@ -254,9 +236,6 @@ export default function WikiPage() {
           entries.map((entry) => {
             const trust = getTrustLevel(entry.avg_trust_score);
             const freshness = getFreshness(entry.updated_at);
-            const isExpanded = expandedEntry === entry.id;
-            const isSubmittedEntry = submitted === entry.id;
-
             return (
               <div key={entry.id} className="card overflow-hidden stagger-item">
                 <Link href={`/wiki/${entry.slug}`} className="block p-4 hover:bg-[var(--color-surface-warm)]/30 transition-colors" id={`wiki-entry-${entry.slug}`}>
@@ -284,57 +263,7 @@ export default function WikiPage() {
                       </span>
                     ))}
                   </div>
-                  <button
-                    onClick={(e) => { e.preventDefault(); setExpandedEntry(isExpanded ? null : entry.id); setContribText(""); }}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all ${
-                      isExpanded
-                        ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                        : "text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)] hover:text-[var(--color-primary)]"
-                    }`}
-                    id={`contribute-${entry.id}`}
-                  >
-                    {isExpanded ? (<><X className="w-3 h-3" /> とじる</>) : (<><Plus className="w-3 h-3" /> 情報を追加</>)}
-                  </button>
                 </div>
-
-                {isExpanded && (
-                  <div className="px-4 pb-4 pt-0 border-t border-[var(--color-border-light)]">
-                    <div className="pt-3">
-                      {isSubmittedEntry ? (
-                        <div className="flex items-center gap-2 justify-center py-5 text-[var(--color-success)]">
-                          <Check className="w-5 h-5" />
-                          <span className="text-[13px] font-semibold">情報をいただきました！AIが整理して反映します 🌿</span>
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-[11px] text-[var(--color-subtle)] mb-2.5">
-                            知っていることをざざっと書くだけでOK。AIが整理します ✨
-                          </p>
-                          <textarea
-                            value={contribText}
-                            onChange={(e) => setContribText(e.target.value)}
-                            placeholder="例: 西松屋で売ってるアンパンマンのせんべいも卵不使用だったよ！"
-                            className="input-field resize-none w-full"
-                            rows={3}
-                            autoFocus
-                            id={`contrib-text-${entry.id}`}
-                          />
-                          <div className="flex items-center justify-between mt-2.5">
-                            <span className="text-[10px] text-[var(--color-muted)]">きれいに書かなくて大丈夫です</span>
-                            <button
-                              onClick={() => handleContribute(entry.id)}
-                              disabled={!contribText.trim() || isSubmitting}
-                              className="btn-primary !py-2 !px-5 !text-[12px] disabled:opacity-40 flex items-center gap-1.5"
-                              id={`submit-contrib-${entry.id}`}
-                            >
-                              {isSubmitting ? (<><Loader2 className="w-3 h-3 animate-spin" /> AIが整理中...</>) : (<><Plus className="w-3 h-3" /> 追加する</>)}
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })

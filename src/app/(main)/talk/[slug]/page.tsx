@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Send, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X, Trash2, Reply } from "@/components/icons";
 import {
@@ -36,6 +37,7 @@ interface Message {
     avatar_url: string | null;
     trust_score: number;
   };
+  has_thanked?: boolean;
 }
 
 interface RoomInfo {
@@ -106,15 +108,19 @@ export default function TalkRoomPage() {
     if (typeof window !== "undefined") {
       const accepted = localStorage.getItem("anshin_guidelines_accepted");
       if (accepted) setGuidelinesAccepted(true);
-
-      const storedThanks = localStorage.getItem("anshin_thanked_ids");
-      if (storedThanks) {
-        try { setThankedIds(new Set(JSON.parse(storedThanks))); } catch {}
-      }
     }
     
     createClient().auth.getUser().then(({ data }) => {
-      if (data.user) setCurrentUserId(data.user.id);
+      if (data.user) {
+        setCurrentUserId(data.user.id);
+        import("@/app/actions/mypage").then(({ getMyProfile }) => {
+          getMyProfile().then(res => {
+            if (res.success && res.data && res.data.total_contributions > 0) {
+              setGuidelinesAccepted(true);
+            }
+          });
+        });
+      }
     });
 
     loadRoom();
@@ -161,7 +167,9 @@ export default function TalkRoomPage() {
 
   async function loadRoom() {
     const result = await getTalkRoomBySlug(slug);
-    if (result.success && result.data) {
+    // id: 'temp-id' means the room is a valid phase 3 theme but not yet seeded in DB.
+    // However, users shouldn't be here until it's seeded. We require a real DB id.
+    if (result.success && result.data && result.data.id && result.data.id !== 'temp-id') {
       const room = result.data as RoomInfo;
       setRoomInfo(room);
       loadMessages(room.id);
@@ -172,46 +180,9 @@ export default function TalkRoomPage() {
       if (intervalRef.current) clearInterval(intervalRef.current);
       intervalRef.current = setInterval(() => loadMessages(room.id), 30000);
     } else {
-      // DB lookup failed — seed the room via server action, then retry
-      // First set fallback display info immediately
-      const CANONICAL_ROOMS: Record<string, { name: string; description: string; icon_emoji: string }> = {
-        "daily-food": { name: "毎日のごはん", description: "献立・代替食材・お弁当のリアルな工夫", icon_emoji: "🍚" },
-        "products": { name: "使ってよかった市販品", description: "おやつ・パン・調味料のクチコミ", icon_emoji: "🛒" },
-        "eating-out": { name: "外食・おでかけ", description: "チェーン店・旅行・イベントの対応", icon_emoji: "🍽️" },
-        "school-life": { name: "園・学校との連携", description: "給食・面談・行事の乗り切り方", icon_emoji: "🏫" },
-        "challenge": { name: "負荷試験の体験談", description: "準備・当日の流れ・結果後の変化", icon_emoji: "🧪" },
-        "skin-body": { name: "肌とからだのケア", description: "アトピー・保湿・スキンケアの工夫", icon_emoji: "🧴" },
-        "family": { name: "気持ち・家族・まわり", description: "不安・理解・パートナーや祖父母との関わり", icon_emoji: "👨‍👩‍👧" },
-        "milestone": { name: "食べられた！の記録", description: "克服・成長のうれしい報告", icon_emoji: "🌱" },
-      };
-      const canonical = CANONICAL_ROOMS[slug];
-      setRoomInfo({
-        id: "",
-        name: canonical?.name || slug,
-        description: canonical?.description || "体験や情報を気軽にシェア",
-        icon_emoji: canonical?.icon_emoji || "💬",
-      });
-      setIsLoading(false);
-      // Set default prompts for canonical rooms when DB is not seeded
-      if (canonical) {
-        setPrompts(getDefaultPrompts(slug));
-        setIsLoadingPrompts(false);
-      }
+      // 亡霊ルート（旧Phase 2の不要なslug等）への侵入をブロックし、正しいトップにリダイレクト
+      window.location.href = "/talk";
     }
-  }
-
-  function getDefaultPrompts(roomSlug: string): string[] {
-    const defaults: Record<string, string[]> = {
-      "daily-food": ["みんな朝ごはんは何を食べさせてる？", "代替食材で一番使えるのは？", "お弁当のアレルギー対応どうしてる？"],
-      "products": ["最近見つけたアレルギー対応おやつは？", "スーパーで買える卵不使用のパンある？", "調味料で気をつけてることは？"],
-      "eating-out": ["アレルギー対応してくれたお店教えて！", "旅行先でのごはんどうしてる？", "ファミレスで安心して頼めるメニューは？"],
-      "school-life": ["給食の対応、園にどう相談した？", "遠足のお弁当で困ったことある？", "先生への伝え方のコツは？"],
-      "challenge": ["負荷試験の前に準備したことは？", "当日の流れを教えて！", "試験後に食べられるようになったものは？"],
-      "skin-body": ["保湿剤は何を使ってる？", "お風呂の入り方で工夫してることは？", "アトピーが悪化したときどうしてる？"],
-      "family": ["周りに理解してもらうために何をした？", "祖父母への説明で困ったことは？", "不安になったときどうしてる？"],
-      "milestone": ["食べられるようになったもの教えて！", "克服までどのくらいかかった？", "成長を感じた瞬間は？"],
-    };
-    return defaults[roomSlug] || ["このテーマについて体験を教えてください", "困ったことや知りたいことは？", "おすすめの情報があれば共有してください"];
   }
 
   async function loadPrompts(roomId: string) {
@@ -237,7 +208,18 @@ export default function TalkRoomPage() {
 
   async function loadMessages(roomId: string) {
     const result = await getActiveMessages(roomId);
-    if (result.success) setMessages(result.data as Message[]);
+    if (result.success) {
+      const msgs = result.data as Message[];
+      setMessages(msgs);
+      const dbThanked = msgs.filter(m => m.has_thanked).map(m => m.id);
+      if (dbThanked.length > 0) {
+        setThankedIds(prev => {
+          const newSet = new Set(prev);
+          dbThanked.forEach(id => newSet.add(id));
+          return newSet;
+        });
+      }
+    }
     setIsLoading(false);
   }
 
@@ -393,7 +375,17 @@ export default function TalkRoomPage() {
   }
 
   function renderMessageAvatar(avatarUrl: string | null | undefined, name: string) {
-    if (avatarUrl && avatarUrl.startsWith("http")) return <img src={avatarUrl} alt="" className="w-full h-full object-cover rounded-full" />;
+    if (avatarUrl && avatarUrl.startsWith("http")) {
+      return (
+        <Image 
+          src={avatarUrl} 
+          alt={name || ""} 
+          fill 
+          unoptimized 
+          className="object-cover rounded-full" 
+        />
+      );
+    }
     if (avatarUrl && avatarUrl.length <= 4) return <span className="text-[14px]">{avatarUrl}</span>;
     return <span className="text-[13px] text-white font-bold">{name?.[0] || "👤"}</span>;
   }

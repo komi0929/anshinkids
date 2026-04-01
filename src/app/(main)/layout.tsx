@@ -32,7 +32,24 @@ export default function MainLayout({
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
-        if (!cancelled) setIsLoggedIn(!!user);
+        if (!cancelled) {
+          setIsLoggedIn(!!user);
+          if (user) {
+            import("@/app/actions/mypage").then(({ getMyProfile }) => {
+              getMyProfile().then(res => {
+                if (cancelled) return;
+                if (res.success && res.data) {
+                  // If we have profile data with tags/children, they have onboarded!
+                  if ((res.data.children_profiles && res.data.children_profiles.length > 0) || 
+                      (res.data.allergen_tags && res.data.allergen_tags.length > 0)) {
+                    setShowOnboarding(false);
+                    localStorage.setItem("anshin_onboarding_done", "true");
+                  }
+                }
+              });
+            });
+          }
+        }
       } catch {
         if (!cancelled) setIsLoggedIn(false);
       }

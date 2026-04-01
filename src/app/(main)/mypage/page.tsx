@@ -3,13 +3,24 @@
 import { useState, useEffect } from "react";
 import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Eye, MessageCircle, Settings, Bell, X } from "@/components/icons";
 import { getMyProfile, getMyContributions, getMyImpact, deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
-import { getContributionStreak } from "@/app/actions/discover";
+import { getImpactFeedback, getContributionStreak } from "@/app/actions/discover";
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
+import Image from "next/image";
 import OnboardingWizard, { UserPreferences, ChildProfile } from "@/components/onboarding-wizard";
 
 function renderAvatar(avatar_url: string | null, name: string) {
-  if (avatar_url && avatar_url.startsWith("http")) return <img src={avatar_url} alt="" className="w-full h-full object-cover rounded-2xl" />;
+  if (avatar_url && avatar_url.startsWith("http")) {
+    return (
+      <Image 
+        src={avatar_url} 
+        alt={name || ""} 
+        fill 
+        unoptimized 
+        className="object-cover rounded-2xl" 
+      />
+    );
+  }
   if (avatar_url && avatar_url.length <= 4) return <span className="text-3xl">{avatar_url}</span>;
   const colors = ["from-[#7FA77A] to-[#5C8B56]", "from-[#B8956A] to-[#9A7A52]", "from-[#8B9EBF] to-[#6A7FA0]", "from-[#C2917A] to-[#A87060]", "from-[#9BB88F] to-[#7A9E6E]", "from-[#B8A07A] to-[#9A8560]"];
   const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
@@ -36,10 +47,21 @@ interface Contribution {
   wiki_entries: Record<string, string> | null;
 }
 
+// Ensure type matches what getImpactFeedback returns
 interface ImpactData {
-  articlesContributed: number;
-  totalHelpfulVotes: number;
-  trustDelta: number;
+  articlesHelped: number;
+  totalSourcesInArticles: number;
+  thanks: number;
+  trustScore: number;
+  message: string;
+  recentImpacts?: {
+    title: string;
+    slug: string;
+    category: string;
+    snippet: string;
+    trustScore: number;
+    extractedAt: string;
+  }[];
 }
 
 export default function MyPage() {
@@ -65,7 +87,7 @@ export default function MyPage() {
     const [profileResult, contribResult, impactResult] = await Promise.all([
       getMyProfile(),
       getMyContributions(),
-      getMyImpact(),
+      getImpactFeedback(), // Changed from getMyImpact for richer Visual Data
     ]);
 
     if (profileResult.success && profileResult.data) {
@@ -81,7 +103,7 @@ export default function MyPage() {
     }
 
     if (impactResult.success && impactResult.data) {
-      setImpact(impactResult.data as ImpactData);
+      setImpact(impactResult.data as unknown as ImpactData);
     }
 
     setIsLoading(false);
@@ -144,6 +166,10 @@ export default function MyPage() {
 
   async function handleLogout() {
     setIsLoggingOut(true);
+    // 状態の二重管理（Façade）を防ぎ、別端末や別ユーザーログイン時のデータ漏洩を遮断する
+    localStorage.removeItem("anshin_user_preferences");
+    localStorage.removeItem("anshin_onboarding_done");
+    localStorage.removeItem("anshin_post_count");
     await logoutAction();
   }
 
@@ -219,7 +245,7 @@ export default function MyPage() {
         </div>
         <Link href="/notifications" className="w-10 h-10 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-border-light)] transition-colors relative" aria-label="通知を見る">
           <Bell className="w-5 h-5 text-[var(--color-text)]" />
-          {(impact && (impact.totalHelpfulVotes > 0 || impact.trustDelta > 0)) && (
+          {(impact && (impact.thanks > 0)) && (
             <span className="absolute top-0 right-0 w-3 h-3 bg-[var(--color-heart)] rounded-full border-2 border-[var(--color-surface)] animate-pulse"></span>
           )}
         </Link>
@@ -334,54 +360,113 @@ export default function MyPage() {
         </div>
       </div>
 
-      {/* === Gap 5: Impact Visualization === */}
-      {impact && (impact.totalHelpfulVotes > 0) && (
+      {/* === F8: Visual Impact Dashboard (Bento UI) === */}
+      {impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0)) && (
         <div className="px-4 mb-6">
-          <div className="card-elevated p-5 contrib-highlight">
-            <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
-              あなたの声のインパクト
-            </h3>
-            <div className="space-y-3">
-              {impact.totalHelpfulVotes > 0 && (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[var(--color-surface-warm)] to-transparent">
-                  <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
-                    <Eye className="w-4 h-4 text-[var(--color-primary)]" />
-                  </div>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] leading-snug">
-                    あなたの体験が <strong className="text-[var(--color-text)]">{impact.totalHelpfulVotes}人</strong> の親の役に立ちました
-                  </p>
-                </div>
-              )}
-              {impact.trustDelta > 0 && (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50/50 to-transparent">
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-4 h-4 text-amber-600" />
-                  </div>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] leading-snug">
-                    あなたの信頼度が <strong className="text-amber-600">+{impact.trustDelta}</strong> 上がりました
-                  </p>
-                </div>
-              )}
+          <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
+            貢献の証明（Proof of Impact）
+          </h3>
+          <p className="text-[12px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+            ここで共有していただいた体験は消えずに、すでに多くの保護者を支える「知恵袋の資産」として活躍しています。
+          </p>
+          
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 flex flex-col justify-between h-28 shadow-sm relative overflow-hidden group hover:border-[var(--color-success)]/40 transition-colors">
+              <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">📖</div>
+              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">反映された記事</p>
+              <div className="flex items-end gap-1.5">
+                <span className="text-3xl font-extrabold text-[var(--color-success-deep)]">{impact.articlesHelped}</span>
+                <span className="text-[11px] font-semibold text-[var(--color-success)] mb-1">件</span>
+              </div>
             </div>
-            <p className="text-[10px] text-[var(--color-muted)] mt-3 text-center">
-              🌿 あなたの声が、同じ悩みの親子を救っています
-            </p>
+            <div className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-pink-50 border border-pink-100 flex flex-col justify-between h-28 shadow-sm relative overflow-hidden group hover:border-[var(--color-heart)]/40 transition-colors">
+              <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">❤️</div>
+              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">みんなからの感謝</p>
+              <div className="flex items-end gap-1.5">
+                <span className="text-3xl font-extrabold text-[var(--color-heart)]">{impact.thanks}</span>
+                <span className="text-[11px] font-semibold text-pink-500 mb-1">人</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {impact.recentImpacts && impact.recentImpacts.map((imp, idx) => (
+              <Link 
+                key={idx}
+                href={`/wiki/${imp.slug}`}
+                className="block p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/40 hover:shadow-md transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-primary)]/5 flex items-center justify-center flex-shrink-0">
+                     <BookOpen className="w-5 h-5 text-[var(--color-primary)] opacity-80" />
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <p className="text-[10px] text-[var(--color-success)] font-bold mb-1 flex items-center gap-1">
+                       <Check className="w-3 h-3" /> 知恵袋に採用されました
+                     </p>
+                     <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">
+                       {imp.title}
+                     </h4>
+                     <div className="text-[12px] bg-[var(--color-surface-warm)] rounded-xl p-2.5 text-[var(--color-text-secondary)] leading-relaxed relative">
+                       <div className="absolute left-0 top-1/2 -mt-1.5 -ml-1.5 border-[6px] border-transparent border-r-[var(--color-surface-warm)]" />
+                       <span className="font-semibold opacity-70">あなたの体験:</span><br/>
+                       「{imp.snippet.length > 40 ? imp.snippet.slice(0, 40) + "..." : imp.snippet}」
+                     </div>
+                   </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Contributions */}
-      <div className="px-4 pb-4">
-        <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-1.5 flex items-center gap-2">
-          <span className="text-lg">🌱</span>
-          あなたの声が知恵になった記録
-        </h3>
-        <p className="text-[12px] text-[var(--color-subtle)] mb-4 leading-relaxed">
-          あなたの投稿がAIによって整理され、知恵袋の記事として保存されています
-        </p>
+      {/* Contributions Fallback list (Historical data not in top 3 Bento UI) */}
+      {contributions.length > 0 && !(impact && impact.recentImpacts && impact.recentImpacts.length > 0) && (
+        <div className="px-4 pb-4">
+          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+            <span className="text-lg">🌱</span>
+            過去の抽出履歴
+          </h3>
+            <div className="space-y-3">
+              {contributions.map((contrib) => (
+                <Link
+                  key={contrib.id}
+                  href={contrib.wiki_entries ? `/wiki/${(contrib.wiki_entries as Record<string, string>).slug}` : "/wiki"}
+                  className="card p-4 stagger-item block hover:border-[var(--color-success)]/30 transition-all"
+                  id={`contrib-${contrib.id}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-success-light)] to-green-100/50 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <span className="text-lg">🌱</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {contrib.wiki_entries && (
+                        <h4 className="font-bold text-[14px] text-[var(--color-text)]">
+                          {(contrib.wiki_entries as Record<string, string>).title}
+                        </h4>
+                      )}
+                      <p className="text-[12px] text-[var(--color-subtle)] mt-1 line-clamp-2 leading-relaxed">
+                        あなたの投稿: 「{contrib.original_message_snippet}」
+                      </p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className="text-[10px] text-[var(--color-muted)] bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-full">
+                          {new Date(contrib.extracted_at).toLocaleDateString("ja-JP")}に反映
+                        </span>
+                        <span className="text-[10px] text-[var(--color-success)] font-semibold">
+                          知恵袋を確認する →
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+        </div>
+      )}
 
-        {contributions.length === 0 ? (
+      {contributions.length === 0 && (
+         <div className="px-4 pb-6">
           <div className="card-elevated p-6 text-center">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center mx-auto mb-3 shadow-sm">
               <Sparkles className="w-7 h-7 text-[var(--color-success)]" />
@@ -390,49 +475,14 @@ export default function MyPage() {
               まだ知恵に反映された投稿はありません
             </p>
             <p className="text-[12px] text-[var(--color-subtle)] leading-relaxed mb-4">
-              「みんなの声」で体験を共有すると、<br/>AIがあなたの知恵を整理して残してくれます
+              「みんなの声」で体験を共有すると、<br/>AIがあなたの知恵を整理してプラットフォームの資産として残してくれます
             </p>
             <Link href="/talk" className="btn-primary inline-flex items-center gap-2" id="go-talk-from-mypage">
               💬 みんなの声で話してみる
             </Link>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {contributions.map((contrib) => (
-              <Link
-                key={contrib.id}
-                href={contrib.wiki_entries ? `/wiki/${(contrib.wiki_entries as Record<string, string>).slug}` : "/wiki"}
-                className="card p-4 stagger-item block hover:border-[var(--color-success)]/30 transition-all"
-                id={`contrib-${contrib.id}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-success-light)] to-green-100/50 flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <span className="text-lg">🌱</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {contrib.wiki_entries && (
-                      <h4 className="font-bold text-[14px] text-[var(--color-text)]">
-                        {(contrib.wiki_entries as Record<string, string>).title}
-                      </h4>
-                    )}
-                    <p className="text-[12px] text-[var(--color-subtle)] mt-1 line-clamp-2 leading-relaxed">
-                      あなたの投稿: 「{contrib.original_message_snippet}」
-                    </p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-[10px] text-[var(--color-muted)] bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-full">
-                        {new Date(contrib.extracted_at).toLocaleDateString("ja-JP")}に反映
-                      </span>
-                      <span className="text-[10px] text-[var(--color-success)] font-semibold">
-                        知恵袋で公開中 →
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+         </div>
+      )}
 
       {/* === F7: Contribution Streak === */}
       <div className="px-4 mb-4">

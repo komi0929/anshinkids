@@ -40,16 +40,16 @@ export async function askConcierge(
 
   const history: ConciergeChatMessage[] = (session.messages_json as ConciergeChatMessage[]) || [];
 
-  // Mix context keywords gracefully
+  // Mix context keywords gracefully for the semantic search (only allergens and age to avoid diluting the search)
   let combinedQuery = question;
   if (contextPayload) {
-    try {
-      const p = JSON.parse(contextPayload);
-      if (p.children && p.children.length > 0) {
-        const algs = p.children.flatMap((c: Record<string, unknown>) => [...((c.allergens as string[]) || []), ...((c.customAllergens as string[]) || [])]);
-        if (algs.length > 0) combinedQuery += " " + algs.join(" ");
-      }
-    } catch { /* skip */ }
+     if (contextPayload.includes("卵")) combinedQuery += " 卵";
+     if (contextPayload.includes("乳")) combinedQuery += " 乳";
+     if (contextPayload.includes("小麦")) combinedQuery += " 小麦";
+     if (contextPayload.includes("ピーナッツ") || contextPayload.includes("落花生")) combinedQuery += " 落花生";
+     if (contextPayload.includes("離乳食")) combinedQuery += " 離乳食";
+     if (contextPayload.includes("幼児期")) combinedQuery += " 幼児";
+     if (contextPayload.includes("小学生")) combinedQuery += " 学校 給食";
   }
 
   const questionKeywords = combinedQuery
@@ -67,7 +67,7 @@ export async function askConcierge(
       .join(",");
     const { data: matched } = await supabase
       .from("wiki_entries")
-      .select("title, summary, content_json, allergen_tags, avg_trust_score, source_count")
+      .select("title, summary, sections, allergen_tags, avg_trust_score, source_count")
       .or(orFilter)
       .order("avg_trust_score", { ascending: false })
       .limit(5);
@@ -78,7 +78,7 @@ export async function askConcierge(
   const existingIds = new Set(wikiResults.map(w => w.title));
   const { data: topEntries } = await supabase
     .from("wiki_entries")
-    .select("title, summary, content_json, allergen_tags, avg_trust_score, source_count")
+    .select("title, summary, sections, allergen_tags, avg_trust_score, source_count")
     .order("avg_trust_score", { ascending: false })
     .limit(5);
   if (topEntries) {
@@ -93,7 +93,7 @@ export async function askConcierge(
   const wikiContext = wikiResults
     .map(
       (w) =>
-        `【${w.title}】(信頼度: ${w.avg_trust_score})\n${w.summary || JSON.stringify(w.content_json).slice(0, 500)}`
+        `【${w.title}】(信頼度: ${w.avg_trust_score})\n${w.summary || JSON.stringify(w.sections).slice(0, 1000)}`
     )
     .join("\n\n---\n\n");
 
@@ -105,8 +105,12 @@ export async function askConcierge(
 
   const ragPrompt = `${SYSTEM_PROMPTS.concierge}
 
-## 相談者のプロフィール情報（回答のパーソナライズに活用してください）:
+## コンシェルジュとしてのパーソナライズ絶対指示:
+以下の「相談者のコンテキスト」を最優先で考慮して回答を生成してください。
 ${contextPayload || "未設定"}
+- 最初の挨拶の直後に、登録情報（年齢やアレルゲン）に優しく触れ、「〇〇アレルギーの〇〇歳のお子様ですね。日々のおかず作り、本当にお疲れ様です」などと寄り添ってください。
+- 提案する解決策や体験談は、お子様の年齢（成長段階）やアレルゲン情報に完全に適応させてください。
+- アカウント状態が「貢献者」の場合、「いつもコミュニティへ体験を共有していただき、とても助かっています」と深い感謝を添えてください。
 
 ## 参照可能な一次情報データベース（AI動的Wiki）:
 ${wikiContext || "（まだ一次情報が蓄積されていません。一般的なアドバイスで回答してください）"}

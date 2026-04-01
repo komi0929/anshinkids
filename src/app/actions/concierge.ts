@@ -16,13 +16,47 @@ export async function askConcierge(sessionId: string | null, question: string, c
       userId = user?.id || null;
 
       if (userId) {
-        // Fetch real DB profile over client localstorage
         const { data: profile } = await getMyProfile();
         if (profile) {
-          finalPayload = JSON.stringify({
-             children: profile.children_profiles || [],
-             allergies: profile.allergen_tags || []
-          });
+          // 1. アレルゲンの抽出
+          let allergens: string[] = [];
+          if (profile.allergen_tags && profile.allergen_tags.length > 0) {
+            const firstTag = profile.allergen_tags[0];
+            if (typeof firstTag === "string" && firstTag.startsWith("JSON_PAYLOAD_V3:")) {
+               try {
+                 const parsed = JSON.parse(firstTag.replace("JSON_PAYLOAD_V3:", ""));
+                 const children = parsed.children || [];
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 allergens = Array.from(new Set(children.flatMap((c: any) => [...(c.allergens||[]), ...(c.customAllergens||[])])));
+               } catch { /* fallback */ }
+            } else {
+               allergens = profile.allergen_tags as string[];
+            }
+          }
+
+          // 2. 年齢情報の抽出
+          let childrenStr = "お子様";
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const childrenProfiles = profile.children_profiles as any[];
+          if (childrenProfiles && childrenProfiles.length > 0) {
+             const groups = childrenProfiles.map(c => c.ageGroup).filter(Boolean);
+             if (groups.length > 0) {
+               childrenStr = groups.map(g => {
+                 if (g === '0-1') return '離乳食期(0-1歳)のお子様';
+                 if (g === '1-3') return '幼児期(1-3歳)のお子様';
+                 if (g === '3-6') return '園児(3-6歳)のお子様';
+                 if (g === '6-12') return '小学生のお子様';
+                 return 'お子様';
+               }).join("と");
+             }
+          }
+
+          // 3. 貢献・トラスト情報の抽出
+          const ts = profile.trust_score || 0;
+          const trustStr = ts ? ` (トラストスコア: ${ts.toFixed(0)})` : "";
+          const contributorStatus = ts >= 40 ? "信頼できるコミュニティの貢献者" + trustStr : "コミュニティ参加者" + trustStr;
+          
+          finalPayload = `【相談者のコンテキスト】\n- 対象: ${childrenStr}\n- アレルゲン: ${allergens.length > 0 ? allergens.join("・") : "登録なし"}\n- アカウント状態: ${contributorStatus}`;
         }
       }
     }
@@ -63,130 +97,32 @@ export async function contributeFromConcierge(questionText: string) {
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    // User is optional — guests can contribute too
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Use AI to determine if this consultation contains new knowledge
-    const apiKey = process.env.GOOGLE_API_KEY;
-    if (!apiKey) {
-      // Fallback: store as raw contribution
-      await supabase.from("wiki_sources").insert({
-        wiki_entry_id: null,
-        original_message_snippet: questionText.slice(0, 500),
-        contributor_id: user?.id || null,
-        contributor_trust_score: 0,
-        source_type: "concierge",
-      });
-      return { success: true };
-    }
+    // In Phase 3, we no longer process Wiki Entries synchronously from the Concierge.
+    // Instead, we inject the high-value context into the 'family' room stream (or a general catch-all).
+    // The nightly Batch Processor will autonomously harvest this anonymized insight
+    // and naturally integrate it into the Mega-Wiki sections.
+    
+    // First, resolve the appropriate room ID for 'family'
+    const { data: room } = await supabase
+      .from("talk_rooms")
+      .select("id")
+      .eq("slug", "family")
+      .single();
 
-    const { GoogleGenerativeAI } = await import("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    if (!room) return { success: false, error: "該当ルームが見つかりません" };
 
-    // Ask AI to extract structured knowledge from the consultation
-    const prompt = `あなたは食物アレルギー情報の整理AIです。
+    const { error: insertError } = await supabase.from("messages").insert({
+      room_id: room.id,
+      content: `【AI相談室からの匿名知恵共有】\n${questionText.slice(0, 1000)}`,
+      user_id: user?.id || null, // Guest or properly anonymized
+      is_system_bot: false, // We treat this as user-contributed insight for trust score propagation
+    });
 
-以下はAIコンシェルジュへの相談内容です。この中に、他の保護者の役に立つ一次情報が含まれていますか？
+    if (insertError) throw insertError;
 
-相談内容:
-「${questionText}」
-
-タスク:
-1. 一次情報（具体的な商品名、病院名、年齢、経験談など）が含まれているか判定
-2. 含まれている場合、適切なWikiカテゴリーを決定
-3. 構造化されたJSON形式で返す
-
-含まれていない場合（一般的な質問のみの場合）は {"has_knowledge": false} を返してください。
-
-含まれている場合:
-{
-  "has_knowledge": true,
-  "title": "記事タイトル案",
-  "category": "商品情報|体験記|対処法|レシピ|基礎知識",
-  "summary": "抽出された一次情報の要約",
-  "allergen_tags": ["卵", "乳"],
-  "tips": ["具体的な工夫や情報"]
-}`;
-
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-
-      if (parsed.has_knowledge) {
-        // Create or update wiki entry
-        const slug = (parsed.title || "相談から")
-          .replace(/[^\w\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g, "-")
-          .replace(/-+/g, "-")
-          .toLowerCase()
-          .slice(0, 100);
-
-        // Check if similar entry exists
-        const { data: existing } = await supabase
-          .from("wiki_entries")
-          .select("id, content_json, source_count")
-          .or(`slug.eq.${slug},title.ilike.%${parsed.title}%`)
-          .limit(1)
-          .single();
-
-        if (existing) {
-          // Merge into existing
-          const currentContent = (existing.content_json || {}) as Record<string, unknown[]>;
-          const tips = currentContent.tips || [];
-          await supabase
-            .from("wiki_entries")
-            .update({
-              content_json: {
-                ...currentContent,
-                tips: [...(tips as unknown[]), ...(parsed.tips || []).map((t: string) => ({ text: t, source: "AI相談から", added_at: new Date().toISOString() }))],
-              },
-              source_count: (existing.source_count || 0) + 1,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existing.id);
-
-          // Record source
-          await supabase.from("wiki_sources").insert({
-            wiki_entry_id: existing.id,
-            original_message_snippet: questionText.slice(0, 500),
-            contributor_id: user?.id || null,
-            contributor_trust_score: 0,
-            source_type: "concierge",
-          });
-        } else {
-          // Create new entry
-          const { data: newEntry } = await supabase
-            .from("wiki_entries")
-            .insert({
-              title: parsed.title,
-              slug,
-              category: parsed.category || "その他",
-              summary: parsed.summary,
-              content_json: { tips: (parsed.tips || []).map((t: string) => ({ text: t, source: "AI相談から" })) },
-              allergen_tags: parsed.allergen_tags || [],
-              source_count: 1,
-              is_public: true,
-            })
-            .select()
-            .single();
-
-          if (newEntry) {
-            await supabase.from("wiki_sources").insert({
-              wiki_entry_id: newEntry.id,
-              original_message_snippet: questionText.slice(0, 500),
-              contributor_id: user?.id || null,
-              contributor_trust_score: 0,
-              source_type: "concierge",
-            });
-          }
-        }
-      }
-    }
-
-    // Update contributor stats
+    // Update contributor stats if logged in
     if (user) {
       try {
         const { data: profile } = await supabase
@@ -194,10 +130,12 @@ export async function contributeFromConcierge(questionText: string) {
           .select("total_contributions")
           .eq("id", user.id)
           .single();
-        await supabase
-          .from("profiles")
-          .update({ total_contributions: ((profile?.total_contributions as number) || 0) + 1 })
-          .eq("id", user.id);
+        if (profile) {
+          await supabase
+            .from("profiles")
+            .update({ total_contributions: (profile.total_contributions || 0) + 1 })
+            .eq("id", user.id);
+        }
       } catch { /* best effort */ }
     }
 

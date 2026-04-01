@@ -250,8 +250,8 @@ CREATE OR REPLACE FUNCTION decrement_thanks_count()
 RETURNS TRIGGER AS $$
 BEGIN
   UPDATE messages SET thanks_count = thanks_count - 1 WHERE id = OLD.message_id;
-  UPDATE profiles SET total_thanks_received = total_thanks_received - 1
-    WHERE id = (SELECT user_id FROM messages WHERE id = OLD.message_id);
+  -- CASCADE DELETE等で投稿が消去された際も、ユーザーが一度獲得した感謝（トラストスコア）は
+  -- 『永遠の資産』として保護するため、プロフィールからの減算処理は行いません
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;

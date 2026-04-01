@@ -217,6 +217,12 @@ export async function deleteMyAccount() {
       .delete()
       .eq("user_id", user.id);
 
+    // 安全対策: Pending raw messages are immediately wiped
+    await supabase
+      .from("messages")
+      .delete()
+      .eq("user_id", user.id);
+
     // Delete profile
     await supabase
       .from("profiles")

@@ -7,6 +7,21 @@ export async function runBatchExtraction() {
   const supabase = createAdminClient();
   const model = getGeminiFlash();
 
+  // Mutex: Check if another batch is already running (prevent concurrency dupes)
+  // To prevent deadlocks from crashed batches, we only consider it "running" if started within the last 15 mins.
+  const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("batch_logs")
+    .select("id", { count: "exact" })
+    .eq("batch_type", "extraction")
+    .eq("status", "running")
+    .gte("started_at", fifteenMinsAgo);
+
+  if (count && count > 0) {
+    console.log("[Batch] Mutex Locked: Another extraction is currently running.");
+    return { processed: 0, reason: "mutex_locked_already_running" };
+  }
+
   // Log batch start
   const { data: batchLog } = await supabase
     .from("batch_logs")
@@ -18,12 +33,13 @@ export async function runBatchExtraction() {
     .single();
 
   try {
-    // 1. Fetch unextracted messages from last 72 hours
-    const threeDaysAgo = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+    // 1. Fetch unextracted messages that are still alive (not expired)
+    // created_atによる3日間のハードコード制限を撤廃し、expires_atによる「生存期間の連鎖延長ルール」に完全追従
+    const now = new Date().toISOString();
     const { data: messages, error } = await supabase
       .from("messages")
       .select("*, profiles:user_id(trust_score, display_name)")
-      .gte("created_at", threeDaysAgo)
+      .gt("expires_at", now)
       .eq("ai_extracted", false)
       .eq("is_system_bot", false)
       .order("created_at", { ascending: true });
@@ -104,6 +120,7 @@ export async function runBatchExtraction() {
 
       let currentSections: MegaWikiSection[] = (existingEntry.sections || []) as unknown as MegaWikiSection[];
       const entryId = existingEntry.id;
+      let roomUpdated = false;
 
       for (let i = 0; i < roomMessages.length; i += chunkSize) {
         const chunk = roomMessages.slice(i, i + chunkSize);
@@ -120,32 +137,40 @@ export async function runBatchExtraction() {
           const responseText = result.response.text();
           const jsonMatch = responseText.match(/\[[\s\S]*\]/);
           
+          let extractionSuccess = false;
+          
           if (jsonMatch) {
             const incomingSections = JSON.parse(jsonMatch[0]) as MegaWikiSection[];
             if (incomingSections.length > 0) {
               currentSections = mergeMegaWikiSections(currentSections, incomingSections);
               totalUpdated++;
+              roomUpdated = true;
             }
+            extractionSuccess = true;
+          }
+
+          if (extractionSuccess) {
+            // 貢献ソースをDBに記録（抽出成功時のみ）
+            for (const m of chunk) {
+              await supabase.from("wiki_sources").insert({
+                wiki_entry_id: entryId,
+                original_message_snippet: String(m.content).slice(0, 500),
+                contributor_id: m.user_id || null,
+                contributor_trust_score: m.trust_score,
+              });
+            }
+
+            // Mark as extracted
+            await supabase
+              .from("messages")
+              .update({ ai_extracted: true })
+              .in("id", chunk.map(m => m.id));
+          } else {
+             console.warn(`[Batch] Extraction failed for chunk in ${roomSlug}. Will retry next batch.`);
           }
         } catch (err) {
           console.error(`[Batch] Parse failed for ${roomSlug}`, err);
         }
-
-        // 貢献ソースをDBに記録
-        for (const m of chunk) {
-          await supabase.from("wiki_sources").insert({
-            wiki_entry_id: entryId,
-            original_message_snippet: String(m.content).slice(0, 500),
-            contributor_id: m.user_id || null,
-            contributor_trust_score: m.trust_score,
-          });
-        }
-
-        // Mark as extracted
-        await supabase
-          .from("messages")
-          .update({ ai_extracted: true })
-          .in("id", chunk.map(m => m.id));
       }
 
       // 4. Update Mega-Wiki in DB
@@ -157,6 +182,41 @@ export async function runBatchExtraction() {
           source_count: (existingEntry.source_count || 0) + roomMessages.length,
         })
         .eq("id", entryId);
+
+      // 4.5. AI自律的ファシリテーション (Proactive Topic Summoning)
+      // 抽出があったら、部屋に感謝と「次のお題」を投下する
+      if (roomUpdated) {
+        try {
+           const facPrompt = `あなたは活発な保護者コミュニティのファシリテーターです。先ほど参加者の会話から新しい知恵を抽出しました。
+以下の「現在の知恵袋の見出し」を見て、参加者への短い感謝と、『次に聞きたい関連の話題（まだ不足していそうなもの）」を1〜2文で投げかけてください。
+
+ルール:
+・100〜150文字以内で、短く、温かい保護者目線のトーンにする
+・「先ほど皆さんのお話をまとめました！」のように報告をいれる
+・必ず最後は「〇〇について工夫していることはありますか？」のように質問で終わる
+
+直近の知恵袋の見出し:
+${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
+
+           const facResult = await model.generateContent(facPrompt);
+           const facMessage = facResult.response.text();
+
+           const roomId = Object.keys(roomIdToSlug).find(id => roomIdToSlug[id] === roomSlug);
+           if (roomId) {
+             await supabase.from("messages").insert({
+               room_id: roomId,
+               content: `【AIファシリテーターより】\n${facMessage}`,
+               is_system_bot: true,
+             });
+
+             // 部屋の寿命を延長（ファシリテーションによって復活させる）
+             const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+             await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", roomId);
+           }
+        } catch (facErr) {
+           console.error(`[Batch] Facilitator error for ${roomSlug}`, facErr);
+        }
+      }
     }
 
     // 5. Update Log
@@ -202,9 +262,25 @@ export async function runBatchExtraction() {
       }
     }
 
+    // 7. Data Privacy Safety measure: Purge Expired Data
+    // 期限切れ（72時間経過）の生メッセージを物理削除（プライバシー配慮）
+    let purgedCount = 0;
+    try {
+      // Get count first (optional, but good for logs if needed)
+      const purgeResult = await supabase
+        .from("messages")
+        .delete()
+        .lt("expires_at", new Date().toISOString());
+      purgedCount = purgeResult.count || 0;
+      console.log(`[Batch] Purged ${purgedCount} expired messages.`);
+    } catch (purgeErr) {
+      console.error("[Batch] Failed to purge expired messages", purgeErr);
+    }
+
     return {
       processed: allMessages.length,
       updated: totalUpdated,
+      purged: purgedCount,
     };
   } catch (err) {
     console.error("[Batch] Error:", err);

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw } from "@/components/icons";
 import { askConcierge, contributeFromConcierge } from "@/app/actions/concierge";
 import { checkContentSafety, EMERGENCY_GUIDANCE, calculateAnswerConfidence } from "@/lib/ai/safety-guard";
+import { getMyProfile } from "@/app/actions/mypage";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -29,6 +30,8 @@ export default function ConciergePage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [allergens, setAllergens] = useState<Set<string>>(new Set());
+
   // Restore session from sessionStorage on mount (avoids hydration mismatch)
   useEffect(() => {
     try {
@@ -37,6 +40,45 @@ export default function ConciergePage() {
       const sid = sessionStorage.getItem("anshin_concierge_session");
       if (sid) setTimeout(() => setSessionId(sid), 0);
     } catch { /* empty */ }
+
+    // Load real profile from DB or fallback to localStorage (for guests)
+    async function loadPrefs() {
+      let loadedAllergens = new Set<string>();
+      try {
+        const res = await getMyProfile();
+        if (res.success && res.data) {
+          const profile = res.data;
+          (profile.allergen_tags || []).forEach((a: string) => loadedAllergens.add(a));
+          if (profile.children_profiles) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            profile.children_profiles.forEach((c: any) => {
+              (c.allergens || []).forEach((a: string) => loadedAllergens.add(a));
+              (c.customAllergens || []).forEach((a: string) => loadedAllergens.add(a));
+            });
+          }
+        }
+        
+        if (loadedAllergens.size === 0) {
+          const stored = localStorage.getItem("anshin_user_preferences");
+          if (stored) {
+            const prefs = JSON.parse(stored);
+            if (prefs.children) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              prefs.children.forEach((c: any) => {
+                (c.allergens || []).forEach((a: string) => loadedAllergens.add(a));
+                (c.customAllergens || []).forEach((a: string) => loadedAllergens.add(a));
+              });
+            } else if (prefs.allergens) {
+              prefs.allergens.forEach((a: string) => loadedAllergens.add(a));
+            }
+          }
+        }
+      } catch (err) { /* ignore */ }
+      
+      setAllergens(loadedAllergens);
+      setIsMounted(true);
+    }
+    loadPrefs();
   }, []);
 
   // Gap 4: Contribution prompt
@@ -200,33 +242,16 @@ export default function ConciergePage() {
                 
                 if (!isMounted) return defaults;
 
-                try {
-                  const stored = localStorage.getItem("anshin_user_preferences");
-                  if (!stored) return defaults;
-                  const prefs = JSON.parse(stored);
-                  
-                  const allAllergens = new Set<string>();
-                  if (prefs.children) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    prefs.children.forEach((c: any) => {
-                      (c.allergens || []).forEach((a: string) => allAllergens.add(a));
-                      (c.customAllergens || []).forEach((a: string) => allAllergens.add(a));
-                    });
-                  } else if (prefs.allergens) {
-                    prefs.allergens.forEach((a: string) => allAllergens.add(a));
-                  }
+                const personalized: string[] = [];
+                if (allergens.has("卵") || allergens.has("egg")) personalized.push("卵アレルギーの3歳児ですが、食べられるケーキはありますか？");
+                else if (allergens.has("乳") || allergens.has("milk")) personalized.push("乳アレルギーでも食べられるアイスクリームはありますか？");
+                else personalized.push(defaults[0]);
 
-                  const personalized: string[] = [];
-                  if (allAllergens.has("卵") || allAllergens.has("egg")) personalized.push("卵アレルギーの3歳児ですが、食べられるケーキはありますか？");
-                  else if (allAllergens.has("乳") || allAllergens.has("milk")) personalized.push("乳アレルギーでも食べられるアイスクリームはありますか？");
-                  else personalized.push(defaults[0]);
+                if (allergens.has("小麦") || allergens.has("wheat")) personalized.push("小麦アレルギーの子に米粉パンを作りたいのですが、おすすめのレシピは？");
+                else personalized.push(defaults[1]);
 
-                  if (allAllergens.has("小麦") || allAllergens.has("wheat")) personalized.push("小麦アレルギーの子に米粉パンを作りたいのですが、おすすめのレシピは？");
-                  else personalized.push(defaults[1]);
-
-                  personalized.push(defaults[2]);
-                  return personalized;
-                } catch { return defaults; }
+                personalized.push(defaults[2]);
+                return personalized;
               })().map((suggestion, i) => (
                 <button
                   key={suggestion}

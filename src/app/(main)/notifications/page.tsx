@@ -59,11 +59,11 @@ export default function NotificationsPage() {
         if (impactRes.success && impactRes.data) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const impact = impactRes.data as any;
-          if (impact.totalReaders > 0) {
+          if (impact.totalHelpfulVotes > 0) {
             notifs.push({
               id: `notif-${idCounter++}`,
               type: "impact_milestone",
-              message: <span>あなたの声が、これまでに <strong className="text-[var(--color-primary)]">{impact.totalReaders}人</strong> の親に読まれて助けになりました。</span>,
+              message: <span>あなたの声が、これまでに <strong className="text-[var(--color-primary)]">{impact.totalHelpfulVotes}人</strong> の親に読まれて役に立ちました。</span>,
               dateStr: "累積インパクト",
               isRead: true,
               link: "/mypage"

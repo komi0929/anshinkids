@@ -76,10 +76,11 @@ export async function getTrendingTopics() {
 }
 
 /**
- * パーソナライズドフィード — ユーザーのアレルゲンに基づく関連Wiki記事
+ * パーソナライズドフィード — ユーザーのアレルゲン・年齢に基づく関連Wiki記事
  * 
  * ✅ RLS対応: wiki_entries の SELECT は is_public=true またはauthenticated。
  *    is_public=true のみクエリしているので問題なし。
+ * ✅ F1: データ活用による「なぜこの情報が出たのか」の納得感を高めるフルパーソナライズ
  */
 export async function getPersonalizedWikiEntries() {
   try {
@@ -89,28 +90,175 @@ export async function getPersonalizedWikiEntries() {
     const { data: { user } } = await supabase.auth.getUser();
 
     let allergenTags: string[] = [];
+    let ageGroups: string[] = [];
+
     if (user) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("allergen_tags")
         .eq("id", user.id)
         .single();
-      allergenTags = profile?.allergen_tags || [];
+        
+      if (profile && profile.allergen_tags && profile.allergen_tags.length > 0) {
+        const firstTag = profile.allergen_tags[0];
+        if (typeof firstTag === "string" && firstTag.startsWith("JSON_PAYLOAD_V3:")) {
+           try {
+             const parsed = JSON.parse(firstTag.replace("JSON_PAYLOAD_V3:", ""));
+             const children = parsed.children || [];
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             allergenTags = Array.from(new Set(children.flatMap((c: any) => [...(c.allergens||[]), ...(c.customAllergens||[])])));
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             ageGroups = Array.from(new Set(children.map((c: any) => c.ageGroup).filter(Boolean)));
+           } catch { /* fallback */ }
+        } else {
+           allergenTags = profile.allergen_tags;
+        }
+      }
     }
 
-    // If user has allergens, search for matching wiki entries
-    if (allergenTags.length > 0) {
-      const { data: matched } = await supabase
-        .from("wiki_entries")
-        .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at")
-        .eq("is_public", true)
-        .overlaps("allergen_tags", allergenTags)
-        .order("avg_trust_score", { ascending: false })
-        .limit(5);
+    // Decode age contextual keywords
+    const keywords: string[] = [];
+    let ageLabel = "";
 
-      if (matched && matched.length > 0) {
-        return { success: true, data: matched, isPersonalized: true };
+    if (ageGroups.length > 0) {
+      if (ageGroups.includes("0-1")) {
+        keywords.push("離乳食", "赤ちゃん", "ベビー", "ミルク", "初めて", "授乳");
+        ageLabel = "離乳食期";
       }
+      if (ageGroups.includes("1-3")) {
+        keywords.push("幼児", "保育園", "1歳", "2歳", "3歳", "おやつ", "イヤイヤ");
+        ageLabel = ageLabel ? "離乳食/幼児期" : "幼児期";
+      }
+      if (ageGroups.includes("3-6")) {
+        keywords.push("幼稚園", "こども園", "給食", "お弁当", "先生", "遠足");
+        ageLabel = ageLabel ? "乳幼児/園児" : "園児（3-6歳）";
+      }
+      if (ageGroups.includes("6-12")) {
+        keywords.push("小学生", "学童", "入学", "学校", "宿泊", "ランドセル");
+        ageLabel = ageLabel ? "園児/小学生" : "小学生";
+      }
+    }
+
+    // Build personalization label
+    let personalizationLabel = "";
+    const tagLabel = allergenTags.length > 0 
+      ? (allergenTags.length <= 2 ? allergenTags.join("・") : allergenTags[0] + "など") + "アレルギー" 
+      : "";
+      
+    if (tagLabel && ageLabel) {
+      personalizationLabel = `✨ ${tagLabel} × ${ageLabel} をもつ方へ`;
+    } else if (tagLabel) {
+      personalizationLabel = `✨ ${tagLabel} をもつ方へ`;
+    } else if (ageLabel) {
+      personalizationLabel = `✨ ${ageLabel} の知恵（一部抜粋）`;
+    }
+
+    // Type for our queried data
+    interface WikiEntryData {
+      id: string;
+      title: string;
+      slug: string;
+      category: string;
+      summary: string;
+      allergen_tags: string[];
+      avg_trust_score: number;
+      source_count: number;
+      updated_at: string;
+      sections?: Record<string, unknown>[]; // Mega-Wiki sections array
+    }
+
+    let matched: WikiEntryData[] = [];
+
+    // Stage 1: Try finding by allergens first (Primary axis)
+    if (allergenTags.length > 0) {
+      const { data: allergenMatched } = await supabase
+        .from("wiki_entries")
+        .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at, sections")
+        .eq("is_public", true)
+        .overlaps("allergen_tags", allergenTags as string[])
+        .order("avg_trust_score", { ascending: false })
+        .limit(8);
+      
+      if (allergenMatched) matched = allergenMatched as WikiEntryData[];
+    }
+
+    // Stage 2: Enhance with Age Keywords
+    if (keywords.length > 0) {
+      if (matched.length === 0) {
+        // No allergens matches (or no allergens set), find purely by keywords
+        const orConditions: string[] = [];
+        keywords.forEach(kw => {
+          orConditions.push(`summary.ilike.%${kw}%`);
+          orConditions.push(`sections::text.ilike.%${kw}%`);
+        });
+        
+        const { data: kwMatched } = await supabase
+          .from("wiki_entries")
+          .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at, sections")
+          .eq("is_public", true)
+          .or(orConditions.join(","))
+          .order("avg_trust_score", { ascending: false })
+          .limit(8);
+          
+        if (kwMatched) matched = kwMatched as WikiEntryData[];
+      } else {
+        // We have matching allergens. Boost the ones that also match the age keywords.
+        matched.sort((a, b) => {
+          let aScore = a.avg_trust_score || 0;
+          let bScore = b.avg_trust_score || 0;
+          const aText = (a.title + " " + a.summary + " " + JSON.stringify(a.sections)).toLowerCase();
+          const bText = (b.title + " " + b.summary + " " + JSON.stringify(b.sections)).toLowerCase();
+          // Boost significantly if the age context matches anywhere in the article
+          if (keywords.some(kw => aText.includes(kw))) aScore += 1000;
+          if (keywords.some(kw => bText.includes(kw))) bScore += 1000;
+          return bScore - aScore; // Descending
+        });
+      }
+    }
+
+    if (matched && matched.length > 0) {
+      const isPersonalized = true;
+      const finalLabel = personalizationLabel || "✨ あなたへの特別なおすすめ";
+      
+      // Feature: "Extract specific snippets instead of generic article summaries"
+      // Mega-Wikis are large (1 of 8). We should show the EXACT relevant sub-section.
+      const searchTerms = [...keywords, ...(allergenTags as string[])];
+      
+      const enhancedMatches = matched.slice(0, 5).map(entry => {
+        let bestSnippet = entry.summary;
+        // Search through the sections to find a hyper-relevant snippet
+        if (entry.sections && Array.isArray(entry.sections)) {
+          for (const section of entry.sections) {
+            const heading = (section.heading as string) || "";
+            const items = (section.items as Record<string, unknown>[]) || [];
+            
+            // Does this section heading or items contain our keywords?
+            const sectionText = (heading + " " + JSON.stringify(items)).toLowerCase();
+            if (searchTerms.some(term => sectionText.includes(term.toLowerCase()))) {
+              // Find the specific item that matched
+              const matchedItem = items.find((item: Record<string, unknown>) => {
+                const content = item.content as string | undefined;
+                return searchTerms.some(term => content && content.toLowerCase().includes(term.toLowerCase()));
+              });
+              
+              if (matchedItem) {
+                 bestSnippet = `💡 ${heading}: ${(matchedItem.content as string).substring(0, 50)}...`;
+              } else {
+                 bestSnippet = `💡 見出し: ${heading}`;
+              }
+              break; // Found the best snippet for this entry
+            }
+          }
+        }
+        
+        return {
+          ...entry,
+          summary: bestSnippet,
+          sections: undefined // do not send heavy json to client
+        };
+      });
+
+      return { success: true, data: enhancedMatches, isPersonalized, personalizationLabel: finalLabel };
     }
 
     // Fallback: top entries by trust
@@ -121,7 +269,7 @@ export async function getPersonalizedWikiEntries() {
       .order("avg_trust_score", { ascending: false })
       .limit(5);
 
-    return { success: true, data: top || [], isPersonalized: false };
+    return { success: true, data: top || [], isPersonalized: false, personalizationLabel: "📖 人気の知恵袋記事" };
   } catch (err) {
     console.error("[getPersonalizedWikiEntries]", err);
     return { success: false, data: [] };
@@ -302,26 +450,71 @@ export async function getImpactFeedback() {
     if (!user) return { success: false, data: null };
 
     // Count how many wiki articles reference this user's contributions
-    const { data: sources } = await supabase
+    const { data: allSources } = await supabase
       .from("wiki_sources")
       .select("wiki_entry_id")
       .eq("contributor_id", user.id);
 
-    if (!sources || sources.length === 0) {
-      return { success: true, data: { articlesHelped: 0, message: null } };
+    let uniqueArticles = 0;
+    let totalSourcesInArticles = 0;
+    const entryIds = new Set<string>();
+
+    if (allSources && allSources.length > 0) {
+      allSources.forEach(s => entryIds.add(s.wiki_entry_id as string));
+      uniqueArticles = entryIds.size;
+      totalSourcesInArticles = allSources.length;
     }
 
-    const uniqueArticles = new Set(sources.map(s => s.wiki_entry_id)).size;
+    // NEW: Get the detailed recent impact history (for Visual Bento UI)
+    interface ImpactItem {
+      title: string;
+      slug: string;
+      category: string;
+      snippet: string;
+      trustScore: number;
+      extractedAt: string;
+    }
+    const recentImpacts: ImpactItem[] = [];
 
-    // Get total source count of articles this user contributed to (= community size helped)
-    const entryIds = [...new Set(sources.map(s => s.wiki_entry_id))];
-    let totalSourcesInArticles = 0;
-    if (entryIds.length > 0) {
-      const { count } = await supabase
+    if (entryIds.size > 0) {
+      // Get the latest distinct sources from this user
+      const { data: recentSources } = await supabase
         .from("wiki_sources")
-        .select("id", { count: "exact" })
-        .in("wiki_entry_id", entryIds);
-      totalSourcesInArticles = count || 0;
+        .select("wiki_entry_id, original_message_snippet, extracted_at")
+        .eq("contributor_id", user.id)
+        .order("extracted_at", { ascending: false })
+        .limit(10);
+
+      if (recentSources && recentSources.length > 0) {
+        const recentEntryIds = [...new Set(recentSources.map(s => String(s.wiki_entry_id)))];
+        const { data: entries } = await supabase
+          .from("wiki_entries")
+          .select("id, title, slug, category, avg_trust_score")
+          .in("id", recentEntryIds);
+
+        if (entries) {
+          const entryMap = new Map(entries.map(e => [e.id, e]));
+          const added = new Set<string>();
+          for (const src of recentSources) {
+            const eid = String(src.wiki_entry_id);
+            if (!added.has(eid)) {
+              added.add(eid);
+              const entry = entryMap.get(eid);
+              if (entry) {
+                recentImpacts.push({
+                  title: entry.title,
+                  slug: entry.slug,
+                  category: entry.category,
+                  snippet: (src.original_message_snippet as string) || "コミュニティへの投稿が採用されました",
+                  trustScore: entry.avg_trust_score || 0,
+                  extractedAt: String(src.extracted_at),
+                });
+              }
+            }
+            if (recentImpacts.length >= 3) break; // Only showcase top 3 in Bento
+          }
+        }
+      }
     }
 
     // Get the user's profile stats
@@ -356,6 +549,7 @@ export async function getImpactFeedback() {
         thanks,
         trustScore: Math.round(trustScore),
         message,
+        recentImpacts,
       },
     };
   } catch (err) {

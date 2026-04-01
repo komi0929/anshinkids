@@ -55,6 +55,7 @@ export default function TalkRoomsPage() {
   const [trending, setTrending] = useState<TrendingTopic[]>([]);
   const [personalizedWiki, setPersonalizedWiki] = useState<PersonalizedEntry[]>([]);
   const [isPersonalized, setIsPersonalized] = useState(false);
+  const [personalizationLabel, setPersonalizationLabel] = useState("");
   const [streak, setStreak] = useState<StreakData | null>(null);
   const [digest, setDigest] = useState<DigestData | null>(null);
 
@@ -89,6 +90,7 @@ export default function TalkRoomsPage() {
       if (r.success) {
         setPersonalizedWiki(r.data as PersonalizedEntry[]);
         setIsPersonalized(r.isPersonalized || false);
+        setPersonalizationLabel(r.personalizationLabel || "");
       }
     });
     getContributionStreak().then(r => { if (r.success && r.data) setStreak(r.data); });
@@ -272,9 +274,8 @@ export default function TalkRoomsPage() {
       {personalizedWiki.length > 0 && (
         <div className="px-4 pb-4">
           <div className="flex items-center gap-2 mb-2.5 px-1">
-            <span className="text-sm">{isPersonalized ? "✨" : "📖"}</span>
             <h2 className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>
-              {isPersonalized ? "あなたへのおすすめ記事" : "人気の知恵袋記事"}
+              {personalizationLabel || (isPersonalized ? "✨ あなたへのおすすめ記事" : "📖 人気の知恵袋記事")}
             </h2>
           </div>
           <div className="space-y-2">
