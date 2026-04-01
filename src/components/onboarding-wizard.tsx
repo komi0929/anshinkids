@@ -74,6 +74,7 @@ async function syncPreferencesToProfile(prefs: UserPreferences) {
   const { updateMyProfile } = await import("@/app/actions/mypage");
   await updateMyProfile({
     children_profiles: prefs.children as unknown as Record<string, unknown>[],
+    interests: prefs.interests,
   });
 }
 

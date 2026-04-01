@@ -58,12 +58,31 @@ export default function TalkRoomsPage() {
   const [streak, setStreak] = useState<StreakData | null>(null);
   const [digest, setDigest] = useState<DigestData | null>(null);
 
+  const [recommendedRooms, setRecommendedRooms] = useState<Room[]>([]);
+
   useEffect(() => {
     // Load rooms
     getTalkRooms().then(({ data }) => {
-      if (data) setRooms(data as Room[]);
-      setIsLoading(false);
+      if (data) {
+        const roomList = data as Room[];
+        setRooms(roomList);
+        setIsLoading(false);
+        // Fetch real profile to determine recommended rooms
+        import("@/app/actions/mypage").then(({ getMyProfile }) => {
+          getMyProfile().then(res => {
+            if (res.success && res.data && res.data.interests) {
+              const userInterests = res.data.interests as string[];
+              if (userInterests.length > 0) {
+                setRecommendedRooms(roomList.filter(r => userInterests.includes(r.slug)));
+              }
+            }
+          }).catch(() => {});
+        });
+      } else {
+        setIsLoading(false);
+      }
     });
+
     // Load discovery data in parallel (non-blocking)
     getTrendingTopics().then(r => { if (r.success) setTrending(r.data as TrendingTopic[]); });
     getPersonalizedWikiEntries().then(r => {
@@ -75,18 +94,6 @@ export default function TalkRoomsPage() {
     getContributionStreak().then(r => { if (r.success && r.data) setStreak(r.data); });
     getWeeklyDigest().then(r => { if (r.success && r.data) setDigest(r.data as DigestData); });
   }, []);
-
-  // Derive recommended rooms from current rooms (no setState in effect)
-  const recommendedRooms = (() => {
-    if (rooms.length === 0 || typeof window === "undefined") return [];
-    try {
-      const stored = localStorage.getItem("anshin_user_preferences");
-      if (!stored) return [];
-      const prefs = JSON.parse(stored);
-      if (!prefs.interests || prefs.interests.length === 0) return [];
-      return rooms.filter((r) => (prefs.interests as string[]).includes(r.slug));
-    } catch { return []; }
-  })();
 
 
 

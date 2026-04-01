@@ -39,13 +39,21 @@ export async function getMyProfile() {
 
     if (error) throw error;
     
-    // Polyfill children_profiles from serialized allergen_tags to bypass missing DB column
+    // Polyfill children_profiles and interests from serialized allergen_tags to bypass missing DB column
     if (profile && profile.allergen_tags && Array.isArray(profile.allergen_tags)) {
       const firstTag = profile.allergen_tags[0];
-      if (firstTag && typeof firstTag === "string" && firstTag.startsWith("JSON_PAYLOAD_V2:")) {
+      if (firstTag && typeof firstTag === "string") {
         try {
-          profile.children_profiles = JSON.parse(firstTag.replace("JSON_PAYLOAD_V2:", ""));
-          profile.allergen_tags = profile.allergen_tags.slice(1);
+          if (firstTag.startsWith("JSON_PAYLOAD_V3:")) {
+            const parsed = JSON.parse(firstTag.replace("JSON_PAYLOAD_V3:", ""));
+            profile.children_profiles = parsed.children || [];
+            profile.interests = parsed.interests || [];
+            profile.allergen_tags = profile.allergen_tags.slice(1);
+          } else if (firstTag.startsWith("JSON_PAYLOAD_V2:")) {
+            profile.children_profiles = JSON.parse(firstTag.replace("JSON_PAYLOAD_V2:", ""));
+            profile.allergen_tags = profile.allergen_tags.slice(1);
+            profile.interests = [];
+          }
         } catch { /* ignore */ }
       }
     }
@@ -63,6 +71,7 @@ export async function updateMyProfile(updates: {
   allergen_tags?: string[];
   child_age_months?: number | null;
   children_profiles?: Record<string, unknown>[];
+  interests?: string[];
 }) {
   try {
     const supabase = await createClient();
@@ -73,17 +82,22 @@ export async function updateMyProfile(updates: {
 
     const payload = { ...updates };
     
-    // Fallback: If children_profiles column is missing on remote, pack it into allergen_tags
-    if (payload.children_profiles) {
+    if (payload.children_profiles || payload.interests) {
       const flatAllergens = new Set<string>();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      payload.children_profiles.forEach((c: any) => {
-        if (Array.isArray(c.allergens)) c.allergens.forEach((a: string) => flatAllergens.add(a));
-      });
+      if (payload.children_profiles) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        payload.children_profiles.forEach((c: any) => {
+          if (Array.isArray(c.allergens)) c.allergens.forEach((a: string) => flatAllergens.add(a));
+        });
+      }
       const tags = Array.from(flatAllergens);
-      tags.unshift("JSON_PAYLOAD_V2:" + JSON.stringify(payload.children_profiles));
+      tags.unshift("JSON_PAYLOAD_V3:" + JSON.stringify({
+        children: payload.children_profiles || [],
+        interests: payload.interests || [],
+      }));
       payload.allergen_tags = tags;
       delete payload.children_profiles;
+      delete payload.interests;
     }
 
     const { error } = await supabase
