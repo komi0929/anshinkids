@@ -253,3 +253,29 @@ export async function deleteMyAccount() {
     return { success: false, error: "削除に失敗しました" };
   }
 }
+
+/**
+ * Phase 9: 300-point Utility-Led Growth
+ * Fetch public allergy passport safely for sharing.
+ */
+export async function getPublicAllergyCard(profileId: string) {
+  try {
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const adminClient = createAdminClient();
+
+    // Only fetch safe, essential data needed for the amulet card.
+    const { data: profile, error } = await adminClient
+      .from("profiles")
+      .select("id, display_name, allergen_tags, child_age_months, children_profiles")
+      .eq("id", profileId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!profile) return { success: false, error: "カードが見つかりません" };
+
+    return { success: true, data: profile };
+  } catch (err) {
+    console.error("[getPublicAllergyCard]", err);
+    return { success: false, error: "カードの読み込みに失敗しました" };
+  }
+}
