@@ -1,6 +1,6 @@
 export default function TermsPage() {
   return (
-    <div className="min-h-screen px-4 py-12" style={{ backgroundColor: "var(--color-bg)", color: "var(--color-text)" }}>
+    <div className="min-h-[100dvh] px-4 py-12" style={{ backgroundColor: "var(--color-bg)", color: "var(--color-text)" }}>
       <div className="mx-auto max-w-3xl">
         <h1 className="mb-8 text-2xl font-bold">利用規約</h1>
         <section className="space-y-8 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>

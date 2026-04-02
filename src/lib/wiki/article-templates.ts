@@ -16,7 +16,6 @@ export function getExtractionPrompt(themeSlug: string, messagesText: string, exi
 ## テーマ: ${theme.name}
 ${theme.extractionHint}
 分類軸: ${theme.indexingAxis}
-スコアリング方針: ${theme.scoringHint}
 
 ## 会話（時系列順）:
 ${messagesText}
@@ -29,6 +28,8 @@ ${existingSectionsTitleList || "（まだアイテムがありません）"}
 2. JSON以外のテキストやMarkdownの装飾（\`\`\`jsonなど）は絶対に含めないでください。
 3. すでに既存の「見出し(heading)」や「アイテム(title)」と同じ意味のものがあれば、表記揺れを整えて同じタイトルを出力してください。
 4. 情報がない場合、またはノイズのみの場合は空の配列 [] を返してください。
+5. 【プライバシー保護】個人名・病院名・地名・SNSアカウント等の個人特定情報は絶対に含めないでください。「ある病院で」「知人が」のように匿名化して記録してください。
+6. 【医療的断定の禁止】「〜すべき」「〜が正しい」等の断定表現は使わず、「〜という体験がある」「〜という声が多い」のように体験談として記録してください。
 
 ## 出力スキーマ:
 [
@@ -105,9 +106,14 @@ function ensureItemDefaults(item: Record<string, unknown>): MegaWikiItem {
 function mergeText(a: string, b: string): string {
   if (!a) return b || "";
   if (!b) return a || "";
-  if (a.includes(b)) return a;
-  if (b.includes(a)) return b;
-  return a + "\n" + b;
+  
+  // Clean, split, and deduplicate sentences
+  const sentences = [...a.split(/[。\n]+/), ...b.split(/[。\n]+/)].map(s => s.trim()).filter(Boolean);
+  const uniqueSentences = Array.from(new Set(sentences));
+  
+  // Cap length to prevent infinite growth (max ~3-4 key sentences)
+  const capped = uniqueSentences.slice(0, 4);
+  return capped.join("。") + (capped.length > 0 ? "。" : "");
 }
 
 function mergeArrays(a: unknown, b: unknown): unknown[] {

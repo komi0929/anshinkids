@@ -45,7 +45,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--color-bg)" }}>
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: "var(--color-bg)" }}>
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           {/* Logo & Brand */}

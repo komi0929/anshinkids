@@ -28,6 +28,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['profiles']['Row']>
         Update: Partial<Database['public']['Tables']['profiles']['Row']>
+        Relationships: any[]
       }
       talk_rooms: {
         Row: {
@@ -44,6 +45,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['talk_rooms']['Row']>
         Update: Partial<Database['public']['Tables']['talk_rooms']['Row']>
+        Relationships: any[]
       }
       messages: {
         Row: {
@@ -59,6 +61,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['messages']['Row']>
         Update: Partial<Database['public']['Tables']['messages']['Row']>
+        Relationships: any[]
       }
       message_thanks: {
         Row: {
@@ -69,6 +72,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['message_thanks']['Row']>
         Update: Partial<Database['public']['Tables']['message_thanks']['Row']>
+        Relationships: any[]
       }
       wiki_entries: {
         Row: {
@@ -93,6 +97,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['wiki_entries']['Row']>
         Update: Partial<Database['public']['Tables']['wiki_entries']['Row']>
+        Relationships: any[]
       }
       wiki_helpful_votes: {
         Row: {
@@ -103,6 +108,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['wiki_helpful_votes']['Row']>
         Update: Partial<Database['public']['Tables']['wiki_helpful_votes']['Row']>
+        Relationships: any[]
       }
       wiki_sources: {
         Row: {
@@ -116,6 +122,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['wiki_sources']['Row']>
         Update: Partial<Database['public']['Tables']['wiki_sources']['Row']>
+        Relationships: any[]
       }
       concierge_sessions: {
         Row: {
@@ -127,6 +134,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['concierge_sessions']['Row']>
         Update: Partial<Database['public']['Tables']['concierge_sessions']['Row']>
+        Relationships: any[]
       }
       user_bookmarks: {
         Row: {
@@ -139,6 +147,7 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['user_bookmarks']['Row']>
         Update: Partial<Database['public']['Tables']['user_bookmarks']['Row']>
+        Relationships: any[]
       }
       contribution_days: {
         Row: {
@@ -149,7 +158,20 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['contribution_days']['Row']>
         Update: Partial<Database['public']['Tables']['contribution_days']['Row']>
+        Relationships: any[]
       }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }

@@ -13,7 +13,7 @@ export interface ThemeDefinition {
   /** Mega-Wiki の動的セクション分類軸 */
   indexingAxis: string;
   /** AI抽出時のスコアリング方針 */
-  scoringHint: string;
+
   /** AI抽出のカテゴリ専用指示 */
   extractionHint: string;
   /** 出力スキーマ */
@@ -28,7 +28,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "🍚",
     sort_order: 1,
     indexingAxis: "場面別（朝食・昼食・弁当・夕食・おやつ）→ レシピ/食材名",
-    scoringHint: "再現しやすさ × 言及数 × 感謝数",
+
     extractionHint: "レシピ・代替食材・お弁当の工夫を構造化。材料、手順、どのアレルゲン除去かを記録。",
     sectionSchema: `{
   "heading": "場面名（朝食・弁当など）",
@@ -50,7 +50,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "🛒",
     sort_order: 2,
     indexingAxis: "カテゴリ（パン・おやつ・調味料・冷凍食品等）→ 商品名",
-    scoringHint: "言及数 × レビュー評価 × 感謝数",
+
     extractionHint: "商品名、メーカー、対応アレルゲン、味・使い勝手の評価、購入先を構造化。",
     sectionSchema: `{
   "heading": "カテゴリ名（パン・おやつなど）",
@@ -74,7 +74,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "🍽️",
     sort_order: 3,
     indexingAxis: "ジャンル（ファストフード・ファミレス・和食・旅行先等）→ 店名/場所",
-    scoringHint: "言及数 × ポジティブな文脈 × 感謝数 → 👑みんなのおすすめ上位",
+
     extractionHint: "店名、チェーン名、アレルギー対応メニュー有無、スタッフ対応、安全に食べられたメニューを構造化。",
     sectionSchema: `{
   "heading": "ジャンル名（ファストフードなど）",
@@ -97,7 +97,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "🏫",
     sort_order: 4,
     indexingAxis: "シチュエーション別（入園前準備・給食・遠足・面談・進学等）",
-    scoringHint: "具体的交渉フレーズの有無 × 感謝数",
+
     extractionHint: "園/学校との交渉方法、必要書類、成功事例、具体的なフレーズを構造化。",
     sectionSchema: `{
   "heading": "シチュエーション名（入園前・給食など）",
@@ -119,7 +119,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "🧪",
     sort_order: 5,
     indexingAxis: "アレルゲン別（卵・乳・小麦等）→ 年齢帯別",
-    scoringHint: "信頼度（詳細さ）× 感謝数",
+
     extractionHint: "検査の時系列（準備→当日→結果→その後）、子どもの年齢、ターゲット食材、結果を構造化。",
     sectionSchema: `{
   "heading": "アレルゲン名（卵・乳など）",
@@ -143,7 +143,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "🧴",
     sort_order: 6,
     indexingAxis: "製品カテゴリ（保湿剤・入浴剤・洗剤等）→ 製品名",
-    scoringHint: "レビュー評価 × 使用期間 × 感謝数",
+
     extractionHint: "製品名、肌質、使い方、効果の感想を構造化。",
     sectionSchema: `{
   "heading": "カテゴリ名（保湿剤・入浴剤など）",
@@ -166,7 +166,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "👨‍👩‍👧",
     sort_order: 7,
     indexingAxis: "シチュエーション別（診断直後・祖父母対応・パートナー・ママ友等）",
-    scoringHint: "共感数（感謝数）× 言及数",
+
     extractionHint: "エピソード、対処法、励ましの言葉を構造化。個人特定情報は除去。",
     sectionSchema: `{
   "heading": "シチュエーション名",
@@ -188,7 +188,7 @@ export const THEMES: ThemeDefinition[] = [
     icon_emoji: "🌱",
     sort_order: 8,
     indexingAxis: "アレルゲン別（卵・乳・小麦等）→ 時系列",
-    scoringHint: "言及数 × ポジティブ度 × 感謝数",
+
     extractionHint: "克服したアレルゲン、年齢、きっかけ、経過期間を構造化。",
     sectionSchema: `{
   "heading": "アレルゲン名",

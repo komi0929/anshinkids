@@ -1,0 +1,16 @@
+{
+  "name": "あんしんキッズ",
+  "short_name": "あんしんキッズ",
+  "description": "食物アレルギーの知恵を、みんなでつくるコミュニティ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#FAFAFA",
+  "icons": [
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

@@ -178,8 +178,8 @@ CREATE TABLE IF NOT EXISTS wiki_sources (
 );
 
 ALTER TABLE wiki_sources ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Wiki sources viewable by authenticated" ON wiki_sources
-  FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Wiki sources viewable by contributor" ON wiki_sources
+  FOR SELECT USING (auth.uid() = contributor_id);
 
 -- ========================================
 -- CONCIERGE SESSIONS (AI相談)

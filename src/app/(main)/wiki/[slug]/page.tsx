@@ -8,6 +8,10 @@ import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen, Bookmark } fro
 const Users = User;
 import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets } from "@/app/actions/wiki";
 import { getKnowledgeRipple } from "@/app/actions/discover";
+import { Haptics } from "@/lib/haptics";
+import { AudioHaptics } from "@/lib/audio-haptics";
+import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
+import { motion, useScroll, useSpring } from "framer-motion";
 
 export interface MegaWikiItem {
   title: string;
@@ -68,6 +72,13 @@ export default function WikiDetailPage() {
   const [entry, setEntry] = useState<WikiEntryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   const [ripple, setRipple] = useState<{
     maturityLabel: string;
     maturityLevel: string;
@@ -106,8 +117,13 @@ export default function WikiDetailPage() {
     setIsLoading(false);
   }
 
-  async function handleVoteHelpful() {
+  async function handleVoteHelpful(event?: React.MouseEvent) {
     if (hasVotedHelpful || !entry) return;
+    Haptics.success();
+    if (event) {
+      AudioHaptics.playPop();
+      triggerSensoryBurst(event);
+    }
     setHasVotedHelpful(true);
     setHelpfulCount(c => c + 1);
     const res = await voteWikiHelpful(entry.id);
@@ -118,7 +134,12 @@ export default function WikiDetailPage() {
     }
   }
 
-  async function handleToggleBookmark(title: string, content: string) {
+  async function handleToggleBookmark(title: string, content: string, event?: React.MouseEvent) {
+    Haptics.light();
+    if (event && !bookmarkedSnippets.has(title)) {
+      AudioHaptics.playTink();
+      triggerSensoryBurst(event);
+    }
     if (!entry) return;
     
     const isBookmarked = bookmarkedSnippets.has(title);
@@ -189,7 +210,12 @@ export default function WikiDetailPage() {
   const freshness = getFreshness(entry.updated_at);
 
   return (
-    <div className="fade-in pb-24">
+    <div className="flex flex-col min-h-[100dvh] bg-[var(--color-surface)]">
+      {/* Scroll Progress */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-success)] origin-left z-[100]"
+        style={{ scaleX }}
+      />
       {/* Header */}
       <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
         <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors" id="back-to-wiki">
@@ -294,8 +320,9 @@ export default function WikiDetailPage() {
                               👑 定番
                             </span>
                           )}
-                          <button
-                            onClick={() => handleToggleBookmark(item.title, item.content)}
+                          <motion.button
+                            whileTap={{ scale: 0.85 }}
+                            onClick={(e: React.MouseEvent) => handleToggleBookmark(item.title, item.content, e)}
                             className={`p-1.5 rounded-full transition-colors ${
                               bookmarkedSnippets.has(item.title)
                                 ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
@@ -304,7 +331,7 @@ export default function WikiDetailPage() {
                             aria-label="ブックマーク"
                           >
                             <Bookmark className={`w-4 h-4 ${bookmarkedSnippets.has(item.title) ? "fill-current" : ""}`} />
-                          </button>
+                          </motion.button>
                         </div>
                       </div>
                       <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed whitespace-pre-wrap">{item.content}</p>
@@ -371,8 +398,9 @@ export default function WikiDetailPage() {
 
         {/* === Helpful Vote Button === */}
         <div className="mb-8 flex flex-col items-center">
-          <button
-            onClick={handleVoteHelpful}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={(e: React.MouseEvent) => handleVoteHelpful(e)}
             disabled={hasVotedHelpful}
             className={`flex items-center gap-2.5 px-6 py-3.5 rounded-full font-bold shadow-sm transition-all ${
               hasVotedHelpful
@@ -385,7 +413,7 @@ export default function WikiDetailPage() {
             <span className={`ml-1 px-2.5 py-0.5 rounded-full text-[11px] ${hasVotedHelpful ? 'bg-rose-100 text-rose-600' : 'bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)]'}`}>
               {helpfulCount}
             </span>
-          </button>
+          </motion.button>
           {!hasVotedHelpful && (
             <p className="text-[10px] text-[var(--color-subtle)] mt-2.5">
               「役に立った」を押すと、情報を提供してくれた保護者のトラストスコアに還元されます ✨

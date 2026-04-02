@@ -4,14 +4,20 @@ const genAI = process.env.GOOGLE_API_KEY
   ? new GoogleGenerativeAI(process.env.GOOGLE_API_KEY)
   : null;
 
-export function getGeminiFlash() {
+export function getGeminiFlash(systemInstruction?: string) {
   if (!genAI) throw new Error("GOOGLE_API_KEY is not configured.");
-  return genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+  return genAI.getGenerativeModel({
+    model: "gemini-3-flash-preview",
+    ...(systemInstruction && { systemInstruction }),
+  });
 }
 
-export function getGeminiPro() {
+export function getGeminiPro(systemInstruction?: string) {
   if (!genAI) throw new Error("GOOGLE_API_KEY is not configured.");
-  return genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
+  return genAI.getGenerativeModel({
+    model: "gemini-3-pro-preview",
+    ...(systemInstruction && { systemInstruction }),
+  });
 }
 
 export const SYSTEM_PROMPTS = {

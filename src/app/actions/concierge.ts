@@ -38,32 +38,20 @@ export async function askConcierge(sessionId: string | null, question: string, c
              }
           }
 
-          // 3. 貢献・トラスト情報の抽出
-          const ts = profile.trust_score || 0;
-          const trustStr = ts ? ` (トラストスコア: ${ts.toFixed(0)})` : "";
-          const contributorStatus = ts >= 40 ? "信頼できるコミュニティの貢献者" + trustStr : "コミュニティ参加者" + trustStr;
+          // 3. コミュニティ参加情報（ランク付けしない）
+          const memberStatus = (profile.trust_score || 0) > 0 ? "体験を共有してくれている参加者" : "コミュニティ参加者";
           
-          finalPayload = `【相談者のコンテキスト】\n- 対象: ${childrenStr}\n- アレルゲン: ${allergens.length > 0 ? allergens.join("・") : "登録なし"}\n- アカウント状態: ${contributorStatus}`;
+          finalPayload = `【相談者のコンテキスト】\n- 対象: ${childrenStr}\n- アレルゲン: ${allergens.length > 0 ? allergens.join("・") : "登録なし"}\n- アカウント状態: ${memberStatus}`;
         }
       }
     }
 
     // Check if API key is configured
-    if (!process.env.GOOGLE_API_KEY || !userId) {
-      // Demo/guest response
-      const loginNote = !userId
-        ? "\n\n---\n💡 ログインすると、より詳しい個別相談ができます。"
-        : "";
-      return {
-        success: true,
-        data: {
-          sessionId: sessionId || "demo",
-          answer: `ご相談ありがとうございます 🌿\n\nお子さまのアレルギーについてのお悩み、よく伝わってきます。日々、お子さまの安全を最優先に考えながら食事を準備されているのは、本当に素晴らしいことです。\n\n一般的に以下のステップがお役に立つかもしれません：\n\n• **主治医との定期的な相談**: 負荷試験の進め方やタイミングは、お子さまの状態により大きく異なります\n• **トークルームへの投稿**: 同じ悩みを持つ保護者の方からのリアルな体験談が集まりつつあります\n• **食品メーカーへの直接確認**: アレルゲンのコンタミネーション情報は、メーカーに直接問い合わせることが最も確実です\n\n一人で抱え込まないでくださいね。あんしんキッズは、いつでもお話を伺います 💚${loginNote}`,
-          messages: [],
-          wikiSourceCount: 0,
-          avgTrustScore: 0,
-        },
-      };
+    if (!process.env.GOOGLE_API_KEY) {
+      return { success: false, error: "AI機能は現在メンテナンス中です。しばらくしてからお試しください。" };
+    }
+    if (!userId) {
+      return { success: false, error: "AI個別相談はログインが必要です" };
     }
 
     const result = await askConciergeAI(userId, sessionId, question, finalPayload);
@@ -96,7 +84,7 @@ export async function contributeFromConcierge(questionText: string) {
       .from("talk_rooms")
       .select("id")
       .eq("slug", "family")
-      .single();
+      .maybeSingle();
 
     if (!room) return { success: false, error: "該当ルームが見つかりません" };
 
@@ -116,7 +104,7 @@ export async function contributeFromConcierge(questionText: string) {
           .from("profiles")
           .select("total_contributions")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
         if (profile) {
           await supabase
             .from("profiles")

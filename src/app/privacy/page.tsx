@@ -1,6 +1,6 @@
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen px-4 py-12" style={{ backgroundColor: "var(--color-bg)", color: "var(--color-text)" }}>
+    <div className="min-h-[100dvh] px-4 py-12" style={{ backgroundColor: "var(--color-bg)", color: "var(--color-text)" }}>
       <div className="mx-auto max-w-3xl">
         <h1 className="mb-8 text-2xl font-bold">プライバシーポリシー</h1>
         <section className="space-y-8 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
@@ -34,7 +34,7 @@ export default function PrivacyPage() {
               <li>ユーザーからのお問い合わせに回答するため（本人確認を行うことを含む）</li>
               <li>AIによる情報抽出・構造化処理（AI動的Wiki生成）のため</li>
               <li>AIコンシェルジュによる相談回答のため</li>
-              <li>トラストスコアの算出および情報品質の維持のため</li>
+              <li>情報の品質維持およびコミュニティの安全性確保のため</li>
               <li>利用規約に違反したユーザーや、不正・不当な目的でサービスを利用しようとするユーザーの特定をし、ご利用をお断りするため</li>
               <li>メンテナンス、重要なお知らせなど必要に応じたご連絡のため</li>
               <li>上記の利用目的に付随する目的のため</li>

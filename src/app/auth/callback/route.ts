@@ -42,7 +42,7 @@ export async function GET(request: Request) {
           .from("profiles")
           .select("id")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
 
         if (!profile) {
           // Create profile from LINE user metadata

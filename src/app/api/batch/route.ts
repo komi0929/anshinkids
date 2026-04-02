@@ -11,6 +11,9 @@ import { updateTalkRoomThemes, seedMegaWikis } from "@/app/actions/seed";
  * Manual calls use POST /api/batch with JSON body
  */
 
+export const maxDuration = 300; // AI batch processing requires max Vercel timeout (5 minutes)
+export const dynamic = "force-dynamic"; // Prevent aggressive static caching of GET endpoint
+
 function verifyAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get("Authorization");
   const batchSecret = process.env.BATCH_SECRET || "dev-secret";

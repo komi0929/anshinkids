@@ -1,41 +1,54 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
- * Trust Score Calculation
+ * Trust / Impact Score Calculation
  * 
  * Formula:
- *   base = (contributions * 1.5) + (thanks_received * 3.0)
- *   score = min(100, base / decay_factor)
+ *   score = contributions + thanks_received + (helpful_votes * 2)
  * 
- * - 貢献回数: 投稿するたびに +1.5pt
- * - 感謝いいね受信数: 他者からの感謝 +3.0pt (高評価)
- * - 最大100点
- * - 新規アカウントは自動的に低スコア (ステマ対策)
+ * - Egalitarian Paradigm: pure impact sum, no decay, no cap, no gamification
+ * - Translates directly to "how much have you helped other parents"
  */
 export async function recalculateTrustScores() {
   const supabase = createAdminClient();
 
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, total_contributions, total_thanks_received, created_at");
+    .select("id, total_contributions, total_thanks_received, total_helpful_votes, created_at");
 
   if (!profiles) return { updated: 0 };
 
+  // Fetch active days for streak bonus (last 30 days)
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const { data: streakData } = await supabase
+    .from("contribution_days")
+    .select("user_id, active_date")
+    .gte("active_date", thirtyDaysAgo);
+
+  const userActiveDays: Record<string, number> = {};
+  if (streakData) {
+    const userDays: Record<string, Set<string>> = {};
+    for (const row of streakData) {
+      if (!userDays[row.user_id]) userDays[row.user_id] = new Set();
+      userDays[row.user_id].add(row.active_date);
+    }
+    for (const [userId, days] of Object.entries(userDays)) {
+      userActiveDays[userId] = days.size;
+    }
+  }
+
   let updated = 0;
 
-  for (const profile of profiles as unknown as {id: string, total_contributions: number, total_thanks_received: number, created_at: string}[]) {
+  for (const profile of profiles as unknown as {id: string, total_contributions: number, total_thanks_received: number, total_helpful_votes: number, created_at: string}[]) {
     const contributions = profile.total_contributions || 0;
     const thanks = profile.total_thanks_received || 0;
+    const helpfulVotes = profile.total_helpful_votes || 0;
+    // Intentionally removed activeDays to prevent gamification loop
 
-    // Account age factor (older = more trusted)
-    const accountAgeDays = Math.max(
-      1,
-      (Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const ageFactor = Math.min(1, accountAgeDays / 30); // Max trust after 30 days
-
-    const rawScore = (contributions * 1.5 + thanks * 3.0) * ageFactor;
-    const trustScore = Math.min(100, Math.round(rawScore * 100) / 100);
+    // Egalitarian Paradigm: pure impact sum, no decay, no cap, no 'exam score' mentality.
+    // 1 contribution = 1 impact. 1 thanks = 1 impact. 1 helpful vote = 2 impact.
+    const impactSum = contributions + thanks + (helpfulVotes * 2);
+    const trustScore = impactSum;
 
     await supabase
       .from("profiles")

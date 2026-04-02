@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { Database } from "@/types/database";
 
 const COOKIE_OPTIONS = {
   path: "/",
@@ -15,7 +16,7 @@ export async function createClient() {
   if (!url || !key) return null;
 
   const cookieStore = await cookies();
-  return createServerClient(url, key, {
+  return createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

@@ -52,7 +52,7 @@ const steps = [
 
 export default function GuidePage() {
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
+    <div className="min-h-[100dvh] bg-[var(--color-bg)]">
       {/* Header */}
       <div className="px-5 pt-7 pb-4">
         <Link
@@ -111,6 +111,28 @@ export default function GuidePage() {
           あなたの体験が、次に悩む誰かの助けになります。<br />
           使うほど知恵袋が育ち、回答も正確になっていきます。
         </p>
+      </div>
+
+      {/* Feature Highlights (UX & Growth) */}
+      <div className="mx-5 mb-8 p-5 rounded-2xl bg-[#FBF8F4] border border-[var(--color-border-light)] shadow-sm">
+        <h2 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
+          あんしんキッズのやさしい特徴
+        </h2>
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1">💚 「ありがとう」が目に見える資産に</h3>
+            <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
+              トークルームで共感を集めたり、知恵袋に体験を追加すると「トラストスコア（信頼度）」が貯まります。あなたの日々の奮闘が、コミュニティを守る力としてマイページに記録され、お互いの助け合いがひと目で分かります。
+            </p>
+          </div>
+          <div>
+            <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1">⚡ 病院の地下でもサクサク安心</h3>
+            <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
+              最新の超高速技術を搭載し、画面の読み込み待ち時間を「ゼロ」にしました。一度開いた知恵袋は裏で自動保存されるため、電波の悪い病院の待合室や災害時でも、お守りのようにサクサク閲覧できます。
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Steps */}

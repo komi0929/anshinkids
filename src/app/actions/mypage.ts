@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export async function getMyProfile() {
   try {
@@ -12,11 +13,11 @@ export async function getMyProfile() {
 
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months, children_profiles, interests")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code === "PGRST116") {
+    if (!profile && !error) {
       // Profile not found — create one
       const displayName = user.user_metadata?.full_name
         || user.user_metadata?.name
@@ -30,8 +31,8 @@ export async function getMyProfile() {
           display_name: displayName,
           avatar_url: avatarUrl,
         })
-        .select()
-        .single();
+        .select("id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months, children_profiles, interests")
+        .maybeSingle();
 
       if (insertError) throw insertError;
       return { success: true, data: newProfile };
@@ -47,11 +48,11 @@ export async function getMyProfile() {
           if (firstTag.startsWith("JSON_PAYLOAD_V3:")) {
             const parsed = JSON.parse(firstTag.replace("JSON_PAYLOAD_V3:", ""));
             // Only polyfill if DB columns are empty
-            if (!profile.children_profiles || profile.children_profiles.length === 0) profile.children_profiles = parsed.children || [];
-            if (!profile.interests || profile.interests.length === 0) profile.interests = parsed.interests || [];
+            if (!profile.children_profiles || (profile.children_profiles as unknown[]).length === 0) profile.children_profiles = parsed.children || [];
+            if (!profile.interests || (profile.interests as unknown[]).length === 0) profile.interests = parsed.interests || [];
             profile.allergen_tags = profile.allergen_tags.slice(1);
           } else if (firstTag.startsWith("JSON_PAYLOAD_V2:")) {
-            if (!profile.children_profiles || profile.children_profiles.length === 0) profile.children_profiles = JSON.parse(firstTag.replace("JSON_PAYLOAD_V2:", ""));
+            if (!profile.children_profiles || (profile.children_profiles as unknown[]).length === 0) profile.children_profiles = JSON.parse(firstTag.replace("JSON_PAYLOAD_V2:", ""));
             profile.allergen_tags = profile.allergen_tags.slice(1);
             if (!profile.interests) profile.interests = [];
           }
@@ -96,10 +97,12 @@ export async function updateMyProfile(updates: {
 
     const { error } = await supabase
       .from("profiles")
-      .update(payload)
+      .update(payload as any)
       .eq("id", user.id);
 
     if (error) throw error;
+    
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
     console.error("[updateMyProfile]", err);
@@ -157,7 +160,8 @@ export async function getMyImpact() {
     const { data: sources } = await supabase
       .from("wiki_sources")
       .select("wiki_entry_id")
-      .eq("contributor_id", user.id);
+      .eq("contributor_id", user.id)
+      .limit(2000);
 
     const articlesContributed = new Set(
       (sources || []).map((s) => s.wiki_entry_id).filter(Boolean)
@@ -168,7 +172,7 @@ export async function getMyImpact() {
       .from("profiles")
       .select("trust_score, total_contributions, total_thanks_received, total_helpful_votes")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     const totalHelpfulVotes = profile?.total_helpful_votes || 0;
     const trustDelta = Math.round((profile?.trust_score || 0));
@@ -211,6 +215,12 @@ export async function deleteMyAccount() {
       .delete()
       .eq("user_id", user.id);
 
+    // Delete isolated related row data (Prevents FK Violations)
+    await supabase.from("message_thanks").delete().eq("user_id", user.id);
+    await supabase.from("wiki_helpful_votes").delete().eq("user_id", user.id);
+    await supabase.from("user_bookmarks").delete().eq("user_id", user.id);
+    await supabase.from("contribution_days").delete().eq("user_id", user.id);
+
     // 安全対策: Pending raw messages are immediately wiped
     await supabase
       .from("messages")
@@ -236,6 +246,7 @@ export async function deleteMyAccount() {
       // Profile and data are already deleted, so this is best-effort
     }
 
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
     console.error("[deleteMyAccount]", err);

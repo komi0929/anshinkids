@@ -48,8 +48,8 @@
   --color-heart-light: #FFF0ED;
 
   /* Typography */
-  --font-sans: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
-  --font-display: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  --font-sans: var(--font-inter), var(--font-noto-sans-jp), 'Hiragino Kaku Gothic ProN', sans-serif;
+  --font-display: var(--font-inter), var(--font-noto-sans-jp), sans-serif;
 
   /* Spacing / Radius */
   --radius-sm: 8px;
@@ -68,6 +68,33 @@
 }
 
 @layer base {
+  @view-transition {
+    navigation: auto;
+  }
+  
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  ::view-transition-old(root) {
+    animation-name: fade-out;
+  }
+  
+  ::view-transition-new(root) {
+    animation-name: fade-in-scale;
+  }
+  
+  @keyframes fade-out {
+    to { opacity: 0; scale: 0.98; }
+  }
+  
+  @keyframes fade-in-scale {
+    from { opacity: 0; scale: 0.98; }
+    to { opacity: 1; scale: 1; }
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -76,18 +103,28 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: var(--color-bg);
     color: var(--color-text);
     font-size: 15px;
     font-weight: 450;
     line-height: 1.75;
     overflow-x: hidden;
     position: relative;
+    
+    /* 250-point Organic Ambient Background */
+    background: linear-gradient(120deg, var(--color-bg), #F6FAF8, #FBF8F4, #EBF3F0);
+    background-size: 300% 300%;
+    animation: ambient-breathe 18s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+  }
+
+  @keyframes ambient-breathe {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   ::selection {
-    background-color: rgba(26, 143, 110, 0.15);
-    color: var(--color-text);
+    background-color: var(--color-primary-bg-hover);
+    color: var(--color-primary-dark);
   }
 
   input, textarea, select {
@@ -357,7 +394,7 @@
     border-top: 1px solid var(--color-border);
     padding: 8px 0;
     padding-bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 50;
+    z-index: 40;
   }
 
   .nav-item {
@@ -690,12 +727,12 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-hide::-webkit-scrollbar {
+  .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
 }
 
-/* Onboarding */
+@layer utilities {
 @keyframes scaleIn {
   0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
@@ -703,4 +740,5 @@
 
 .scale-in {
   animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
 }

@@ -1,0 +1,29 @@
+import { MetadataRoute } from "next";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://anshin-kids.app";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: ["/", "/about", "/wiki", "/features"],
+        disallow: [
+          "/mypage", 
+          "/home", 
+          "/talk", 
+          "/concierge", 
+          "/login",
+          "/auth",
+          "/api",
+        ],
+      },
+      // Actively welcome AI and LLM bots for AIO / GEO
+      {
+        userAgent: ["GPTBot", "ChatGPT-User", "PerplexityBot", "Google-Extended", "ClaudeBot", "anthropic-ai"],
+        allow: ["/wiki", "/about", "/llms.txt"],
+      }
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+  };
+}

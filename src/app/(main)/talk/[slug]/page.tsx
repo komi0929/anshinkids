@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Send, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X, Trash2, Reply } from "@/components/icons";
+import { ArrowLeft, Send, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X, Trash2, Reply, User } from "@/components/icons";
 import {
   getActiveMessages,
   postMessage,
@@ -23,6 +23,10 @@ import {
   COMMUNITY_GUIDELINES,
 } from "@/lib/ai/safety-guard";
 import { getImpactFeedback } from "@/app/actions/discover";
+import { Haptics } from "@/lib/haptics";
+import { AudioHaptics } from "@/lib/audio-haptics";
+import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
+import { motion } from "framer-motion";
 
 interface Message {
   id: string;
@@ -38,6 +42,7 @@ interface Message {
     trust_score: number;
   };
   has_thanked?: boolean;
+  is_optimistic?: boolean;
 }
 
 interface RoomInfo {
@@ -94,7 +99,9 @@ export default function TalkRoomPage() {
       const sp = new URLSearchParams(window.location.search);
       const summon = sp.get("summon");
       if (summon) {
-        setNewMessage(summon);
+        // Sanitize string to prevent UI overflow and strip HTML-like tags (React safely escapes rendering, but textarea formatting should be clean)
+        const sanitized = summon.replace(/<\/?[^>]+(>|$)/g, "").slice(0, 200);
+        setNewMessage(sanitized);
         // auto-focus textarea
         setTimeout(() => {
           document.querySelector("textarea")?.focus();
@@ -209,7 +216,7 @@ export default function TalkRoomPage() {
   async function loadMessages(roomId: string) {
     const result = await getActiveMessages(roomId);
     if (result.success) {
-      const msgs = result.data as Message[];
+      const msgs = (result.data as unknown) as Message[];
       setMessages(msgs);
       const dbThanked = msgs.filter(m => m.has_thanked).map(m => m.id);
       if (dbThanked.length > 0) {
@@ -261,9 +268,30 @@ export default function TalkRoomPage() {
     }
 
     setIsSending(true);
+
+    const optimisticMsg: Message = {
+      id: "opt-" + Date.now(),
+      user_id: currentUserId || "temp",
+      content: text,
+      is_system_bot: false,
+      thanks_count: 0,
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 72*3600*1000).toISOString(),
+      profiles: { display_name: "あなた", avatar_url: null, trust_score: 0 },
+      is_optimistic: true
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 20);
+
     const result = await postMessage(roomInfo.id, text);
     if (result.success) {
+      Haptics.success();
+      AudioHaptics.playPop();
       setNewMessage("");
+      setTimeout(() => {
+        const ta = document.getElementById("message-input") as HTMLTextAreaElement;
+        if (ta) ta.style.height = 'auto';
+      }, 10);
       setSafetyWarning(null);
       setAuthError(false);
       await loadMessages(roomInfo.id);
@@ -287,13 +315,13 @@ export default function TalkRoomPage() {
       const newTotal = stored + 1;
       if (typeof window !== "undefined") localStorage.setItem("anshin_post_count", String(newTotal));
       if (newTotal === 1) {
-        setTimeout(() => { setMilestoneToast("🎉 初めての投稿！ あなたの声がコミュニティの力になります"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
+        setTimeout(() => { setMilestoneToast("🎉 初めての投稿！ あなたの声がだれかの助けになります"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
       } else if (newTotal === 5) {
-        setTimeout(() => { setMilestoneToast("🌿 5投稿達成！ あなたの知恵がどんどん蓄積されています"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
+        setTimeout(() => { setMilestoneToast("🌿 5回目の投稿！ 知恵袋がどんどん充実しています"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
       } else if (newTotal === 10) {
-        setTimeout(() => { setMilestoneToast("⭐ 10投稿！ あなたはコミュニティの大切な柱です"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
+        setTimeout(() => { setMilestoneToast("✨ 10回目！ たくさんの親子があなたの知恵に出会っています"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
       } else if (newTotal === 25) {
-        setTimeout(() => { setMilestoneToast("🥇 25投稿達成！ あなたはゴールド貢献者です"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
+        setTimeout(() => { setMilestoneToast("💚 25回も！ あなたの体験が、この場所をもっと温かくしています"); setTimeout(() => setMilestoneToast(null), 5000); }, 4500);
       }
     } else if (result.error === "ログインが必要です") {
       setAuthError(true);
@@ -328,7 +356,12 @@ export default function TalkRoomPage() {
     await deleteMessage(messageId);
   }
 
-  async function handleThanks(messageId: string) {
+  async function handleThanks(messageId: string, event?: React.MouseEvent) {
+    Haptics.light();
+    if (event && !thankedIds.has(messageId)) {
+      AudioHaptics.playTink();
+      triggerSensoryBurst(event);
+    }
     // Optimistic UI: update immediately, then sync with server
     if (thankedIds.has(messageId)) {
       setThankedIds((prev) => { const n = new Set(prev); n.delete(messageId); return n; });
@@ -374,32 +407,109 @@ export default function TalkRoomPage() {
     return colors[hash % colors.length];
   }
 
-  function renderMessageAvatar(avatarUrl: string | null | undefined, name: string) {
-    if (avatarUrl && avatarUrl.startsWith("http")) {
+
+  const renderedMessages = useMemo(() => {
+    if (isLoading) {
+      return <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="shimmer h-24 rounded-2xl" />)}</div>;
+    }
+    
+    if (messages.length === 0) {
       return (
-        <Image 
-          src={avatarUrl} 
-          alt={name || ""} 
-          fill 
-          unoptimized 
-          className="object-cover rounded-full" 
-        />
+        <div className="empty-state py-12">
+          <MessageCircle className="w-12 h-12 text-[var(--color-border)] mb-3" />
+          <h3 className="text-[16px] font-bold text-[var(--color-text)]">{roomInfo?.name}の話題はまだありません</h3>
+          <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 leading-relaxed max-w-[240px]">
+            最初の投稿をしてみませんか？<br/>「うちの場合は…」の体験談が大歓迎です！
+          </p>
+        </div>
       );
     }
-    if (avatarUrl && avatarUrl.length <= 4) return <span className="text-[14px]">{avatarUrl}</span>;
-    return <span className="text-[13px] text-white font-bold">{name?.[0] || "👤"}</span>;
-  }
+
+    return messages.map((msg) => {
+      const isThanked = msg.has_thanked || thankedIds.has(msg.id);
+      const isMyMessage = msg.user_id === currentUserId;
+      const opacityClass = msg.is_optimistic ? "opacity-60" : "opacity-100 transition-opacity duration-300";
+
+      return (
+        <div key={msg.id} className={`fade-in ${msg.is_optimistic ? 'animate-pulse' : ''} ${opacityClass}`}>
+          {msg.is_system_bot ? (
+            <div className="chat-bubble system">
+              <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                <span className="text-xs">🤖</span>
+                <span className="font-semibold text-[11px]">あんしんBot</span>
+              </div>
+              {msg.content}
+            </div>
+          ) : (
+            <div className="card p-4">
+              <div className="flex items-start gap-3">
+                <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(msg.user_id)} flex items-center justify-center flex-shrink-0 shadow-sm relative overflow-hidden`}>
+                  <User className="w-5 h-5 text-white/80" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-[13px] text-[var(--color-text)]">参加者</span>
+                    <span className="text-[10px] text-[var(--color-subtle)]">{getTimeAgo(msg.created_at)}</span>
+                  </div>
+                  <p className="text-[14px] leading-[1.8] text-[var(--color-text)] whitespace-pre-wrap">{msg.content}</p>
+
+                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                    {!isMyMessage && (
+                      <motion.button
+                        whileTap={{ scale: 0.85 }}
+                        whileHover={{ scale: 1.02 }}
+                        onClick={(e) => handleThanks(msg.id, e)}
+                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border ${
+                          isThanked
+                            ? "bg-[var(--color-heart-light)] border-[var(--color-heart)]/30 text-[var(--color-heart)]"
+                            : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-surface-warm)]"
+                        }`}
+                        id={`reaction-thanks-${msg.id}`}
+                      >
+                        <span>❤️</span>
+                        <span className="font-medium">ありがとう</span>
+                        {msg.thanks_count > 0 && (
+                          <span className="font-bold text-[var(--color-heart)]">{msg.thanks_count}</span>
+                        )}
+                      </motion.button>
+                    )}
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleReply(msg)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-warm)]"
+                    >
+                      <Reply className="w-3 h-3" />
+                      <span className="font-medium">返信</span>
+                    </motion.button>
+                    <span className="ml-auto text-[10px] text-[var(--color-muted)] flex items-center gap-1">
+                      <Clock className="w-2.5 h-2.5" /> {getExpiresIn(msg.expires_at)}
+                    </span>
+                    {isMyMessage && (
+                      <button onClick={() => handleDelete(msg.id)} className="p-1.5 ml-1 text-[var(--color-muted)] hover:text-[var(--color-danger)] transition-colors rounded-full hover:bg-red-50" aria-label="投稿を削除">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, thankedIds, currentUserId, isLoading, roomInfo]);
 
   const assetMessages = [
-    "🌱 あなたの体験が、未来の誰かの道しるべになります",
-    "✨ AIが知恵として整理し、知恵袋に反映します",
-    "📖 投稿は消えても、中の5件で知恵は永久に残ります",
-    "💚 同じ悩みを持つ親子を救う力になります",
-    "🌿 あなたの声が、コミュニティの資産になっています",
+    "✨ あなたの声を受け取りました！ AIが次の整理タイミングで知恵袋に反映します",
+    "📖 個人情報は除いてAIが要約します。安心してお書きください",
+    "🌱 体験が5件集まるとAIが知恵袋を自動で更新します",
+    "💚 名前は出ません。あなたの体験だけが、次の誰かの助けになります",
+    "✨ 受け取りました！ 知恵袋への反映は投稿が集まった時点で自動で行われます",
   ];
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[100dvh]">
       {/* Header */}
       <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
         <Link href="/talk" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors active:scale-95" id="back-to-rooms">
@@ -411,7 +521,7 @@ export default function TalkRoomPage() {
           </div>
           <div>
             <h1 className="text-[15px] font-bold text-[var(--color-text)]">{roomInfo?.name || ""}</h1>
-            <p className="text-[12px] font-medium" style={{ color: 'var(--color-subtle)' }}>体験や情報を気軽にシェア</p>
+            <p className="text-[12px] font-medium" style={{ color: 'var(--color-subtle)' }}>{roomInfo?.description || "体験や情報を気軽にシェア"}</p>
           </div>
         </div>
       </div>
@@ -485,7 +595,7 @@ export default function TalkRoomPage() {
         )}
 
         {wikiCount > 0 && relatedWiki.length === 0 && (
-          <Link href="/wiki" className="block mb-2" id="wiki-banner">
+          <Link href={`/wiki/${slug}`} className="block mb-2" id="wiki-banner">
             <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-success-light)]/60 to-[var(--color-surface-warm)] border border-[var(--color-success)]/15 hover:border-[var(--color-success)]/30 transition-all hover:shadow-sm">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[var(--color-success)]/10 flex items-center justify-center"><BookOpen className="w-4 h-4 text-[var(--color-success)]" /></div>
@@ -548,77 +658,9 @@ export default function TalkRoomPage() {
         )}
 
         {/* Messages */}
-        {isLoading ? (
-          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="shimmer h-24 rounded-2xl" />)}</div>
-        ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className="fade-in">
-              {msg.is_system_bot ? (
-                <div className="chat-bubble system">
-                  <div className="flex items-center justify-center gap-1.5 mb-1.5">
-                    <span className="text-xs">🤖</span>
-                    <span className="font-semibold text-[11px]">あんしんBot</span>
-                  </div>
-                  {msg.content}
-                </div>
-              ) : (
-                <div className="card p-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(msg.profiles?.display_name || "匿名")} flex items-center justify-center flex-shrink-0 shadow-sm relative overflow-hidden`}>
-                      {renderMessageAvatar(msg.profiles?.avatar_url, msg.profiles?.display_name || "匿名")}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-[13px] text-[var(--color-text)]">{msg.profiles?.display_name || "匿名ユーザー"}</span>
-                        {msg.profiles?.trust_score && msg.profiles.trust_score > 30 && (
-                          <span className="trust-badge trust-high">✓ 信頼</span>
-                        )}
-                        <span className="text-[10px] text-[var(--color-subtle)]">{getTimeAgo(msg.created_at)}</span>
-                      </div>
-                      <p className="text-[14px] leading-[1.8] text-[var(--color-text)] whitespace-pre-wrap">{msg.content}</p>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        {currentUserId !== msg.user_id && (
-                          <button
-                            onClick={() => handleThanks(msg.id)}
-                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border ${
-                              thankedIds.has(msg.id)
-                                ? "bg-[var(--color-heart-light)] border-[var(--color-heart)]/30 text-[var(--color-heart)]"
-                                : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-surface-warm)]"
-                            }`}
-                            id={`reaction-thanks-${msg.id}`}
-                          >
-                            <span>❤️</span>
-                            <span className="font-medium">ありがとう</span>
-                            {msg.thanks_count > 0 && (
-                              <span className="font-bold text-[var(--color-heart)]">{msg.thanks_count}</span>
-                            )}
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleReply(msg)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] transition-all border bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)] hover:border-[var(--color-primary)]/30 hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-warm)]"
-                        >
-                          <Reply className="w-3 h-3" />
-                          <span className="font-medium">返信</span>
-                        </button>
-                        <span className="ml-auto text-[10px] text-[var(--color-muted)] flex items-center gap-1">
-                          <Clock className="w-2.5 h-2.5" /> {getExpiresIn(msg.expires_at)}
-                        </span>
-                        {currentUserId === msg.user_id && (
-                          <button onClick={() => handleDelete(msg.id)} className="p-1.5 ml-1 text-[var(--color-muted)] hover:text-[var(--color-danger)] transition-colors rounded-full hover:bg-red-50" aria-label="投稿を削除">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
-        )}
+        <div className="space-y-4">
+          {renderedMessages}
+        </div>
         <div ref={messagesEndRef} />
       </div>
 
@@ -677,16 +719,33 @@ export default function TalkRoomPage() {
               value={newMessage}
               onChange={(e) => handleMessageChange(e.target.value)}
               placeholder="体験をざざっと書くだけでOK ✍️"
-              className="input-field w-full resize-none max-h-32"
+              className="input-field w-full resize-none max-h-32 transition-none"
               rows={1}
               id="message-input"
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = target.scrollHeight + 'px';
+              }}
+              onFocus={() => {
+                setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 300);
+              }}
+              onKeyDown={(e) => { 
+                if (e.key === "Enter" && !e.shiftKey) { 
+                  e.preventDefault(); 
+                  if (!isSending) handleSend(); 
+                } 
+              }}
             />
-            <p className="mt-1 text-[11px] font-medium leading-snug" style={{ color: 'var(--color-muted)' }}>💬 投稿は消去 → 5件でAIが知恵袋に永久保存</p>
+            <p className="mt-1 text-[11px] font-medium leading-snug" style={{ color: 'var(--color-muted)' }}>💬 書き込みは一定期間後に消えますが、AIが知恵袋に知識として残します</p>
           </div>
-          <button onClick={() => handleSend()} disabled={!newMessage.trim() || isSending} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 mb-4" id="send-message">
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleSend()} 
+            disabled={!newMessage.trim() || isSending || authError || !!safetyWarning} 
+            className="btn-primary flex-shrink-0" id="message-send">
             <Send className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
       </div>
 

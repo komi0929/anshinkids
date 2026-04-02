@@ -1,11 +1,24 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getGeminiFlash } from "@/lib/ai/gemini";
+import { getGeminiFlash, SYSTEM_PROMPTS } from "@/lib/ai/gemini";
 import { getExtractionPrompt, mergeMegaWikiSections } from "@/lib/wiki/article-templates";
 import { THEME_BY_SLUG, MegaWikiSection } from "@/lib/themes";
 
 export async function runBatchExtraction() {
   const supabase = createAdminClient();
-  const model = getGeminiFlash();
+  
+  if (!process.env.GOOGLE_API_KEY) {
+    console.warn("[Batch] GOOGLE_API_KEY is not configured. Skipping extraction.");
+    // Log batch as skipped due to config
+    await supabase.from("batch_logs").insert({
+      batch_type: "extraction",
+      status: "error",
+      error_log: "GOOGLE_API_KEY is missing",
+      completed_at: new Date().toISOString(),
+    });
+    return { processed: 0, reason: "missing_api_key" };
+  }
+
+  const model = getGeminiFlash(SYSTEM_PROMPTS.batchExtractor);
 
   // Mutex: Check if another batch is already running (prevent concurrency dupes)
   // To prevent deadlocks from crashed batches, we only consider it "running" if started within the last 15 mins.
@@ -111,7 +124,7 @@ export async function runBatchExtraction() {
         .from("wiki_entries")
         .select("id, sections, source_count")
         .eq("slug", megaWikiSlug)
-        .single();
+        .maybeSingle();
         
       if (!existingEntry) {
         console.warn(`[Batch] Mega-Wiki for ${roomSlug} not found. Ensure seed is run.`);
@@ -125,32 +138,42 @@ export async function runBatchExtraction() {
       for (let i = 0; i < roomMessages.length; i += chunkSize) {
         const chunk = roomMessages.slice(i, i + chunkSize);
         
-        // 直近の既存セクション一覧を見出し化
-        const existingHeadings = currentSections.map(s => `- ${s.heading} (${s.items.length}件のアイテム)`).join("\n");
-        const messagesText = chunk.map(m => `[ID:${m.id}] ${m.content}`).join("\n");
+        // RAG Limit: Truncate existing headings to max 150 items to prevent context bloom
+        const existingHeadings = currentSections.slice(0, 150).map(s => `- ${s.heading} (${s.items.length}件のアイテム)`).join("\n");
+        // RAG Limit: strictly limit message bounds (Gemini flash supports 1M, but keep it tight for RAG coherence)
+        let messagesText = chunk.map(m => `[ID:${m.id}] ${m.content}`).join("\n");
+        if (messagesText.length > 50000) messagesText = messagesText.slice(0, 50000) + "\n...[TRUNCATED]";
 
         const prompt = getExtractionPrompt(roomSlug, messagesText, existingHeadings);
         if (!prompt) continue;
 
-        try {
-          const result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          });
-          const responseText = result.response.text();
+          try {
+            const result = await model.generateContent({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: { 
+                responseMimeType: "application/json",
+                temperature: 0.2 
+              }
+            });
+            const responseText = result.response.text();
           
           let extractionSuccess = false;
           let incomingSections: MegaWikiSection[] = [];
           
           try {
-             // Strip markdown if gemini accidentally added it despite mimeType
-             const cleanJson = responseText.replace(/```json\n?|\n?```/g, '').trim();
+             const cleanJson = responseText.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
              incomingSections = JSON.parse(cleanJson) as MegaWikiSection[];
-          } catch (e) {
-             // Fallback defensive extraction
-             const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-             if (jsonMatch) {
-               incomingSections = JSON.parse(jsonMatch[0]) as MegaWikiSection[];
+          } catch {
+             try {
+               const cleanJson = responseText.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
+               incomingSections = JSON.parse(cleanJson + ']') as MegaWikiSection[];
+             } catch {
+               try {
+                 const cleanJson = responseText.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
+                 incomingSections = JSON.parse(cleanJson + '}]') as MegaWikiSection[];
+               } catch (e3) {
+                 console.warn("[Batch] JSON parse error, even with fallback.", e3);
+               }
              }
           }
           
@@ -185,19 +208,20 @@ export async function runBatchExtraction() {
         }
       }
 
-      // 4. Update Mega-Wiki in DB
+      // 4. Update Mega-Wiki in DB (source_count uses actual chunks that were successfully extracted)
+      const actualSourcesAdded = roomUpdated ? roomMessages.length : 0;
       await supabase
         .from("wiki_entries")
         .update({
           sections: currentSections,
           last_updated_from_batch: new Date().toISOString(),
-          source_count: (existingEntry.source_count || 0) + roomMessages.length,
+          source_count: (existingEntry.source_count || 0) + actualSourcesAdded,
         })
         .eq("id", entryId);
 
       // 4.5. AI自律的ファシリテーション (Proactive Topic Summoning)
-      // 抽出があったら、部屋に感謝と「次のお題」を投下する
-      if (roomUpdated) {
+      // 抽出があったら、部屋に感謝と「次のお題」を投下する (空転防止: 3件以上の実質的な抽出があった時のみ)
+      if (roomUpdated && actualSourcesAdded >= 3) {
         try {
            const facPrompt = `あなたは活発な保護者コミュニティのファシリテーターです。先ほど参加者の会話から新しい知恵を抽出しました。
 以下の「現在の知恵袋の見出し」を見て、参加者への短い感謝と、『次に聞きたい関連の話題（まだ不足していそうなもの）」を1〜2文で投げかけてください。
@@ -210,14 +234,17 @@ export async function runBatchExtraction() {
 直近の知恵袋の見出し:
 ${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
 
-           const facResult = await model.generateContent(facPrompt);
+           const facResult = await model.generateContent({
+             contents: [{ role: "user", parts: [{ text: facPrompt }] }],
+             generationConfig: { temperature: 0.7 }
+           });
            const facMessage = facResult.response.text();
 
            const roomId = Object.keys(roomIdToSlug).find(id => roomIdToSlug[id] === roomSlug);
            if (roomId) {
              await supabase.from("messages").insert({
                room_id: roomId,
-               content: `【AIファシリテーターより】\n${facMessage}`,
+               content: `📖 知恵袋を更新しました！\n${facMessage}`,
                is_system_bot: true,
              });
 
@@ -242,57 +269,12 @@ ${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
       })
       .eq("id", batchLog?.id);
 
-    // 6. Compound Trust Scores
-    const { data: allProfiles } = await supabase.from("profiles").select("id, total_contributions, total_thanks_received, total_helpful_votes");
-    const userStreaks: Record<string, number> = {};
-    const { data: streakData } = await supabase
-      .from("contribution_days")
-      .select("user_id, active_date")
-      .gte("active_date", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
-
-    if (streakData) {
-      const userDays: Record<string, Set<string>> = {};
-      for (const row of streakData) {
-        if (!userDays[row.user_id]) userDays[row.user_id] = new Set();
-        userDays[row.user_id].add(row.active_date);
-      }
-      for (const [userId, days] of Object.entries(userDays)) {
-        userStreaks[userId] = days.size;
-      }
-    }
-
-    if (allProfiles) {
-      for (const profile of allProfiles) {
-        const contribs = profile.total_contributions || 0;
-        const thanks = profile.total_thanks_received || 0;
-        const helpfulVotes = profile.total_helpful_votes || 0;
-        const activeDays = userStreaks[profile.id] || 0;
-        const rawScore = (contribs * 2) + (thanks * 3) + (helpfulVotes * 5) + (activeDays * 1.5);
-        const trustScore = Math.min(100, Math.round(rawScore * 100) / 100);
-
-        await supabase.from("profiles").update({ trust_score: trustScore }).eq("id", profile.id);
-      }
-    }
-
-    // 7. Data Privacy Safety measure: Purge Expired Data
-    // 期限切れ（72時間経過）の生メッセージを物理削除（プライバシー配慮）
-    let purgedCount = 0;
-    try {
-      // Get count first (optional, but good for logs if needed)
-      const purgeResult = await supabase
-        .from("messages")
-        .delete()
-        .lt("expires_at", new Date().toISOString());
-      purgedCount = purgeResult.count || 0;
-      console.log(`[Batch] Purged ${purgedCount} expired messages.`);
-    } catch (purgeErr) {
-      console.error("[Batch] Failed to purge expired messages", purgeErr);
-    }
+    // 6. Trust Score recalculation is delegated to trust-calculator.ts (called by /api/batch?type=all)
+    // No inline trust calculation here — SSoT is trust-calculator.ts
 
     return {
       processed: allMessages.length,
       updated: totalUpdated,
-      purged: purgedCount,
     };
   } catch (err) {
     console.error("[Batch] Error:", err);

@@ -1,6 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
+import { ActionResponse, CommonSchemas } from "@/types/actions";
+import { revalidatePath } from "next/cache";
 
 export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[] }) {
   try {
@@ -34,10 +37,13 @@ export async function searchWiki(query: string, filters?: { category?: string; a
   }
 }
 
-export async function getWikiEntry(slug: string) {
+export async function getWikiEntry(slug: string): Promise<ActionResponse<any>> {
   try {
-    const supabase = await createClient();
-    if (!supabase) return { success: false, error: "DB未接続" };
+    const validSlug = CommonSchemas.PageSlug.safeParse(slug);
+    if (!validSlug.success) return { success: false, error: "不正なURLです" };
+
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const supabase = createAdminClient();
 
     const { data, error } = await supabase
       .from("wiki_entries")
@@ -45,25 +51,53 @@ export async function getWikiEntry(slug: string) {
         *,
         wiki_sources (
           id,
-          original_message_snippet,
           contributor_trust_score,
           extracted_at
         )
       `)
-      .eq("slug", slug)
-      .single();
+      .eq("slug", validSlug.data)
+      .maybeSingle();
+
+    if (!data) return { success: false, error: "記事が見つかりません" };
 
     if (error) throw error;
     return { success: true, data };
   } catch (err) {
     console.error("[getWikiEntry]", err);
-    return { success: false, error: "記事が見つかりません" };
+    return { success: false, error: "記事の取得に失敗しました" };
   }
 }
 
-
-export async function voteWikiHelpful(entryId: string) {
+export async function getRelatedWikiEntries(currentSlug: string, allergenTags: string[], limit: number = 3) {
   try {
+    const supabase = await createClient();
+    if (!supabase) return { success: true, data: [] };
+
+    let queryBuilder = supabase
+      .from("wiki_entries")
+      .select("id, title, slug, category, summary, allergen_tags, source_count")
+      .neq("slug", currentSlug)
+      .order("source_count", { ascending: false })
+      .limit(limit);
+
+    if (allergenTags && allergenTags.length > 0) {
+      queryBuilder = queryBuilder.overlaps("allergen_tags", allergenTags);
+    }
+
+    const { data, error } = await queryBuilder;
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (err) {
+    console.error("[getRelatedWikiEntries]", err);
+    return { success: true, data: [] };
+  }
+}
+
+export async function voteWikiHelpful(entryId: string): Promise<ActionResponse> {
+  try {
+    const validEntry = CommonSchemas.UUID.safeParse(entryId);
+    if (!validEntry.success) return { success: false, error: "不正な記事IDです" };
+
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
@@ -73,7 +107,7 @@ export async function voteWikiHelpful(entryId: string) {
     const { error } = await supabase
       .from("wiki_helpful_votes")
       .insert({
-        wiki_entry_id: entryId,
+        wiki_entry_id: validEntry.data,
         user_id: user.id,
       });
 
@@ -83,6 +117,7 @@ export async function voteWikiHelpful(entryId: string) {
     }
     if (error) throw error;
 
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
     console.error("[voteWikiHelpful]", err);
@@ -90,8 +125,11 @@ export async function voteWikiHelpful(entryId: string) {
   }
 }
 
-export async function toggleSnippetBookmark(entryId: string, snippetTitle: string, snippetContent: string) {
+export async function toggleSnippetBookmark(entryId: string, snippetTitle: string, snippetContent: string): Promise<ActionResponse<{ bookmarked: boolean }>> {
   try {
+    const validEntry = CommonSchemas.UUID.safeParse(entryId);
+    if (!validEntry.success || !snippetTitle) return { success: false, error: "不正なリクエストです" };
+
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
@@ -103,21 +141,23 @@ export async function toggleSnippetBookmark(entryId: string, snippetTitle: strin
       .from("user_bookmarks")
       .select("id")
       .eq("user_id", user.id)
-      .eq("wiki_entry_id", entryId)
+      .eq("wiki_entry_id", validEntry.data)
       .eq("snippet_title", snippetTitle)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       await supabase.from("user_bookmarks").delete().eq("id", existing.id);
-      return { success: true, bookmarked: false };
+      revalidatePath("/", "layout");
+      return { success: true, data: { bookmarked: false } };
     } else {
       await supabase.from("user_bookmarks").insert({
         user_id: user.id,
-        wiki_entry_id: entryId,
+        wiki_entry_id: validEntry.data,
         snippet_title: snippetTitle,
         snippet_content: snippetContent,
       });
-      return { success: true, bookmarked: true };
+      revalidatePath("/", "layout");
+      return { success: true, data: { bookmarked: true } };
     }
   } catch (err) {
     console.error("[toggleSnippetBookmark]", err);
@@ -125,8 +165,11 @@ export async function toggleSnippetBookmark(entryId: string, snippetTitle: strin
   }
 }
 
-export async function checkBookmarkedSnippets(entryId: string): Promise<{ success: boolean; data?: string[]; error?: string }> {
+export async function checkBookmarkedSnippets(entryId: string): Promise<ActionResponse<string[]>> {
   try {
+    const validEntry = CommonSchemas.UUID.safeParse(entryId);
+    if (!validEntry.success) return { success: false, error: "不正な記事IDです" };
+
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
@@ -137,7 +180,7 @@ export async function checkBookmarkedSnippets(entryId: string): Promise<{ succes
       .from("user_bookmarks")
       .select("snippet_title")
       .eq("user_id", user.id)
-      .eq("wiki_entry_id", entryId);
+      .eq("wiki_entry_id", validEntry.data);
 
     if (error) throw error;
     

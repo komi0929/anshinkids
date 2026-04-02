@@ -22,7 +22,8 @@ export async function getTrendingTopics() {
       .from("messages")
       .select("room_id, thanks_count")
       .gte("created_at", oneDayAgo)
-      .eq("is_system_bot", false);
+      .eq("is_system_bot", false)
+      .limit(1000); // Added limit to prevent OOM on viral scaling
 
     if (!recentMessages || recentMessages.length === 0) {
       return { success: true, data: [] };
@@ -97,7 +98,7 @@ export async function getPersonalizedWikiEntries() {
         .from("profiles")
         .select("allergen_tags, children_profiles")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
         
       if (profile) {
         allergenTags = profile.allergen_tags || [];
@@ -401,7 +402,8 @@ export async function getWeeklyDigest() {
       const { data: weekDays } = await admin
         .from("contribution_days")
         .select("user_id, post_count")
-        .gte("active_date", oneWeekAgoDate);
+        .gte("active_date", oneWeekAgoDate)
+        .limit(3000);
 
       if (weekDays && weekDays.length > 0) {
         messageCount = weekDays.reduce((sum, d) => sum + (d.post_count || 0), 0);
@@ -514,7 +516,7 @@ export async function getImpactFeedback() {
       .from("profiles")
       .select("total_thanks_received, trust_score")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     const thanks = profile?.total_thanks_received || 0;
     const trustScore = profile?.trust_score || 0;
@@ -565,7 +567,7 @@ export async function getKnowledgeRipple(wikiSlug: string) {
       .select("id, title, source_count, avg_trust_score, created_at, updated_at")
       .eq("slug", wikiSlug)
       .eq("is_public", true)
-      .single();
+      .maybeSingle();
 
     if (!entry) return { success: true, data: null };
 
@@ -649,7 +651,7 @@ export async function getEngagementTier(): Promise<{ success: boolean; error?: s
       .from("profiles")
       .select("total_contributions")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     const postCount = profile?.total_contributions || 0;
     const tier = postCount > 0 ? "contributor" : "reader";
@@ -658,5 +660,30 @@ export async function getEngagementTier(): Promise<{ success: boolean; error?: s
   } catch (err) {
     console.error("[getEngagementTier]", err);
     return { success: false, error: err instanceof Error ? err.message : String(err), data: { tier: "guest" as const, postCount: 0 } };
+  }
+}
+
+export async function getCommunityStats() {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { success: true, data: { totalMembers: 0, totalExperiences: 0, totalWikiEntries: 0 } };
+
+    const [profilesRes, sourcesRes, wikiRes] = await Promise.all([
+      supabase.from("profiles").select("id", { count: "exact", head: true }),
+      supabase.from("wiki_sources").select("id", { count: "exact", head: true }),
+      supabase.from("wiki_entries").select("id", { count: "exact", head: true }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        totalMembers: profilesRes.count || 0,
+        totalExperiences: sourcesRes.count || 0,
+        totalWikiEntries: wikiRes.count || 0,
+      },
+    };
+  } catch (err) {
+    console.error("[getCommunityStats]", err);
+    return { success: true, data: { totalMembers: 0, totalExperiences: 0, totalWikiEntries: 0 } };
   }
 }

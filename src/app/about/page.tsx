@@ -90,13 +90,13 @@ export default function AboutPage() {
         <div className="card-elevated p-6 contrib-highlight">
           <p className="text-[15px] font-medium leading-[2.1] text-center" style={{ color: "var(--color-text)" }}>
             今日、あなたが自分の悩みを解消するために
-            した会話が、そのまま消えることなく蓄積され、
+            した何気ない会話が、
             <br />
-            明日、同じ壁にぶつかったどこかの親子を
+            明日、同じことで悩むどこかの親子にとっての
             <br />
-            必ず救う
-            <span className="font-extrabold" style={{ color: "var(--color-primary)" }}>「希望の道しるべ」</span>
-            になります。
+            やさしい
+            <span className="font-extrabold" style={{ color: "var(--color-primary)" }}>「役立つ知恵」</span>
+            に変わります。
           </p>
         </div>
       </div>
@@ -198,22 +198,18 @@ export default function AboutPage() {
           さっそく使ってみましょう！
         </h3>
         <div className="space-y-3 max-w-sm mx-auto">
-          <Link href="/talk" className="btn-primary w-full text-center block" id="go-to-talk-cta">
-            みんなの声を見てみる
+          <Link href="/wiki" className="btn-primary w-full text-center block" id="go-to-wiki-cta" style={{ background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))" }}>
+            📖 今すぐ知恵袋を見てみる
+          </Link>
+          <Link href="/talk" className="btn-secondary w-full text-center block" id="go-to-talk-cta">
+            💬 みんなの声を見てみる
           </Link>
           <Link href="/login" className="btn-secondary w-full text-center block" id="login-cta">
             LINEでログインして参加する
           </Link>
-          <Link
-            href="/guide"
-            className="btn-secondary w-full text-center block"
-            id="guide-cta"
-          >
-            使い方ガイドを見る
-          </Link>
         </div>
         <p className="text-[12px] font-medium text-center mt-4" style={{ color: "var(--color-subtle)" }}>
-          ログインしなくても閲覧・AI相談はご利用いただけます
+          ログインしなくても知恵袋の閲覧・AI相談はご利用いただけます
         </p>
       </div>
 
@@ -236,18 +232,29 @@ export default function AboutPage() {
       </div>
 
       {/* Footer */}
-      <div className="px-5 pb-8 flex items-center justify-center gap-5 text-[12px] font-medium" style={{ color: "var(--color-subtle)" }}>
-        <Link href="/guide" className="underline hover:no-underline transition-colors">
-          使い方ガイド
-        </Link>
-        <span style={{ color: "var(--color-border)" }}>|</span>
-        <Link href="/terms" className="underline hover:no-underline transition-colors">
-          利用規約
-        </Link>
-        <span style={{ color: "var(--color-border)" }}>|</span>
-        <Link href="/privacy" className="underline hover:no-underline transition-colors">
-          プライバシーポリシー
-        </Link>
+      <div className="px-5 pb-8 flex flex-col items-center justify-center gap-3 text-[12px] font-medium" style={{ color: "var(--color-subtle)" }}>
+        <div className="flex items-center gap-5">
+          <Link href="/guide" className="underline hover:no-underline transition-colors">
+            使い方ガイド
+          </Link>
+          <span style={{ color: "var(--color-border)" }}>|</span>
+          <Link href="/terms" className="underline hover:no-underline transition-colors">
+            利用規約
+          </Link>
+          <span style={{ color: "var(--color-border)" }}>|</span>
+          <Link href="/privacy" className="underline hover:no-underline transition-colors">
+            プライバシー
+          </Link>
+        </div>
+        <div className="flex items-center gap-5 mt-2">
+          <a href="mailto:support@anshin-kids.app?subject=お問い合わせ" className="underline hover:no-underline transition-colors">
+            運営へのお問い合わせ
+          </a>
+          <span style={{ color: "var(--color-border)" }}>|</span>
+          <a href="mailto:partner@anshin-kids.app?subject=活動へのご協賛・サポートについて" className="underline hover:no-underline transition-colors">
+            企業・医療提携について
+          </a>
+        </div>
       </div>
     </div>
   );

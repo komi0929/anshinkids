@@ -23,9 +23,11 @@ export default function ConciergePage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
-    setTimeout(() => setIsMounted(true), 0);
+    // eslint-disable-next-line
+    setIsMounted(true);
   }, []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -36,26 +38,29 @@ export default function ConciergePage() {
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("anshin_concierge_messages");
-      if (stored) setTimeout(() => setMessages(JSON.parse(stored)), 0);
+      // eslint-disable-next-line
+      if (stored) setMessages(JSON.parse(stored));
       const sid = sessionStorage.getItem("anshin_concierge_session");
-      if (sid) setTimeout(() => setSessionId(sid), 0);
+      if (sid) setSessionId(sid);
     } catch { /* empty */ }
 
     // Load real profile from DB or fallback to localStorage (for guests)
     async function loadPrefs() {
-      let loadedAllergens = new Set<string>();
+      const loadedAllergens = new Set<string>();
       try {
         const res = await getMyProfile();
         if (res.success && res.data) {
           const profile = res.data;
           (profile.allergen_tags || []).forEach((a: string) => loadedAllergens.add(a));
-          if (profile.children_profiles) {
+          if (profile.children_profiles && Array.isArray(profile.children_profiles)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            profile.children_profiles.forEach((c: any) => {
+            (profile.children_profiles as any[]).forEach((c: any) => {
               (c.allergens || []).forEach((a: string) => loadedAllergens.add(a));
               (c.customAllergens || []).forEach((a: string) => loadedAllergens.add(a));
             });
           }
+        } else if (res.error === "ログインが必要です") {
+          setIsGuest(true);
         }
         
         if (loadedAllergens.size === 0) {
@@ -73,7 +78,7 @@ export default function ConciergePage() {
             }
           }
         }
-      } catch (err) { /* ignore */ }
+      } catch { /* ignore */ }
       
       setAllergens(loadedAllergens);
       setIsMounted(true);
@@ -174,7 +179,7 @@ export default function ConciergePage() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[100dvh]">
       {/* Header */}
       <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -352,21 +357,31 @@ export default function ConciergePage() {
 
       {/* Input */}
       <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm p-4 safe-bottom">
-        <div className="flex gap-3 items-end max-w-lg mx-auto">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="お悩みを入力してください..."
-            className="input-field flex-1 resize-none max-h-32"
-            rows={1}
-            id="concierge-input"
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-          />
-          <button onClick={handleSend} disabled={!input.trim() || isLoading} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0" id="concierge-send">
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
+        {isGuest ? (
+          <div className="flex flex-col items-center justify-center py-2 text-center">
+            <span className="text-2xl mb-1">🔒</span>
+            <p className="text-[13px] font-bold text-[var(--color-text)] mb-3">個別相談はメンバー専用機能です</p>
+            <a href="/login" className="btn-primary !text-[12px] !py-2.5 px-6 rounded-full">
+              ログインして相談する
+            </a>
+          </div>
+        ) : (
+          <div className="flex gap-3 items-end max-w-lg mx-auto">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="お悩みを入力してください..."
+              className="input-field flex-1 resize-none max-h-32"
+              rows={1}
+              id="concierge-input"
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            />
+            <button onClick={handleSend} disabled={!input.trim() || isLoading} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0" id="concierge-send">
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

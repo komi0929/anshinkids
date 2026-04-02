@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Shield, Clock, BookOpen } from "@/components/icons";
+import { Search, Filter, Clock, BookOpen } from "@/components/icons";
 import Link from "next/link";
 import { searchWiki } from "@/app/actions/wiki";
 import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20 } from "@/components/onboarding-wizard";
@@ -47,10 +47,11 @@ interface WikiEntry {
   updated_at: string;
 }
 
-function getTrustLevel(score: number) {
-  if (score >= 70) return { label: "高信頼", className: "trust-high" };
-  if (score >= 40) return { label: "中信頼", className: "trust-medium" };
-  return { label: "新規", className: "trust-low" };
+function getTrustLevel(sourceCount: number) {
+  const count = sourceCount || 0;
+  if (count >= 10) return { label: "たくさんの声", className: "trust-high" };
+  if (count >= 5) return { label: "つながる声", className: "trust-medium" };
+  return { label: "はじめの声", className: "trust-low" };
 }
 
 function getFreshness(updatedAt: string) {
@@ -69,11 +70,17 @@ export default function WikiPage() {
   const [selectedCategory, setSelectedCategory] = useState("すべて");
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedQuery(searchQuery), 400);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
 
   const loadEntries = async () => {
     setIsLoading(true);
-    const result = await searchWiki(searchQuery, {
+    const result = await searchWiki(debouncedQuery, {
       category: selectedCategory === "すべて" ? undefined : selectedCategory,
       allergens: selectedAllergens.length > 0 ? selectedAllergens : undefined,
     });
@@ -86,7 +93,7 @@ export default function WikiPage() {
   useEffect(() => {
     loadEntries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, selectedCategory, selectedAllergens]);
+  }, [debouncedQuery, selectedCategory, selectedAllergens]);
 
 
 
@@ -97,7 +104,7 @@ export default function WikiPage() {
           知恵袋 📖
         </h1>
         <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-          保護者の体験をAIが会話から抽出した知識ライブラリ
+          同じ悩みを持つ親御さんたちの実体験が集まった、みんなの知恵袋です
         </p>
       </div>
 
@@ -234,7 +241,7 @@ export default function WikiPage() {
           </div>
         ) : (
           entries.map((entry) => {
-            const trust = getTrustLevel(entry.avg_trust_score);
+            const trust = getTrustLevel(entry.source_count);
             const freshness = getFreshness(entry.updated_at);
             return (
               <div key={entry.id} className="card overflow-hidden stagger-item">
@@ -243,7 +250,7 @@ export default function WikiPage() {
                   <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mb-3 line-clamp-2">{entry.summary}</p>
                   <div className="flex items-center flex-wrap gap-2">
                     <span className={`trust-badge ${trust.className}`}>
-                      <Shield className="w-3 h-3" />
+                      <span className="text-[10px] font-bold opacity-80 mr-1">💬</span>
                       {trust.label}
                     </span>
                     <span className={`freshness-badge ${freshness.className}`}>

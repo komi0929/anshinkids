@@ -47,7 +47,7 @@ export default function NotificationsPage() {
             notifs.push({
               id: `notif-${idCounter++}`,
               type: "trust_up",
-              message: <span>コミュニティへの貢献が認められ、信頼スコアが <strong className="text-amber-600">シルバーランク</strong> 以上になりました。</span>,
+              message: <span>あなたの体験が多くの親御さんの参考になっています。<strong className="text-amber-600">ありがとうございます！</strong></span>,
               dateStr: "継続的な活動",
               isRead: true,
               link: "/mypage"

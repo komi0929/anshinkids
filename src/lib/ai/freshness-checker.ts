@@ -1,9 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getGeminiFlash, SYSTEM_PROMPTS } from "@/lib/ai/gemini";
+import { SchemaType } from "@google/generative-ai";
 
 export async function checkFreshness() {
   const supabase = createAdminClient();
-  const model = getGeminiFlash();
+  const model = getGeminiFlash(SYSTEM_PROMPTS.freshnessBot);
 
   const threeMonthsAgo = new Date(
     Date.now() - 90 * 24 * 60 * 60 * 1000
@@ -20,15 +21,36 @@ export async function checkFreshness() {
 
   for (const entry of staleEntries as unknown as {id: string; title: string; category: string; allergen_tags: string[]}[]) {
     // Generate friendly question
-    const prompt = `${SYSTEM_PROMPTS.freshnessBot}
-
-以下の情報について質問文を生成してください：
+    const prompt = `以下の情報について質問文を生成してください：
 タイトル: ${entry.title}
 カテゴリー: ${entry.category}
 関連アレルゲン: ${entry.allergen_tags?.join(", ") || "不明"}`;
 
-    const result = await model.generateContent(prompt);
-    const botMessage = result.response.text();
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: SchemaType.OBJECT,
+          properties: {
+            question: {
+              type: SchemaType.STRING,
+              description: "生成された質問文の文字列"
+            }
+          },
+          required: ["question"]
+        },
+        temperature: 0.5,
+      }
+    });
+    
+    let botMessage = "";
+    try {
+      const parsed = JSON.parse(result.response.text());
+      botMessage = parsed.question || "";
+    } catch {
+      botMessage = `【定期】「${entry.title}」について、最近何か変わったことはありましたか？`;
+    }
 
     // Find appropriate room
     const categoryToRoomSlug: Record<string, string> = {
@@ -57,9 +79,9 @@ export async function checkFreshness() {
       .from("talk_rooms")
       .select("id")
       .eq("slug", targetRoomSlug)
-      .single();
+      .maybeSingle();
 
-    if (room) {
+    if (room && botMessage) {
       await supabase.from("messages").insert({
         room_id: room.id,
         content: botMessage.trim(),

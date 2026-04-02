@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Settings, Bell, X } from "@/components/icons";
+import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Settings, Bell, X, ArrowRight } from "@/components/icons";
 import { getMyProfile, getMyContributions, deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
 import { getImpactFeedback, getContributionStreak } from "@/app/actions/discover";
 import { getMyBookmarks } from "@/app/actions/wiki";
@@ -102,7 +102,7 @@ export default function MyPage() {
     ]);
 
     if (profileResult.success && profileResult.data) {
-      const p = profileResult.data as Profile;
+      const p = profileResult.data as unknown as Profile;
       setProfile(p);
       setEditName(p.display_name);
       setEditAvatar(p.avatar_url);
@@ -199,12 +199,6 @@ export default function MyPage() {
     setIsDeleting(false);
   }
 
-  function getTrustLabel(score: number) {
-    if (score >= 70) return { label: "ゴールド", color: "text-amber-600", bg: "bg-gradient-to-r from-amber-50 to-amber-100/50", icon: "🥇", borderColor: "border-amber-200" };
-    if (score >= 40) return { label: "シルバー", color: "text-[var(--color-subtle)]", bg: "bg-gradient-to-r from-[var(--color-surface-warm)] to-gray-100/50", icon: "🥈", borderColor: "border-[var(--color-border)]" };
-    return { label: "ブロンズ", color: "text-[var(--color-accent)]", bg: "bg-gradient-to-r from-[var(--color-warning-light)] to-orange-50/50", icon: "🥉", borderColor: "border-[var(--color-accent-light)]" };
-  }
-
   if (isLoading) {
     return (
       <div className="fade-in">
@@ -243,8 +237,6 @@ export default function MyPage() {
     );
   }
 
-  const trustInfo = getTrustLabel(profile.trust_score);
-
   return (
     <div className="fade-in pb-4">
       {/* Top action bar */}
@@ -254,7 +246,7 @@ export default function MyPage() {
             マイページ
           </h1>
           <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-            あなたの貢献は、ちゃんとみんなの役に立っています
+            あなたの体験が、新しい知恵に変わっています
           </p>
         </div>
         <Link href="/notifications" className="w-10 h-10 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-border-light)] transition-colors relative" aria-label="通知を見る">
@@ -288,9 +280,8 @@ export default function MyPage() {
                     <h2 className="text-[18px] font-extrabold text-[var(--color-text)] truncate">{profile.display_name}</h2>
                   </div>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${trustInfo.color} ${trustInfo.bg} border ${trustInfo.borderColor}`}>
-                      <Award className="w-3 h-3" />
-                      {trustInfo.icon} {trustInfo.label}
+                    <span className="text-[12px] text-[var(--color-subtle)] font-medium bg-[var(--color-surface-warm)] px-2.5 py-0.5 rounded-md">
+                      あんしんキッズ メンバー
                     </span>
                   </div>
                 </div>
@@ -379,16 +370,16 @@ export default function MyPage() {
         <div className="px-4 mb-6">
           <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
-            貢献の証明（Proof of Impact）
+            みんなへの貢献
           </h3>
           <p className="text-[12px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
-            ここで共有していただいた体験は消えずに、すでに多くの保護者を支える「知恵袋の資産」として活躍しています。
+            ここで共有していただいたお話は、同じ悩みを抱える親御さんのための大切な知恵として残っていきます。
           </p>
           
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 flex flex-col justify-between h-28 shadow-sm relative overflow-hidden group hover:border-[var(--color-success)]/40 transition-colors">
               <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">📖</div>
-              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">反映された記事</p>
+              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">知恵袋への採用</p>
               <div className="flex items-end gap-1.5">
                 <span className="text-3xl font-extrabold text-[var(--color-success-deep)]">{impact.articlesHelped}</span>
                 <span className="text-[11px] font-semibold text-[var(--color-success)] mb-1">件</span>
@@ -396,7 +387,7 @@ export default function MyPage() {
             </div>
             <div className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-pink-50 border border-pink-100 flex flex-col justify-between h-28 shadow-sm relative overflow-hidden group hover:border-[var(--color-heart)]/40 transition-colors">
               <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">❤️</div>
-              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">みんなからの感謝</p>
+              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">あなたの情報で助かった親御さん</p>
               <div className="flex items-end gap-1.5">
                 <span className="text-3xl font-extrabold text-[var(--color-heart)]">{impact.thanks}</span>
                 <span className="text-[11px] font-semibold text-pink-500 mb-1">人</span>
@@ -544,15 +535,14 @@ export default function MyPage() {
               <p className="text-[13px] font-bold text-[var(--color-text)]">
                 投稿ストリーク
               </p>
-              <p className="text-[11px] text-[var(--color-subtle)]">
+              <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed">
                 {(() => {
                   if (!profile) return "データを読み込み中...";
                   const count = profile.total_contributions;
-                  if (count === 0) return "まだ投稿がありません。最初の一歩を踏み出しましょう！";
-                  if (count < 5) return `${count}投稿 — いい調子です！5投稿で次のマイルストーン 🌱`;
-                  if (count < 10) return `${count}投稿 — 素晴らしい！10投稿でスターバッジ ⭐`;
-                  if (count < 25) return `${count}投稿 — コミュニティの大切な柱です！25投稿でゴールド 🥇`;
-                  return `${count}投稿 — ゴールド貢献者！あなたの知恵がたくさんの家族を救っています 🏅`;
+                  if (count === 0) return "まだ投稿がありません。日々の小さな気づきが誰かのヒントになります。";
+                  if (count < 5) return `${count}投稿 — いい調子ですね！少しずつ知恵が集まっています 🌱`;
+                  if (count < 10) return `${count}投稿 — たくさんの共有ありがとうございます。あなたの声が誰かの支えになっています 🍀`;
+                  return `${count}投稿 — いつも活動を支えてくださり、本当にありがとうございます 💐`;
                 })()}
               </p>
             </div>
@@ -628,6 +618,43 @@ export default function MyPage() {
               アカウントを削除する
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Support and Feedback */}
+      <div className="px-4 mb-4">
+        <h3 className="text-[13px] font-extrabold text-[var(--color-subtle)] mb-2 px-1">運営・サポート</h3>
+        <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
+          <a
+            href="mailto:support@anshin-kids.app?subject=アプリへのアイデア・バグ報告"
+            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+                <span className="text-sm">💡</span>
+              </div>
+              <div>
+                <div className="text-[14px] font-bold text-[var(--color-text)] mb-0.5">アイデア・バグ報告</div>
+                <div className="text-[11px] text-[var(--color-subtle)]">アプリをもっと良くするためのご意見</div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[var(--color-muted)]" />
+          </a>
+          <a
+            href="mailto:partner@anshin-kids.app?subject=活動への協賛・支援について"
+            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-500">
+                <span className="text-sm">🤝</span>
+              </div>
+              <div>
+                <div className="text-[14px] font-bold text-[var(--color-text)] mb-0.5">この活動を支援する</div>
+                <div className="text-[11px] text-[var(--color-subtle)]">プロジェクトへのご意見・ご参画</div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[var(--color-muted)]" />
+          </a>
         </div>
       </div>
 

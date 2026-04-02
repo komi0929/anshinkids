@@ -2,8 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { THEMES, THEME_BY_SLUG } from "@/lib/themes";
+import { ActionResponse, CommonSchemas } from "@/types/actions";
+import { revalidatePath } from "next/cache";
 
-export async function getRoomPrompts(roomId: string) {
+export async function getRoomPrompts(roomId: string): Promise<ActionResponse<string[]>> {
   try {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
@@ -12,12 +14,12 @@ export async function getRoomPrompts(roomId: string) {
       .from("talk_rooms")
       .select("conversation_prompts")
       .eq("id", roomId)
-      .single();
+      .maybeSingle();
 
-    return { success: true, data: data?.conversation_prompts || [] };
+    return { success: true, data: (data?.conversation_prompts as string[]) || [] };
   } catch (err) {
     console.error("[getRoomPrompts]", err);
-    return { success: true, data: [] };
+    return { success: false, error: "取得に失敗しました" };
   }
 }
 
@@ -33,17 +35,21 @@ async function replenishRoomPrompts(roomId: string, roomName: string, roomDesc: 
       .from("talk_rooms")
       .select("conversation_prompts")
       .eq("id", roomId)
-      .single();
+      .maybeSingle();
 
     const currentPrompts = (room?.conversation_prompts as string[]) || [];
-    if (currentPrompts.length >= 6) return;
+    // API depletion protection / runaway prevention:
+    // Only replenish if strictly needed, and apply a 20% random check to throttle burst messages
+    if (currentPrompts.length >= 2 || Math.random() > 0.2) return;
 
-    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const { GoogleGenerativeAI, SchemaType } = await import("@google/generative-ai");
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-3-flash-preview",
+      systemInstruction: "あなたは食物アレルギーを持つ子供の親のコミュニティのファシリテーターです。"
+    });
 
-    const prompt = `あなたは食物アレルギーを持つ子供の親のコミュニティのファシリテーターです。
-以下のトークルームに新しい「問いかけ」を2つ追加生成してください。
+    const prompt = `以下のトークルームに新しい「問いかけ」を2つ追加生成してください。
 ルーム名: ${roomName}
 ルーム説明: ${roomDesc}
 
@@ -53,24 +59,27 @@ ${currentPrompts.map((p, i) => `${i + 1}. ${p}`).join("\n")}
 ルール:
 - 既存と重複しない、斬新な切り口の問いかけにする
 - 保護者が体験を共有したくなるカジュアルなトーンにする
-- 各質問は40文字以内、医療的な判断は避ける
-
-JSON形式で配列のみ返してください:
-["新しい質問1", "新しい質問2"]`;
+- 各質問は40文字以内、医療的な判断は避ける`;
 
     const result = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: "application/json" }
+      generationConfig: { 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.STRING,
+            description: "生成された新しい質問"
+          }
+        },
+        temperature: 0.8,
+      }
     });
-    const text = result.response.text();
-    const cleanJson = text.replace(/```json\n?|\n?```/g, '').trim();
-
     let newPrompts: string[] = [];
     try {
-      newPrompts = JSON.parse(cleanJson);
-    } catch {
-      const match = text.match(/\[[\s\S]*?\]/);
-      if (match) newPrompts = JSON.parse(match[0]);
+      newPrompts = JSON.parse(result.response.text());
+    } catch (e) {
+      console.error("AI JSON Parse Error:", e);
     }
 
     if (newPrompts && Array.isArray(newPrompts) && newPrompts.length > 0) {
@@ -82,8 +91,14 @@ JSON形式で配列のみ返してください:
   }
 }
 
-export async function postMessage(roomId: string, content: string) {
+export async function postMessage(roomId: string, content: string): Promise<ActionResponse> {
   try {
+    const validRoom = CommonSchemas.UUID.safeParse(roomId);
+    if (!validRoom.success) return { success: false, error: "不正なルーム指定です" };
+    
+    const validContent = CommonSchemas.ChatMessage.safeParse(content);
+    if (!validContent.success) return { success: false, error: validContent.error.issues[0]?.message || "不正なメッセージです" };
+
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
@@ -101,7 +116,7 @@ export async function postMessage(roomId: string, content: string) {
     const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
     await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", roomId);
 
-    const { data: room } = await supabase.from("talk_rooms").select("name, description").eq("id", roomId).single();
+    const { data: room } = await supabase.from("talk_rooms").select("name, description").eq("id", validRoom.data).maybeSingle();
     if (room) {
       replenishRoomPrompts(roomId, room.name, room.description || "").catch((err) => console.error("[Background Error] replenishRoomPrompts", err));
     }
@@ -110,6 +125,7 @@ export async function postMessage(roomId: string, content: string) {
       .then(({ checkExtractionThresholds }) => checkExtractionThresholds())
       .catch((err) => console.error("[Background Error] checkExtractionThresholds", err));
 
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
     console.error("[postMessage]", err);
@@ -117,13 +133,20 @@ export async function postMessage(roomId: string, content: string) {
   }
 }
 
-export async function sendThanks(messageId: string) {
+export async function sendThanks(messageId: string): Promise<ActionResponse> {
   try {
+    const validMessage = CommonSchemas.UUID.safeParse(messageId);
+    if (!validMessage.success) return { success: false, error: "無効なメッセージです" };
+    
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
+
+    const { data: msg } = await supabase.from("messages").select("user_id, room_id").eq("id", validMessage.data).maybeSingle();
+    if (!msg) return { success: false, error: "メッセージが見つかりません" };
+    if (msg.user_id === user.id) return { success: false, error: "自分の投稿には「ありがとう」できません" };
 
     const { error } = await supabase.from("message_thanks").insert({
       message_id: messageId,
@@ -136,8 +159,7 @@ export async function sendThanks(messageId: string) {
     }
 
     try {
-      const { data: msg } = await supabase.from("messages").select("room_id").eq("id", messageId).single();
-      if (msg?.room_id) {
+      if (msg.room_id) {
         const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
         await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", msg.room_id);
       }
@@ -145,6 +167,7 @@ export async function sendThanks(messageId: string) {
       console.error("[sendThanks] Expiry extension failed", err);
     }
 
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
     console.error("[sendThanks]", err);
@@ -152,8 +175,11 @@ export async function sendThanks(messageId: string) {
   }
 }
 
-export async function deleteMessage(messageId: string) {
+export async function deleteMessage(messageId: string): Promise<ActionResponse> {
   try {
+    const validMessage = CommonSchemas.UUID.safeParse(messageId);
+    if (!validMessage.success) return { success: false, error: "無効なメッセージです" };
+
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
@@ -162,6 +188,8 @@ export async function deleteMessage(messageId: string) {
 
     const { error } = await supabase.from("messages").delete().eq("id", messageId).eq("user_id", user.id);
     if (error) throw error;
+    
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
     console.error("[deleteMessage]", err);
@@ -169,8 +197,11 @@ export async function deleteMessage(messageId: string) {
   }
 }
 
-export async function removeThanks(messageId: string) {
+export async function removeThanks(messageId: string): Promise<ActionResponse> {
   try {
+    const validMessage = CommonSchemas.UUID.safeParse(messageId);
+    if (!validMessage.success) return { success: false, error: "無効なメッセージです" };
+
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
@@ -179,6 +210,8 @@ export async function removeThanks(messageId: string) {
 
     const { error } = await supabase.from("message_thanks").delete().eq("message_id", messageId).eq("user_id", user.id);
     if (error) throw error;
+    
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
     console.error("[removeThanks]", err);
@@ -195,16 +228,20 @@ export async function getActiveMessages(roomId: string) {
 
     const { data, error } = await supabase
       .from("messages")
-      .select("*, profiles:user_id (display_name, avatar_url, trust_score)")
+      .select("*")
       .eq("room_id", roomId)
       .gt("expires_at", new Date().toISOString())
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false }) // Fetch newest first
+      .limit(100);
 
     if (error) throw error;
     
+    // Reverse to display chronologically (oldest at top, newest at bottom)
+    const recentData = (data || []).reverse();
+
     let thankedIds: string[] = [];
-    if (user && data && data.length > 0) {
-      const msgIds = data.map(m => m.id);
+    if (user && recentData.length > 0) {
+      const msgIds = recentData.map(m => m.id);
       const { data: thanksData } = await supabase
         .from("message_thanks")
         .select("message_id")
@@ -214,7 +251,7 @@ export async function getActiveMessages(roomId: string) {
       if (thanksData) thankedIds = thanksData.map(t => t.message_id);
     }
 
-    const enhancedData = (data || []).map(msg => ({
+    const enhancedData = recentData.map(msg => ({
       ...msg,
       has_thanked: thankedIds.includes(msg.id)
     }));
@@ -259,7 +296,7 @@ export async function getTalkRoomBySlug(slug: string) {
       .select("id, slug, name, description, icon_emoji")
       .eq("slug", slug)
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
 
     if (!error && data) return { success: true, data };
 
@@ -279,10 +316,10 @@ export async function getTalkRoomBySlug(slug: string) {
 export async function getWikiCountForRoom(roomId: string) {
   try {
     const supabase = await createClient();
-    if (!supabase) return { success: true, count: 0 };
+    if (!supabase) return { success: false, error: "無効なDB接続" };
 
-    const { data: room } = await supabase.from("talk_rooms").select("slug").eq("id", roomId).single();
-    if (!room || !room.slug) return { success: true, count: 0 };
+    const { data: room } = await supabase.from("talk_rooms").select("slug").eq("id", roomId).maybeSingle();
+    if (!room || !room.slug) return { success: false, error: "対象のルームが見つかりません" };
 
     const megaSlug = `mega-${room.slug}`;
     const { count } = await supabase
@@ -300,10 +337,10 @@ export async function getWikiCountForRoom(roomId: string) {
 export async function getRelatedWikiEntries(roomId: string) {
   try {
     const supabase = await createClient();
-    if (!supabase) return { success: true, data: [] };
+    if (!supabase) return { success: false, error: "DB接続エラー" };
 
-    const { data: room } = await supabase.from("talk_rooms").select("slug").eq("id", roomId).single();
-    if (!room || !room.slug) return { success: true, data: [] };
+    const { data: room } = await supabase.from("talk_rooms").select("slug").eq("id", roomId).maybeSingle();
+    if (!room || !room.slug) return { success: false, error: "ルームが見つかりません" };
 
     const megaSlug = `mega-${room.slug}`;
     const { data } = await supabase
@@ -318,7 +355,4 @@ export async function getRelatedWikiEntries(roomId: string) {
   }
 }
 
-// 類似ルームや個別スレッド検索関数はPhase 3で削除 (不要なUIはあとで消される)
-export async function findSimilarRooms() { return { success: true, data: [] }; }
-export async function createTalkRoom() { return { success: false, error: "現在は新しいルームを作成できません" }; }
-export async function getThreadsForTheme() { return { success: true, data: [] }; }
+

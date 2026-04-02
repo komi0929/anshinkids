@@ -103,22 +103,20 @@ export async function POST(request: Request) {
 
         if (signInError || !signInData.session) {
           // Password might have changed — reset it and retry
-          // Find user via listing (paginated)
-          let foundUser = null;
-          for (let page = 1; page <= 10; page++) {
-            const { data: pageData } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 100 });
-            foundUser = pageData?.users?.find((u) => u.email === dummyEmail);
-            if (foundUser) break;
-            if (!pageData?.users?.length || pageData.users.length < 100) break;
-          }
+          // Find user via profiles table which is O(1) instead of fetching all GoTrue users
+          const { data: existingProfile } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("line_user_id", lineUserId)
+            .maybeSingle();
 
-          if (foundUser) {
-            await supabaseAdmin.auth.admin.updateUserById(foundUser.id, {
+          if (existingProfile) {
+            await supabaseAdmin.auth.admin.updateUserById(existingProfile.id, {
               password: deterministicPassword,
             });
-            userId = foundUser.id;
+            userId = existingProfile.id;
           } else {
-            console.error("Cannot find existing user:", dummyEmail);
+            console.error("Cannot find existing user by line_user_id:", lineUserId);
             return Response.json({ error: "ユーザーが見つかりませんでした。再度お試しください。" }, { status: 500 });
           }
         } else {
