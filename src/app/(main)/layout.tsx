@@ -101,63 +101,65 @@ export default function MainLayout({
       {children}
 
       {/* Bottom Navigation */}
-      <nav className="bottom-nav" id="main-navigation" role="navigation" aria-label="メインナビゲーション">
-        <div className="flex justify-around items-center max-w-lg mx-auto">
-          {navItems.map((item) => {
-            // マイページは未ログイン時は非表示（ログインボタンとスワップする）
-            if (item.href === "/mypage" && isLoggedIn === false) {
-              return null;
-            }
+      {!showOnboarding && (
+        <nav className="bottom-nav" id="main-navigation" role="navigation" aria-label="メインナビゲーション">
+          <div className="flex justify-around items-center max-w-lg mx-auto">
+            {navItems.map((item) => {
+              // マイページは未ログイン時は非表示（ログインボタンとスワップする）
+              if (item.href === "/mypage" && isLoggedIn === false) {
+                return null;
+              }
 
-            const isComingSoon = item.href === "/concierge";
-            
-            if (isComingSoon) {
-              return (
-                <div
-                  key={item.href}
-                  className="nav-item opacity-50 cursor-not-allowed select-none relative"
-                  id={`nav-${item.href.slice(1)}`}
-                  aria-label={`${item.label}（準備中）`}
-                >
-                  <item.Icon size={22} className="text-gray-400" />
-                  <span className="text-gray-400">{item.label}</span>
-                  <div className="absolute -top-1 -right-2 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[8px] font-black px-1.5 py-0.5 rounded-sm shadow-sm transform -rotate-6 border border-white whitespace-nowrap">
-                    準備中
+              const isComingSoon = item.href === "/concierge";
+              
+              if (isComingSoon) {
+                return (
+                  <div
+                    key={item.href}
+                    className="nav-item opacity-50 cursor-not-allowed select-none relative"
+                    id={`nav-${item.href.slice(1)}`}
+                    aria-label={`${item.label}（準備中）`}
+                  >
+                    <item.Icon size={22} className="text-gray-400" />
+                    <span className="text-gray-400">{item.label}</span>
+                    <div className="absolute -top-1 -right-2 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[8px] font-black px-1.5 py-0.5 rounded-sm shadow-sm transform -rotate-6 border border-white whitespace-nowrap">
+                      準備中
+                    </div>
                   </div>
-                </div>
-              );
-            }
+                );
+              }
 
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-item ${isActive ? "active" : ""}`}
+                  id={`nav-${item.href.slice(1)}`}
+                  aria-label={item.label}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <item.Icon size={22} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+            {isLoggedIn === false && (
               <Link
-                key={item.href}
-                href={item.href}
-                className={`nav-item ${isActive ? "active" : ""}`}
-                id={`nav-${item.href.slice(1)}`}
-                aria-label={item.label}
-                aria-current={isActive ? "page" : undefined}
+                href="/login"
+                className="nav-item"
+                style={{ color: "var(--color-primary)" }}
+                id="nav-login"
+                aria-label="ログイン"
               >
-                <item.Icon size={22} />
-                <span>{item.label}</span>
+                <LogIn size={22} />
+                <span>ログイン</span>
               </Link>
-            );
-          })}
-          {isLoggedIn === false && (
-            <Link
-              href="/login"
-              className="nav-item"
-              style={{ color: "var(--color-primary)" }}
-              id="nav-login"
-              aria-label="ログイン"
-            >
-              <LogIn size={22} />
-              <span>ログイン</span>
-            </Link>
-          )}
-        </div>
-      </nav>
+            )}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }
