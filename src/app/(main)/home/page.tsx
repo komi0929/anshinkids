@@ -67,37 +67,41 @@ export default function HomePage() {
   
   useEffect(() => {
     let mounted = true;
-    async function load() {
-      const tierRes = await getEngagementTier();
-      const currentTier = (tierRes.success && tierRes.data) ? tierRes.data.tier : "guest";
+    // Phase 1: Determine tier fast — show skeleton-free UI ASAP
+    async function loadTier() {
+      const tierRes = await getEngagementTier().catch(() => ({ success: false, data: undefined }));
       if (!mounted) return;
-      const tierDataFromRes = tierRes.data as { tier: "guest"|"reader"|"contributor", postCount: number } | undefined;
-      setTierData(tierDataFromRes || { tier: "guest", postCount: 0 });
-
-      const [trendRes, recRes, impactRes, bmRes] = await Promise.all([
-        getTrendingTopics().catch(e => ({ success: false, error: e.message, data: null })),
-        getPersonalizedWikiEntries().catch(e => ({ success: false, error: e.message, data: null, isPersonalized: false, personalizationLabel: "" })),
-        currentTier === "contributor" ? getImpactFeedback().catch(e => ({ success: false, error: e.message, data: null })) : Promise.resolve({ success: false, data: null }),
-        currentTier !== "guest" ? getMyBookmarks().catch(e => ({ success: false, error: e.message, data: null })) : Promise.resolve({ success: false, data: [] }),
-      ]);
-      
-      if (!mounted) return;
-
-      // If both core data fetches fail, we assume an API error
-      if (!trendRes.success && !recRes.success) {
-        setErrorMsg("データの取得に失敗しました。時間をおいて再度お試しください。");
-      } else {
-        if (trendRes.success && trendRes.data) setTrending(trendRes.data as TrendingRoom[]);
-        if (recRes.success && recRes.data) setRecommended({ isPersonalized: !!recRes.isPersonalized, personalizationLabel: String(recRes.personalizationLabel || ""), data: recRes.data as WikiEntryPreview[]});
-        if (impactRes.success && impactRes.data) setImpact(impactRes.data as unknown as ImpactData);
-        if (bmRes.success && bmRes.data) setBookmarks(bmRes.data as BookmarkData[]);
-      }
-      
+      const tierDataFromRes = (tierRes.success && tierRes.data) 
+        ? tierRes.data as { tier: "guest"|"reader"|"contributor", postCount: number }
+        : { tier: "guest" as const, postCount: 0 };
+      setTierData(tierDataFromRes);
       setIsLoading(false);
     }
-    load();
+    loadTier();
     return () => { mounted = false; };
   }, []);
+
+  // Phase 2: Enhancement data — load after tier UI is visible
+  useEffect(() => {
+    if (isLoading || !tierData) return;
+    let mounted = true;
+    const timer = setTimeout(async () => {
+      const currentTier = tierData.tier;
+      const [trendRes, recRes, impactRes, bmRes] = await Promise.all([
+        getTrendingTopics().catch(() => ({ success: false, data: null })),
+        getPersonalizedWikiEntries().catch(() => ({ success: false, data: null, isPersonalized: false, personalizationLabel: "" })),
+        currentTier === "contributor" ? getImpactFeedback().catch(() => ({ success: false, data: null })) : Promise.resolve({ success: false, data: null }),
+        currentTier !== "guest" ? getMyBookmarks().catch(() => ({ success: false, data: null })) : Promise.resolve({ success: false, data: [] }),
+      ]);
+      if (!mounted) return;
+      if (trendRes.success && trendRes.data) setTrending(trendRes.data as TrendingRoom[]);
+      if (recRes.success && recRes.data) setRecommended({ isPersonalized: !!recRes.isPersonalized, personalizationLabel: String(recRes.personalizationLabel || ""), data: recRes.data as WikiEntryPreview[]});
+      if (impactRes.success && impactRes.data) setImpact(impactRes.data as unknown as ImpactData);
+      if (bmRes.success && bmRes.data) setBookmarks(bmRes.data as BookmarkData[]);
+    }, 50);
+    return () => { mounted = false; clearTimeout(timer); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, tierData]);
 
   if (errorMsg) {
     return (

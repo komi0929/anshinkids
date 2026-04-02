@@ -1,0 +1,43 @@
+4eb4ebc|||feat: complete SOS Ripple and Official Compass widget
+d176fe6|||feat: complete Phase 9 digital amulet card for utility-driven growth
+874b556|||feat: complete 250 point UX evolution and finalize public documentation
+54a9107|||refactor: eliminate structural technical debt, hacks, and silent errors
+d677d21|||refactor: fix profile JSON payload serialization tech debt and missing DB columns
+58fdf8a|||fix: resolve topic-summon mock and missing db threshold column
+e1cbab2|||feat: complete Phase 5
+f1e9822|||feat: complete Phase 4 ecosystem enhancements (Hyper-Personalized RAG, Proactive Topic Summoning, Visual Impact)
+b32d55b|||refactor: eliminate localStorage UI mocks by migrating user preferences (interests) to Supabase Profiles
+32e8508|||refactor: replace remaining dummy data and localstorage logic with actual Supabase states
+e0516ae|||fix(ui): resolve missing Reply and ArrowUpRight icons to stabilize build
+6312f96|||feat(audit): Phase 4 Multi-child RAG, 28-allergen Wiki filter, schema polyfill
+6282768|||fix(mypage): resolve fatal backward compatibility data loss bug by dynamically migrating legacy profile preferences to new multi-child architecture
+8e6b168|||feat(docs): add comprehensive open features spec page for contributors
+11323ae|||fix(concierge): resolve hydration mismatch throwing react error on AI chat page
+1c1d2be|||fix: use admin client for room seeding to bypass RLS - critical fix for message posting
+4de4d0a|||fix: auto-create canonical talk rooms in DB - fixes empty roomInfo.id that blocked all posts
+9800327|||fix: persistent session cookies (30-day maxAge) + verify account deletion works
+6c7680a|||refactor: replace ALL remaining inline SVGs with unified icons.tsx (complete)
+377251a|||refactor: unify all icons via shared icons.tsx component (strokeWidth: 1.8 everywhere)
+be8fab7|||fix: critical hydration errors, default prompts for unseeded rooms, interval cleanup
+79ce915|||fix: LINE auth - handle existing user with create-first strategy
+4a86104|||design: unified warm palette, heavier typography, consistent card styles
+a0bad0b|||fix: expose actual createUser error for LINE auth debugging
+15c2a16|||fix: UI?????????????????????????4h???????????????+????????????????dae5fb8|||feat: ??????????????????????????????????????
+3edcfc9|||design: remove ALL lucide-react dependencies, replace with inline SVG icons across all pages
+8cb2294|||design: UI overhaul Phase 0-1 - new color palette, typography, blob bg, hand-drawn accents
+8ee8f54|||fix: robust theme fallback - require ALL canonical slugs in DB before using DB data
+504be01|||feat: add seed-themes batch endpoint for production DB theme update
+53a5d12|||refactor: theme restructure - experience-first axis, consolidate load test to 1 theme
+5227ffb|||feat: add About page with annotated screenshots and plain Japanese explanations
+a5438fb|||feat: comprehensive UX improvements based on 10-pattern CJM analysis
+d968f5a|||fix: add missing refreshPrompts function in talk room page
+d151287|||fix: improve LINE auth error message with setup instructions
+7d4e7b6|||fix: resolve build crash - getUserByEmail removal + middleware->proxy rename
+79c9ac9|||fix: LINE??????????????????????????? - ?????????????????????????????
+deea036|||feat: LINE Custom OIDC provider????(signInWithOAuth custom:line)
+ac37dd7|||fix: LINE???????????????????????SVG?????????35a0a5b|||fix: LINE??????????????????????
+5cbc043|||fix: UX???????- ?????????????????????????????????????????????????????????????????
+6c0bc20|||feat: ????????????????? Phase 1-3 - Wiki/MyPage ???????????????iki???????????????????????????????????????????????????UUID???????
+1acc1cf|||feat: AI conversation starters in talk rooms + seamless wiki contribution flow
+7df31d2|||refactor: community-driven UX overhaul - ?????????/???????????/?????2c71fb0|||feat: user-created talk room themes with AI similarity check (Gemini Flash)
+4aced84|||feat: initial Anshin Kids v1.0 - full-stack allergy platform with LINE auth, AI Wiki, ephemeral talk rooms

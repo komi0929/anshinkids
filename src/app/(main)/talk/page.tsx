@@ -61,14 +61,14 @@ export default function TalkRoomsPage() {
 
   const [recommendedRooms, setRecommendedRooms] = useState<Room[]>([]);
 
+  // Phase 1: Core data — show room list ASAP
   useEffect(() => {
-    // Load rooms
     getTalkRooms().then(({ data }) => {
       if (data) {
         const roomList = data as Room[];
         setRooms(roomList);
         setIsLoading(false);
-        // Fetch real profile to determine recommended rooms
+        // Profile fetch for recommendations (non-blocking)
         import("@/app/actions/mypage").then(({ getMyProfile }) => {
           getMyProfile().then(res => {
             if (res.success && res.data && res.data.interests) {
@@ -83,19 +83,26 @@ export default function TalkRoomsPage() {
         setIsLoading(false);
       }
     });
-
-    // Load discovery data in parallel (non-blocking)
-    getTrendingTopics().then(r => { if (r.success) setTrending(r.data as TrendingTopic[]); });
-    getPersonalizedWikiEntries().then(r => {
-      if (r.success) {
-        setPersonalizedWiki(r.data as PersonalizedEntry[]);
-        setIsPersonalized(r.isPersonalized || false);
-        setPersonalizationLabel(r.personalizationLabel || "");
-      }
-    });
-    getContributionStreak().then(r => { if (r.success && r.data) setStreak(r.data); });
-    getWeeklyDigest().then(r => { if (r.success && r.data) setDigest(r.data as DigestData); });
   }, []);
+
+  // Phase 2: Enhancement data — load after rooms are visible (non-blocking)
+  useEffect(() => {
+    if (isLoading) return; // Wait until rooms are rendered
+    const timer = setTimeout(() => {
+      getTrendingTopics().then(r => { if (r.success) setTrending(r.data as TrendingTopic[]); }).catch(() => {});
+      getPersonalizedWikiEntries().then(r => {
+        if (r.success) {
+          setPersonalizedWiki(r.data as PersonalizedEntry[]);
+          setIsPersonalized(r.isPersonalized || false);
+          setPersonalizationLabel(r.personalizationLabel || "");
+        }
+      }).catch(() => {});
+      getContributionStreak().then(r => { if (r.success && r.data) setStreak(r.data); }).catch(() => {});
+      getWeeklyDigest().then(r => { if (r.success && r.data) setDigest(r.data as DigestData); }).catch(() => {});
+    }, 100); // Small delay to let rooms paint first
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
 
 

@@ -66,21 +66,16 @@ function getFreshness(updatedAt: string) {
 export default function WikiPage() {
   const [entries, setEntries] = useState<WikiEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("すべて");
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedQuery(searchQuery), 400);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
+
 
 
   const loadEntries = async () => {
     setIsLoading(true);
-    const result = await searchWiki(debouncedQuery, {
+    const result = await searchWiki("", {
       category: selectedCategory === "すべて" ? undefined : selectedCategory,
       allergens: selectedAllergens.length > 0 ? selectedAllergens : undefined,
     });
@@ -93,7 +88,7 @@ export default function WikiPage() {
   useEffect(() => {
     loadEntries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, selectedCategory, selectedAllergens]);
+  }, [selectedCategory, selectedAllergens]);
 
 
 
@@ -108,30 +103,38 @@ export default function WikiPage() {
         </p>
       </div>
 
-      {/* Search */}
+      {/* Search — 現在データ蓄積中のため一時停止 */}
       <div className="px-4 mb-3">
-        <div className="relative">
+        <div className="relative opacity-50 pointer-events-none select-none">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-subtle)]" />
           <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="商品名、症状、病院名で検索..."
-            className="input-field pl-11 pr-12"
+            value=""
+            readOnly
+            placeholder="AI検索（データ蓄積中...まもなく使えるようになります）"
+            className="input-field pl-11 pr-12 cursor-not-allowed"
             id="wiki-search"
+            disabled
           />
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl transition-all ${
-              showFilters || selectedAllergens.length > 0
-                ? "bg-[var(--color-primary)] text-white shadow-sm"
-                : "text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)]"
-            }`}
-            id="toggle-filters"
-          >
-            <Filter className="w-4 h-4" />
-          </button>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-lg text-[10px] font-bold text-white bg-[var(--color-subtle)]">
+            準備中
+          </span>
         </div>
+      </div>
+      {/* Filter toggle — still works for category/allergen filtering */}
+      <div className="px-4 mb-1 flex justify-end">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all ${
+            showFilters || selectedAllergens.length > 0
+              ? "bg-[var(--color-primary)] text-white shadow-sm"
+              : "bg-[var(--color-surface)] text-[var(--color-subtle)] border border-[var(--color-border)] hover:bg-[var(--color-surface-warm)]"
+          }`}
+          id="toggle-filters"
+        >
+          <Filter className="w-3.5 h-3.5" />
+          絞り込み
+        </button>
       </div>
 
       {/* Filters */}

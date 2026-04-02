@@ -36,7 +36,8 @@ const CATEGORIES: Category[] = [
       { title: "アカウント削除と資産の匿名化", desc: "退会時には個人情報を完全消去しつつ、知恵袋に抽出されたノウハウのみをコミュニティの資産として匿名で保持するセキュアシステム。", icon: <Shield className="w-5 h-5" />, tags: ["Privacy"] },
       { title: "カテゴリ別おすすめルーム", desc: "ユーザーのアレルゲン情報から、現在最も盛り上がっている最適なトークルームを自動推薦。", icon: <Sparkles className="w-5 h-5" /> },
       { title: "Micro-Bookmarking（スニペット保存）", desc: "長いWiki記事全体ではなく、本当に自分に役立つ一行単位の「知恵（スニペット）」だけを抽出してマイページにブックマークできる機能。", icon: <BookOpen className="w-5 h-5" />, tags: ["Engagement", "UX"] },
-      { title: "ティア別ダイナミックダッシュボード", desc: "未ログイン、閲覧のみ、投稿者の3つの階層ごとに、最適なアクション（ログイン促進、初投稿推進、影響力レポート）を自動で出し分けるパーソナライズダッシュボード。", icon: <User className="w-5 h-5" />, tags: ["Personalize", "UX"] },
+      { title: "ティア別ダイナミックダッシュボード", desc: "階層や称号といった権威的なバッジを一切廃止し、未ログイン、閲覧のみ、投稿者の3つの状態ごとにフラットに最適なアクションを提案するダッシュボード。", icon: <User className="w-5 h-5" />, tags: ["Egalitarian", "UX"] },
+      { title: "SOS Ripple 拡散連携", desc: "深刻な悩みや助けを求める声を、美しいOG画像付きのカードとしてSNS（X等）へシームレスに拡散し、外部から知恵を集める機能。", icon: <TrendingUp className="w-5 h-5" />, tags: ["Growth", "Share"] },
     ]
   },
   {
@@ -51,7 +52,7 @@ const CATEGORIES: Category[] = [
       { title: "AI回答の信頼度バッジ", desc: "回答に必要な「保護者の一次情報」のデータ量に基づき、回答の確かさを判定してバッジ（緑/橙/赤）で視覚的警告を出す機能。", icon: <ShieldCheck className="w-5 h-5" /> },
       { title: "情報ソース（参照元）の透明性追跡", desc: "AIがどの投稿（wiki_sources）を参考にしたかカウントを追跡することで、AI特有のハルシネーションを極小化。", icon: <Search className="w-5 h-5" /> },
       { title: "緊急度判定ガード（119番誘導）", desc: "「息苦しい」「蕁麻疹が広がった」等のアナフィラキシー疑いをAIが検知し、即座に回答を停止して119番を促すセーフティガード。", icon: <Shield className="w-5 h-5" />, tags: ["Safety", "Urgent"] },
-      { title: "AI画面から「ワンクリック知恵保存」", desc: "AIへの質問とその回答が有用だった場合、ワンタップで匿名化して知恵袋のナレッジベースに直接追加する機能。", icon: <Check className="w-5 h-5" /> },
+      { title: "AI検索システムの自律制御", desc: "データ品質を最優先し、圧倒的な良質な一次情報が十分蓄積されるまではAI検索機能を意図的にロック・不可視化するクオリティコントロール機構。", icon: <ShieldCheck className="w-5 h-5" /> },
       { title: "バウンスアニメーションUI", desc: "AIが思考中であることを伝える、心地よくリズミカルなWaiting UIパターン。", icon: <Sparkles className="w-5 h-5" /> },
       { title: "動的JSONBスキーマ拡張対応", desc: "構造化データやJSONスキーマを用いてAPIのレスポンスを厳格に管理するフルスタックAIアーキテクチャ。", icon: <TrendingUp className="w-5 h-5" /> },
       { title: "複数こども×アレルゲン完全考慮RAG", desc: "ユーザーが設定した複数のお子さまの年齢や複雑なアレルゲン情報（28品目＋自由記述）をすべてAIにコンテキストとして渡し、一人ひとりに寄り添った高精度の回答を動的生成します。", icon: <User className="w-5 h-5" />, tags: ["RAG", "Context Injection"] },
@@ -112,13 +113,14 @@ const CATEGORIES: Category[] = [
     colorClass: "from-blue-100/50 to-indigo-50 border-indigo-200 text-indigo-700 bg-indigo-500/10",
     features: [
       { title: "手書き軽量SVGフルスクラッチ（Lucide排除）", desc: "汎用アイコンライブラリを全て撤廃し、温かみのある太線の「手書き風カスタムSVGアイコン」群を自給。", icon: <Leaf className="w-5 h-5" />, tags: ["Performance"] },
-      { title: "超・角丸（32px）とパステルGlassmorphism", desc: "Nani UI / Bento UIにインスパイアされた、親しみやすく触りたくなる「ぷにぷに」のUIマテリアル。", icon: <Sparkles className="w-5 h-5" /> },
+      { title: "ノイズを削ぎ落とした洗練UI", desc: "過度な装飾（テクスチャや波線）を完全排除。「超・角丸（32px）とパステルGlassmorphism」のみを残し、情報に没入できるクリーンな設計。", icon: <Sparkles className="w-5 h-5" /> },
       { title: "インクブルー × コーラルピンク基調", desc: "医療的な冷たさを排除し、ノートに描いたような安心感のあるTech-Natural Fusionカラーパレット。", icon: <Heart className="w-5 h-5" /> },
       { title: "Hydration Mismatch自動回避", desc: "Server/Clientのレンダリング差によるReactのクラッシュを先読みして防ぐ `isMounted` SSRバリデーション。", icon: <ShieldCheck className="w-5 h-5" />, tags: ["React"] },
       { title: "PWA・モバイル最適化 (100dvh & safe-bottom)", desc: "スマホブラウザのURLバーやiOSのセーフエリア（ノッチ・ホームバー）を考慮した、完全なネイティブアプリ風レイアウト。", icon: <User className="w-5 h-5" /> },
       { title: "Shimmer（スケルトン）ローディング", desc: "データ取得中に画面が真っ白になるのを防ぎ、キラキラと光る波紋のようなローディングで待ち時間を軽減。", icon: <RefreshCw className="w-5 h-5" /> },
       { title: "Smart Sticky ナビゲーション", desc: "スクロールしても入力欄や送信ボタンが常に指を届きやすい下部に固定される追従UI。", icon: <MessageCircle className="w-5 h-5" /> },
       { title: "APIエンドポイントレス構想 (Server Actions)", desc: "Next.js 16のServer Actionsをフル活用し、フロントとバックエンドの中間API層を排除した高速データ通信。", icon: <TrendingUp className="w-5 h-5" /> },
+      { title: "Speculation Rules (0ms画面遷移)", desc: "ユーザーがリンクをホバーした瞬間に次ページを裏でプリレンダリングし、0ミリ秒の瞬時体感遷移を実現する最新Web API。", icon: <Sparkles className="w-5 h-5" />, tags: ["Performance"] },
       { title: "Supabase RLS & Role Separation", desc: "Row Level Securityとサービスロールキーを組み合わせ、バッチ処理とユーザー操作を完全に分離した強固な認証DB。", icon: <Shield className="w-5 h-5" />, tags: ["Security"] },
       { title: "TypeScriptによる厳密型安全運用", desc: "NullやUndefinedを許容しない厳格な型推論による、ビルド時にバグを撲滅するセーフティ開発体制。", icon: <Check className="w-5 h-5" /> },
     ]
