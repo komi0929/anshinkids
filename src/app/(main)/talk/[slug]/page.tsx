@@ -780,13 +780,19 @@ export default function TalkRoomPage() {
 
       {/* === F5: Community Guidelines Modal === */}
       {showGuidelines && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) setShowGuidelines(false); }}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <div className="relative w-full max-w-md mx-4 bg-[var(--color-surface)] rounded-t-3xl sm:rounded-3xl shadow-2xl slide-up max-h-[85vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-[18px] font-extrabold text-[var(--color-text)] text-center mb-4">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-0" onClick={(e) => { if (e.target === e.currentTarget) setShowGuidelines(false); }}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowGuidelines(false)} />
+          <div className="relative w-full max-w-md mx-auto bg-[var(--color-surface)] rounded-3xl shadow-2xl slide-up max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col mb-[env(safe-area-inset-bottom,0px)]">
+            <div className="p-5 flex justify-between items-center border-b border-[var(--color-border-light)] bg-white sticky top-0 z-10 shrink-0 rounded-t-3xl">
+              <h2 className="text-[17px] font-extrabold text-[var(--color-text)] flex-1 text-center pr-6">
                 {COMMUNITY_GUIDELINES.title}
               </h2>
+              <button onClick={() => setShowGuidelines(false)} className="w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center text-[var(--color-subtle)] hover:bg-gray-200 absolute right-4">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto pb-24">
               <div className="space-y-3 mb-5">
                 {COMMUNITY_GUIDELINES.rules.map((rule, i) => (
                   <div key={i} className="flex items-start gap-3 p-3.5 rounded-2xl bg-[var(--color-surface-warm)]">
@@ -798,11 +804,11 @@ export default function TalkRoomPage() {
                   </div>
                 ))}
               </div>
-              <p className="text-[12px] text-center text-[var(--color-text-secondary)] leading-relaxed mb-5 px-2">
+              <p className="text-[12px] text-center text-[var(--color-text-secondary)] leading-relaxed mb-6 px-2">
                 {COMMUNITY_GUIDELINES.agreement}
               </p>
-              <button onClick={acceptGuidelines} className="btn-primary w-full flex items-center justify-center gap-2" id="accept-guidelines">
-                <ShieldCheck className="w-4 h-4" /> 理解して投稿する
+              <button onClick={acceptGuidelines} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 shadow-md" id="accept-guidelines">
+                <ShieldCheck className="w-5 h-5" /> 理解して投稿する
               </button>
             </div>
           </div>
