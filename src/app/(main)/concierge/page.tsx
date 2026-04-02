@@ -366,20 +366,12 @@ export default function ConciergePage() {
             </a>
           </div>
         ) : (
-          <div className="flex gap-3 items-end max-w-lg mx-auto">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="お悩みを入力してください..."
-              className="input-field flex-1 resize-none max-h-32"
-              rows={1}
-              id="concierge-input"
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            />
-            <button onClick={handleSend} disabled={!input.trim() || isLoading} className="btn-primary !p-3 !rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0" id="concierge-send">
-              <Send className="w-5 h-5" />
-            </button>
+          <div className="flex flex-col items-center justify-center py-2 text-center">
+            <span className="text-2xl mb-1">🔒</span>
+            <p className="text-[13px] font-extrabold text-[var(--color-text)] mb-2">AI相談はデータ蓄積中（準備中）です</p>
+            <p className="text-[11px] font-medium text-[var(--color-subtle)] max-w-xs leading-relaxed">
+              安全で正確な回答を提供するため、コミュニティの実体験が十分に集まるまでAIへの新規相談を一時ロックしています。
+            </p>
           </div>
         )}
       </div>
