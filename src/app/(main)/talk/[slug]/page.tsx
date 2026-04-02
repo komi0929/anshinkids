@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Send, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X, Trash2, Reply, User } from "@/components/icons";
+import { ArrowLeft, Send, MessageCircle, Sparkles, RefreshCw, BookOpen, Clock, ArrowRight, Leaf, Check, AlertTriangle, Phone, ShieldCheck, X, Trash2, Reply, User, Share } from "@/components/icons";
 import {
   getActiveMessages,
   postMessage,
@@ -407,6 +407,26 @@ export default function TalkRoomPage() {
     return colors[hash % colors.length];
   }
 
+  const handleShareSOS = async (msg: Message) => {
+    const textSnippet = msg.content.substring(0, 40) + "...";
+    const shareData = {
+      title: "教えて！あんしんキッズ",
+      text: `誰か分かる人いませんか？😭\n「${textSnippet}」\n`,
+      url: `${window.location.origin}/share/talk/${msg.id}`,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        alert("リンクをコピーしました📱");
+      }
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error("シェアエラー", e);
+      }
+    }
+  };
 
   const renderedMessages = useMemo(() => {
     if (isLoading) {
@@ -485,9 +505,18 @@ export default function TalkRoomPage() {
                       <Clock className="w-2.5 h-2.5" /> {getExpiresIn(msg.expires_at)}
                     </span>
                     {isMyMessage && (
-                      <button onClick={() => handleDelete(msg.id)} className="p-1.5 ml-1 text-[var(--color-muted)] hover:text-[var(--color-danger)] transition-colors rounded-full hover:bg-red-50" aria-label="投稿を削除">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1.5 ml-1">
+                        <button
+                          onClick={() => handleShareSOS(msg)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] text-[var(--color-accent)] bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 transition-all rounded-full font-bold shadow-sm"
+                        >
+                          <Share className="w-3 h-3" />
+                          SOS外出し
+                        </button>
+                        <button onClick={() => handleDelete(msg.id)} className="p-1.5 text-[var(--color-muted)] hover:text-red-500 transition-colors rounded-full hover:bg-red-50" aria-label="投稿を削除">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

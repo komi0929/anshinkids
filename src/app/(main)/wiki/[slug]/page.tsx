@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen, Bookmark } from "@/components/icons";
+import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen, Bookmark, ArrowRight } from "@/components/icons";
 // Users icon (not in shared yet, alias User)
 const Users = User;
 import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets } from "@/app/actions/wiki";
@@ -292,6 +292,30 @@ export default function WikiDetailPage() {
             )}
           </div>
         )}
+
+        {/* F10: Official Compass Widget (Static Baseline) */}
+        <div className="p-4 rounded-[20px] bg-blue-50 border border-blue-100 flex flex-col gap-2 mb-5 fade-in shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-3 opacity-10 transform translate-x-2 -translate-y-2">
+            <span className="text-6xl">🏥</span>
+          </div>
+          <div className="flex items-center gap-1.5 relative z-10 mb-1">
+            <span className="text-[16px]">👩‍⚕️</span>
+            <h3 className="text-[13px] font-extrabold text-blue-900 tracking-tight">公式からの道しるべ</h3>
+            <span className="ml-auto text-[9px] font-bold bg-white text-blue-600 px-2 py-0.5 rounded-full shadow-sm">最新ガイドライン</span>
+          </div>
+          <p className="text-[10px] text-blue-800 leading-relaxed font-medium relative z-10 mb-1">
+            ※みんなの体験談を見る前に、国や学会が提供する基礎知識を確認できます。
+          </p>
+          <div className="relative z-10 flex flex-col gap-2 mt-1">
+            <a href="https://allergyportal.jp/knowledge/food/" target="_blank" rel="noopener noreferrer" className="bg-white p-3 rounded-xl border border-blue-100 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group flex items-center justify-between">
+              <div>
+                <p className="text-[12px] font-bold text-blue-900 group-hover:text-blue-700 transition-colors">食物アレルギーの基礎知識</p>
+                <p className="text-[10px] text-blue-500 mt-0.5">アレルギーポータル（日本アレルギー学会）</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
+        </div>
 
         {/* Summary */}
         {entry.summary && (
