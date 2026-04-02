@@ -104,6 +104,11 @@ export default function MainLayout({
       <nav className="bottom-nav" id="main-navigation" role="navigation" aria-label="メインナビゲーション">
         <div className="flex justify-around items-center max-w-lg mx-auto">
           {navItems.map((item) => {
+            // マイページは未ログイン時は非表示（ログインボタンとスワップする）
+            if (item.href === "/mypage" && isLoggedIn === false) {
+              return null;
+            }
+
             const isComingSoon = item.href === "/concierge";
             
             if (isComingSoon) {
