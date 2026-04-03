@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Settings, Bell, X, ArrowRight, ShieldCheck } from "@/components/icons";
+import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Settings, Bell, X, ArrowRight, ShieldCheck, Share } from "@/components/icons";
 import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
 
 import { logoutAction } from "@/app/actions/auth";
@@ -184,6 +184,26 @@ export default function MyPage() {
     }
     setIsDeleting(false);
   }
+
+  const handleShareImpact = async () => {
+    if (!impact) return;
+    const shareText = `あんしんキッズの知恵袋で、私の体験談が「${impact.articlesHelped}件の記事」に反映され、「${impact.thanks}人」から感謝されました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
+    const url = `${window.location.origin}/`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "あんしんキッズでの貢献",
+          text: shareText,
+          url: url
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
+      alert("実績をコピーしました！SNSでシェアしましょう。");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -431,6 +451,16 @@ export default function MyPage() {
                 </div>
               </Link>
             ))}
+          </div>
+
+          <div className="mt-4 flex justify-center">
+             <button
+                onClick={handleShareImpact}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[var(--color-border)] shadow-sm text-[var(--color-text)] font-semibold text-[13px] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-all"
+             >
+                <Share className="w-4 h-4" />
+                自分の貢献実績をSNSでシェア
+             </button>
           </div>
         </div>
       )}

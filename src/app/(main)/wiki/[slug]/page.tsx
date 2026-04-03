@@ -216,6 +216,26 @@ export default function WikiDetailPage() {
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-success)] origin-left z-[100]"
         style={{ scaleX }}
       />
+      {/* FAQSchema JSON-LD for AI Search & Rich Snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": entry.sections?.flatMap(sec => 
+              sec.items.map(item => ({
+                "@type": "Question",
+                "name": item.title,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": item.content
+                }
+              }))
+            ) || []
+          })
+        }}
+      />
       {/* Header */}
       <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
         <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors" id="back-to-wiki">

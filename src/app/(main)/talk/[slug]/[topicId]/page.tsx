@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Trash2,
   User,
+  Share,
 } from "@/components/icons";
 import {
   getTopicMessages,
@@ -232,6 +233,25 @@ export default function TopicChatPage() {
     }
   }, [thankedIds]);
 
+  const handleShareMessage = useCallback(async (msgId: string) => {
+    Haptics.success();
+    const url = `${window.location.origin}/share/talk/${msgId}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "教えて！あんしんキッズ",
+          text: "食物アレルギーの先輩パパ・ママ、知恵を貸してください🙏",
+          url: url,
+        });
+      } catch (e) {
+        console.error("Share failed", e);
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert("リンクをコピーしました！SNSでシェアして助けを呼びましょう。");
+    }
+  }, []);
+
   function getAvatarColor(name: string) {
     const colors = [
       "from-blue-400 to-indigo-500",
@@ -302,12 +322,21 @@ export default function TopicChatPage() {
                     })}
                   </span>
                   {!msg.is_optimistic && (
-                    <button
-                      onClick={() => handleDelete(msg.id)}
-                      className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-danger)] flex items-center transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleShareMessage(msg.id)}
+                        className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-primary)] flex items-center transition-colors mr-1"
+                        aria-label="シェアして助けを求める"
+                      >
+                        <Share className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(msg.id)}
+                        className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-danger)] flex items-center transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -355,6 +384,12 @@ export default function TopicChatPage() {
                       <span className="font-bold">{msg.thanks_count}</span>
                     )}
                   </motion.button>
+                  <button
+                    onClick={() => handleShareMessage(msg.id)}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-surface)] border border-[var(--color-border-light)] text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-all"
+                  >
+                    <Share className="w-3 h-3" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -362,7 +397,7 @@ export default function TopicChatPage() {
         );
       }
     });
-  }, [messages, thankedIds, currentUserId, isLoading, topicInfo, handleThanks]);
+  }, [messages, thankedIds, currentUserId, isLoading, topicInfo, handleThanks, handleShareMessage]);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[var(--color-bg)]">

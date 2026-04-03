@@ -43,6 +43,7 @@ export const ChevronRight = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><polyline points="9 18 15 12 9 6" /></svg>
 );
 
+
 // ── Communication ──
 export const MessageCircle = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
