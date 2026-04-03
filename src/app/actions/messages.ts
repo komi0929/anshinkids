@@ -13,12 +13,29 @@ export async function getTalkTopics(roomId: string) {
     if (!supabase) return { success: true, data: [] };
     const { data, error } = await supabase
       .from("talk_topics")
-      .select("*")
+      .select(`
+        *,
+        profiles:creator_id (
+          display_name,
+          avatar_url
+        )
+      `)
       .eq("room_id", roomId)
       .eq("is_active", true)
       .order("updated_at", { ascending: false });
     if (error) throw error;
-    return { success: true, data: data || [] };
+    
+    const enhancedData = data?.map(t => {
+      const prof = t.profiles as unknown as { display_name?: string, avatar_url?: string };
+      return {
+        ...t,
+        creator_name: prof?.display_name || "参加者",
+        creator_avatar: prof?.avatar_url || null,
+        profiles: undefined
+      };
+    }) || [];
+    
+    return { success: true, data: enhancedData };
   } catch (err) {
     console.error("[getTalkTopics]", err);
     return { success: true, data: [] };

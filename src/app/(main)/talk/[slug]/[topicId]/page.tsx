@@ -344,12 +344,28 @@ export default function TopicChatPage() {
             key={msg.id}
             className={`flex flex-col items-end px-4 mb-4 ${opacityClass} fade-in`}
           >
-            <div className="flex gap-2 max-w-[85%]">
+            <div className="flex gap-2 max-w-[85%] flex-row-reverse">
+              <div
+                className={`w-8 h-8 mt-1 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm relative overflow-hidden`}
+              >
+                {renderAvatar(msg.author_avatar || null, msg.user_id, msg.author_name || "あなた")}
+              </div>
               <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1.5 mr-1 mb-0.5 flex-wrap flex-row-reverse">
+                  <span className="text-[12px] font-bold text-[var(--color-text)]">
+                    {msg.author_name || "あなた"}
+                  </span>
+                  {msg.author_allergens && msg.author_allergens.length > 0 && (
+                    <span className="text-[10px] bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">
+                      {msg.author_allergens.slice(0, 2).join(", ")}
+                      {msg.author_allergens.length > 2 ? "..." : ""}
+                    </span>
+                  )}
+                </div>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-br-[4px] bg-[var(--color-primary)] text-white shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
                   {msg.content}
                 </div>
-                <div className="flex gap-2 items-center mt-1">
+                <div className="flex gap-2 items-center mt-1 mr-1 flex-row-reverse">
                   <span className="text-[10px] font-medium text-[var(--color-muted)]">
                     {new Date(msg.created_at).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -360,7 +376,7 @@ export default function TopicChatPage() {
                     <>
                       <button
                         onClick={() => handleShareMessage(msg.id)}
-                        className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-primary)] flex items-center transition-colors mr-1"
+                        className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-primary)] flex items-center transition-colors ml-1"
                         aria-label="先輩パパ・ママに助けを呼ぶ"
                         title="SNS等でシェアして助けを呼ぶ"
                       >

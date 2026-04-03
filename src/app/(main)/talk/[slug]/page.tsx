@@ -26,6 +26,8 @@ interface Topic {
   message_count: number;
   last_message_preview: string | null;
   updated_at: string;
+  creator_name?: string;
+  creator_avatar?: string | null;
 }
 
 function timeAgo(dateStr: string): string {
@@ -237,6 +239,18 @@ export default function TalkThemeHubPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <div className="w-5 h-5 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center overflow-hidden flex-shrink-0 border border-[var(--color-border-light)]">
+                           {topic.creator_avatar ? (
+                              <img src={topic.creator_avatar} alt="avatar" className="w-full h-full object-cover" />
+                           ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-indigo-500" />
+                           )}
+                        </div>
+                        <span className="text-[11px] font-bold text-[var(--color-subtle)] truncate">
+                          {topic.creator_name || "参加者"}
+                        </span>
+                      </div>
                       <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-1.5 break-keep text-balance leading-snug">
                         {topic.title}
                       </h3>
@@ -253,7 +267,7 @@ export default function TalkThemeHubPage() {
                         <span>{timeAgo(topic.updated_at)}</span>
                       </div>
                     </div>
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors mt-1">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors mt-4">
                       <svg
                         width="14"
                         height="14"
