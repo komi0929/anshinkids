@@ -387,11 +387,6 @@ export default function TopicChatPage() {
                   <span className="text-[11px] font-bold text-[var(--color-primary)]">
                     {msg.author_name || "参加者"}
                   </span>
-                  {(msg.author_trust && msg.author_trust >= 30) ? (
-                    <span className="text-[9px] font-bold bg-[var(--color-success-light)] text-[var(--color-success-deep)] px-1.5 py-0.5 rounded shadow-sm border border-[var(--color-success)]/20" title="信頼された参加者">
-                      🏅
-                    </span>
-                  ) : null}
                 </div>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
                   {msg.content}
