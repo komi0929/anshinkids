@@ -87,7 +87,14 @@ export async function getTopicMessages(topicId: string) {
     } = await supabase.auth.getUser();
     const { data, error } = await supabase
       .from("messages")
-      .select("*")
+      .select(`
+        *,
+        profiles:user_id (
+          display_name,
+          avatar_url,
+          trust_score
+        )
+      `)
       .eq("topic_id", topicId)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
@@ -104,10 +111,17 @@ export async function getTopicMessages(topicId: string) {
         .in("message_id", msgIds);
       if (thanksData) thankedIds = thanksData.map((t) => t.message_id);
     }
-    const enhancedData = recentData.map((msg) => ({
-      ...msg,
-      has_thanked: thankedIds.includes(msg.id),
-    }));
+    const enhancedData = recentData.map((msg) => {
+      const prof = msg.profiles as unknown as { display_name?: string, avatar_url?: string, trust_score?: number };
+      return {
+        ...msg,
+        has_thanked: thankedIds.includes(msg.id),
+        author_name: prof?.display_name || "参加者",
+        author_avatar: prof?.avatar_url || null,
+        author_trust: prof?.trust_score || 0,
+        profiles: undefined
+      };
+    });
     return { success: true, data: enhancedData };
   } catch (err) {
     console.error("[getTopicMessages]", err);

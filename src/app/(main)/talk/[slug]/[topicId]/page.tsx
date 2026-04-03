@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
@@ -39,6 +40,9 @@ interface Message {
   expires_at: string;
   has_thanked?: boolean;
   is_optimistic?: boolean;
+  author_name?: string;
+  author_avatar?: string | null;
+  author_trust?: number;
 }
 
 interface RoomInfo {
@@ -167,6 +171,9 @@ export default function TopicChatPage() {
       created_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 72 * 3600 * 1000).toISOString(),
       is_optimistic: true,
+      author_name: "あなた",
+      author_avatar: null,
+      author_trust: 0,
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
@@ -266,6 +273,26 @@ export default function TopicChatPage() {
     return colors[hash % colors.length];
   }
 
+  function renderAvatar(avatar_url: string | null, user_id: string, name: string) {
+    if (avatar_url && avatar_url.startsWith("http")) {
+      return (
+        <Image 
+          src={avatar_url} 
+          alt={name || ""} 
+          fill 
+          unoptimized 
+          className="object-cover rounded-full" 
+        />
+      );
+    }
+    const color = getAvatarColor(user_id);
+    return (
+      <div className={`w-full h-full bg-gradient-to-br ${color} flex items-center justify-center`}>
+        <User className="w-4 h-4 text-white/90" />
+      </div>
+    );
+  }
+
   const renderedMessages = useMemo(() => {
     if (isLoading) {
       return (
@@ -351,14 +378,21 @@ export default function TopicChatPage() {
           >
             <div className="flex gap-2 max-w-[85%]">
               <div
-                className={`w-8 h-8 mt-1 flex-shrink-0 rounded-full bg-gradient-to-br ${getAvatarColor(msg.user_id)} flex items-center justify-center shadow-sm`}
+                className={`w-8 h-8 mt-1 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm relative overflow-hidden`}
               >
-                <User className="w-4 h-4 text-white/90" />
+                {renderAvatar(msg.author_avatar || null, msg.user_id, msg.author_name || "参加者")}
               </div>
               <div className="flex flex-col items-start">
-                <span className="text-[11px] font-semibold text-[var(--color-subtle)] ml-1 mb-0.5">
-                  参加者
-                </span>
+                <div className="flex items-center gap-1.5 ml-1 mb-0.5">
+                  <span className="text-[11px] font-bold text-[var(--color-primary)]">
+                    {msg.author_name || "参加者"}
+                  </span>
+                  {(msg.author_trust && msg.author_trust >= 30) ? (
+                    <span className="text-[9px] font-bold bg-[var(--color-success-light)] text-[var(--color-success-deep)] px-1.5 py-0.5 rounded shadow-sm border border-[var(--color-success)]/20" title="信頼された参加者">
+                      🏅
+                    </span>
+                  ) : null}
+                </div>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
                   {msg.content}
                 </div>
