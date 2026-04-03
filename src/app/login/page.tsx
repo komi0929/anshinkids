@@ -79,24 +79,26 @@ export default function LoginPage() {
 
           {/* How it Works - 3 Steps */}
           <div className="mb-8 fade-in-delayed-2">
-            <div className="flex items-stretch gap-2">
+            <div className="grid grid-cols-3 gap-2 relative">
               {[
-                { icon: <MessageCircle className="w-5 h-5" />, title: "話すだけ", sub: "気軽にひとこと" },
-                { icon: <Sparkles className="w-5 h-5" />, title: "AIが編集", sub: "会話から抽出" },
-                { icon: <BookOpen className="w-5 h-5" />, title: "知恵になる", sub: "未来の誰かへ" },
+                { icon: <MessageCircle className="w-5 h-5" />, title: "話すだけ", sub: "気軽に" },
+                { icon: <Sparkles className="w-5 h-5" />, title: "AIが編集", sub: "自働で抽出" },
+                { icon: <BookOpen className="w-5 h-5" />, title: "知恵に", sub: "未来へ残す" },
               ].map((step, i) => (
-                <div key={step.title} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center gap-2 px-3 py-4 rounded-2xl flex-1"
+                <div key={step.title} className="relative">
+                  <div className="flex flex-col items-center justify-center gap-1.5 px-1 py-4 rounded-2xl h-full"
                     style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)" }}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-1"
                       style={{ background: "var(--color-primary-bg)", color: "var(--color-primary)" }}>
                       {step.icon}
                     </div>
-                    <p className="text-[13px] font-bold" style={{ color: "var(--color-text)" }}>{step.title}</p>
-                    <p className="text-[11px] font-medium" style={{ color: "var(--color-subtle)" }}>{step.sub}</p>
+                    <p className="text-[12px] font-bold whitespace-nowrap text-center" style={{ color: "var(--color-text)" }}>{step.title}</p>
+                    <p className="text-[10px] font-medium whitespace-nowrap text-center" style={{ color: "var(--color-subtle)" }}>{step.sub}</p>
                   </div>
                   {i < 2 && (
-                    <ArrowRight size={12} className="flex-shrink-0 mx-0.5" style={{ color: "var(--color-muted)" }} />
+                    <div className="absolute top-1/2 -right-2.5 transform -translate-y-1/2 z-10 w-5 h-5 flex items-center justify-center rounded-full" style={{ background: "var(--color-bg)" }}>
+                      <ArrowRight size={12} style={{ color: "var(--color-muted)" }} />
+                    </div>
                   )}
                 </div>
               ))}
@@ -149,33 +151,31 @@ export default function LoginPage() {
               <Shield className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
               安心してご利用ください
             </h3>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 gap-2.5">
               {[
                 "匿名で参加できます",
-                "投稿は自動消去・知恵は残る",
-                "LINEの友だちリスト非アクセス",
-                "いつでもアカウント削除可能",
+                "投稿は自動消去されるので安心",
+                "LINEの友だちには通知されません",
+                "いつでも１タップで登録解除可能",
               ].map((text) => (
-                <div key={text} className="flex items-start gap-2 p-3 rounded-xl"
+                <div key={text} className="flex items-center gap-2.5 p-3 rounded-xl whitespace-nowrap overflow-hidden"
                   style={{ background: "var(--color-surface-soft)" }}>
-                  <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary)" }} />
-                  <span className="text-[12px] font-semibold leading-snug" style={{ color: "var(--color-text-secondary)" }}>{text}</span>
+                  <Check size={14} className="flex-shrink-0" style={{ color: "var(--color-primary)" }} />
+                  <span className="text-[12px] font-bold truncate" style={{ color: "var(--color-text-secondary)" }}>{text}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Legal */}
-          <div className="mt-6 flex items-center justify-center gap-4 text-[12px] font-medium" style={{ color: "var(--color-subtle)" }}>
-            <Link href="/about" className="underline hover:no-underline transition-colors">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] font-bold" style={{ color: "var(--color-subtle)" }}>
+            <Link href="/about" className="underline hover:no-underline transition-colors whitespace-nowrap">
               あんしんキッズとは
             </Link>
-            <span style={{ color: "var(--color-border)" }}>|</span>
-            <Link href="/terms" className="underline hover:no-underline transition-colors">
+            <Link href="/terms" className="underline hover:no-underline transition-colors whitespace-nowrap">
               利用規約
             </Link>
-            <span style={{ color: "var(--color-border)" }}>|</span>
-            <Link href="/privacy" className="underline hover:no-underline transition-colors">
+            <Link href="/privacy" className="underline hover:no-underline transition-colors whitespace-nowrap">
               プライバシーポリシー
             </Link>
           </div>
