@@ -190,7 +190,7 @@ export default function HomePage() {
                  </Link>
                  <Link href="/mypage" className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-pink-50 border border-pink-100 flex flex-col justify-between h-24 shadow-sm relative overflow-hidden group hover:border-[var(--color-heart)]/40 transition-colors cursor-pointer">
                    <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">❤️</div>
-                   <p className="text-[10px] font-bold text-[var(--color-text-secondary)]">みんなへの貢献</p>
+                   <p className="text-[10px] font-bold text-[var(--color-text-secondary)]">みんなへのお役立ち</p>
                    <div className="flex items-end gap-1.5">
                      <span className="text-[28px] font-extrabold text-[var(--color-heart)] leading-none">{impact.thanks}</span>
                      <span className="text-[10px] font-bold text-[var(--color-heart)] mb-1">感謝</span>

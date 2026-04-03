@@ -51,9 +51,9 @@ interface WikiEntryData {
 }
 
 function getTrustLevel(score: number) {
-  if (score >= 70) return { label: "高信頼", className: "trust-high", desc: "多くの保護者から支持されています" };
-  if (score >= 40) return { label: "中信頼", className: "trust-medium", desc: "複数の体験に基づいています" };
-  return { label: "新規", className: "trust-low", desc: "まだ情報が少ないです" };
+  if (score >= 70) return { label: "定番情報", className: "trust-high", desc: "たくさんの保護者から共感されています" };
+  if (score >= 40) return { label: "役立つ知恵", className: "trust-medium", desc: "複数の体験からまとまりました" };
+  return { label: "新しい声", className: "trust-low", desc: "まだ体験が集まりはじめたばかりです" };
 }
 
 function getFreshness(updatedAt: string) {
@@ -279,7 +279,7 @@ export default function WikiDetailPage() {
             {/* Contributors timeline */}
             {ripple.contributors.length > 0 && (
               <div className="flex items-center gap-1 flex-wrap">
-                <span className="text-[9px] text-[var(--color-subtle)] mr-1">貢献者:</span>
+                <span className="text-[9px] text-[var(--color-subtle)] mr-1">情報を提供してくれたママ・パパ:</span>
                 {ripple.contributors.slice(0, 5).map((c, i) => (
                   <span key={i} className="px-1.5 py-0.5 bg-[var(--color-surface-warm)] rounded text-[9px] text-[var(--color-text-secondary)]">
                     {c.displayName}
@@ -439,8 +439,8 @@ export default function WikiDetailPage() {
             </span>
           </motion.button>
           {!hasVotedHelpful && (
-            <p className="text-[10px] text-[var(--color-subtle)] mt-2.5">
-              「役に立った」を押すと、情報を提供してくれた保護者のトラストスコアに還元されます ✨
+            <p className="text-[10px] text-[var(--color-subtle)] mt-2.5 px-4 text-center">
+              「役に立った」を押すと、情報を提供してくれた保護者のマイページに「ありがとう」として届きます ✨
             </p>
           )}
         </div>

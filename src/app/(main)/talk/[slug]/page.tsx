@@ -740,8 +740,7 @@ export default function TalkRoomPage() {
         </div>
       )}
 
-      {/* Input */}
-      <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm p-4 safe-bottom">
+      <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div className="flex gap-3 items-end max-w-lg mx-auto">
           <div className="flex-1">
             <textarea

@@ -313,10 +313,10 @@ export default function MyPage() {
                     <span className="text-xl">🔥</span>
                     <div className="flex-1">
                       <p className="text-[12px] font-bold text-amber-800">
-                        {streakData.currentStreak > 0 ? `${streakData.currentStreak}日連続で貢献中！` : `通算${streakData.totalDays}日参加`}
+                        {streakData.currentStreak > 0 ? `${streakData.currentStreak}日連続で遊びにきてるね！` : `通算${streakData.totalDays}日参加`}
                       </p>
                       <p className="text-[10px] text-amber-600">
-                        最長 {streakData.longestStreak}日ストリーク
+                        最長 {streakData.longestStreak}日連続アクセス
                       </p>
                     </div>
                     {/* Mini bar chart */}
@@ -393,7 +393,7 @@ export default function MyPage() {
         <div className="px-4 mb-6">
           <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
-            みんなへの貢献
+            みんなへのお役立ち
           </h3>
           <p className="text-[12px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
             ここで共有していただいたお話は、同じ悩みを抱える親御さんのための大切な知恵として残っていきます。
@@ -489,7 +489,7 @@ export default function MyPage() {
         <div className="px-4 pb-4">
           <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
             <span className="text-lg">🌱</span>
-            過去の抽出履歴
+            過去の共有
           </h3>
             <div className="space-y-3">
               {contributions.map((contrib) => (
@@ -556,7 +556,7 @@ export default function MyPage() {
             </div>
             <div className="flex-1">
               <p className="text-[13px] font-bold text-[var(--color-text)]">
-                投稿ストリーク
+                参加のあゆみ
               </p>
               <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed">
                 {(() => {
@@ -605,7 +605,7 @@ export default function MyPage() {
         <div className="card p-4 border-red-200/50">
           <h4 className="text-[13px] font-bold text-[var(--color-danger)] mb-2">⚠️ アカウントとデータの削除</h4>
           <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed mb-3">
-            すべてのデータ（プロフィール、投稿履歴、貢献記録）を完全に削除します。
+            すべてのデータ（プロフィール、投稿履歴、共有記録）を完全に削除します。
             知恵袋に匿名化済みの情報は残りますが、あなたへの紐付けは解除されます。
           </p>
           {showDeleteConfirm ? (

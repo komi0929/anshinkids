@@ -258,6 +258,7 @@
     transition: all 0.25s ease;
     box-shadow: 0 2px 8px rgba(26, 143, 110, 0.25);
     letter-spacing: 0.01em;
+    white-space: nowrap;
   }
 
   .btn-primary:hover {
@@ -281,6 +282,7 @@
     font-size: 15px;
     cursor: pointer;
     transition: all 0.25s ease;
+    white-space: nowrap;
   }
 
   .btn-secondary:hover {
@@ -300,6 +302,7 @@
     cursor: pointer;
     transition: all 0.25s ease;
     box-shadow: var(--shadow-accent);
+    white-space: nowrap;
   }
 
   .btn-accent:hover {

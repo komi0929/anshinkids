@@ -118,35 +118,35 @@ export default function TalkRoomsPage() {
         </p>
       </div>
 
-      {/* === Streak Banner (logged-in users only) === */}
+      {/* === Participation Banner (logged-in users only) === */}
       {streak && streak.currentStreak > 0 && (
         <div className="px-4 mb-4 slide-up">
           <div className="p-4 rounded-2xl flex items-center gap-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-            <div className="text-2xl">🔥</div>
+            <div className="text-2xl">🌱</div>
             <div className="flex-1">
               <p className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>
-                {streak.currentStreak}日連続で貢献中！
+                {streak.currentStreak}日連続で遊びにきてるね！
               </p>
               <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                通算{streak.totalDays}日 · 最長{streak.longestStreak}日ストリーク
+                通算{streak.totalDays}日参加 · 過去しおり{streak.longestStreak}日
               </p>
             </div>
             <div className="flex items-center gap-0.5">
               {Array.from({ length: Math.min(streak.currentStreak, 7) }).map((_, i) => (
-                <div key={i} className={`w-2 h-${2 + Math.min(i, 4)} rounded-full bg-amber-400`} />
+                <div key={i} className={`w-2 h-${2 + Math.min(i, 4)} rounded-full bg-[var(--color-primary)] opacity-70`} />
               ))}
             </div>
           </div>
         </div>
       )}
 
-      {/* === Weekly Digest Banner === */}
+      {/* === Weekly Community Activity Banner === */}
       {digest && digest.messageCount > 0 && (
         <div className="px-4 mb-4 slide-up">
           <div className="card p-5">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm">📊</span>
-              <span className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>今週のコミュニティ</span>
+              <span className="text-sm">🌿</span>
+              <span className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>今週のみんなの活動</span>
             </div>
             <div className="flex gap-4 text-center">
               <div>
@@ -159,14 +159,14 @@ export default function TalkRoomsPage() {
               </div>
               <div>
                 <p className="text-[20px] font-black" style={{ color: 'var(--color-primary)' }}>{digest.newArticleCount}</p>
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--color-subtle)' }}>新記事</p>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--color-subtle)' }}>新しいまとめ</p>
               </div>
             </div>
             {digest.newArticles.length > 0 && (
               <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
-                <p className="text-[12px] font-bold mb-2" style={{ color: 'var(--color-subtle)' }}>🆕 新しい知恵袋記事</p>
+                <p className="text-[12px] font-bold mb-2" style={{ color: 'var(--color-subtle)' }}>🆕 新しい知恵袋まとめ</p>
                 {digest.newArticles.slice(0, 2).map((a) => (
-                  <Link key={a.slug} href={`/wiki/${a.slug}`} className="block text-[13px] font-semibold hover:underline truncate mb-1" style={{ color: 'var(--color-primary)' }}>
+                  <Link key={a.slug} href={`/wiki/${a.slug}`} className="block text-[13px] font-semibold hover:underline truncate mb-1 whitespace-nowrap" style={{ color: 'var(--color-primary)' }}>
                     → {a.title}
                   </Link>
                 ))}
@@ -196,7 +196,7 @@ export default function TalkRoomsPage() {
                 <div>
                   <p className="text-[13px] font-bold whitespace-nowrap" style={{ color: 'var(--color-text)' }}>{t.name}</p>
                   <p className="text-[11px] font-medium" style={{ color: 'var(--color-subtle)' }}>
-                    {t.messageCount}件の投稿 · ❤️{t.thanksTotal}
+                    {t.messageCount}件の投稿 · 💚{t.thanksTotal}
                   </p>
                 </div>
               </Link>

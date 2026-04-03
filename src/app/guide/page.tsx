@@ -123,7 +123,7 @@ export default function GuidePage() {
           <div>
             <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1">💚 「ありがとう」が目に見える資産に</h3>
             <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
-              トークルームで共感を集めたり、知恵袋に体験を追加すると「トラストスコア（信頼度）」が貯まります。あなたの日々の奮闘が、コミュニティを守る力としてマイページに記録され、お互いの助け合いがひと目で分かります。
+              トークルームで共感を集めたり、知恵袋に体験を追加すると「ありがとう」が届きます。あなたの日々の奮闘が、コミュニティを守る力としてマイページに記録され、お互いの助け合いがひと目で分かります。
             </p>
           </div>
           <div>

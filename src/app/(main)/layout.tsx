@@ -81,9 +81,10 @@ export default function MainLayout({
   function handleOnboardingSkip() {
     setShowOnboarding(false);
   }
+  const isTalkDetail = pathname.startsWith("/talk/") && pathname.length > "/talk/".length;
 
   return (
-    <div className="min-h-[100dvh] pb-[72px] max-w-md mx-auto relative bg-[var(--color-bg)] shadow-md">
+    <div className={`min-h-[100dvh] ${isTalkDetail ? "" : "pb-[72px]"} max-w-md mx-auto relative bg-[var(--color-bg)] shadow-md`}>
       {isOffline && (
         <div className="fixed top-0 left-0 right-0 bg-red-500 text-white text-xs font-bold text-center py-1.5 z-50 animate-in slide-in-from-top flex items-center justify-center gap-2">
           <span>⚠️ ネットワーク接続がありません</span>
@@ -101,7 +102,7 @@ export default function MainLayout({
       {children}
 
       {/* Bottom Navigation */}
-      {!showOnboarding && (
+      {!showOnboarding && !isTalkDetail && (
         <nav className="bottom-nav" id="main-navigation" role="navigation" aria-label="メインナビゲーション">
           <div className="flex justify-around items-center max-w-lg mx-auto">
             {navItems.map((item) => {
