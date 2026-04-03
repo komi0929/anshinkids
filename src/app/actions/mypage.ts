@@ -2,6 +2,32 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getImpactFeedback, getContributionStreak } from "./discover";
+import { getMyBookmarks } from "./wiki";
+
+export async function getFullMyPageData() {
+  try {
+    const [profileRes, contribRes, impactRes, bookmarksRes, streakRes] = await Promise.all([
+      getMyProfile().catch(() => ({ success: false, data: null })),
+      getMyContributions().catch(() => ({ success: true, data: [] })),
+      getImpactFeedback().catch(() => ({ success: false, data: null })),
+      getMyBookmarks().catch(() => ({ success: false, data: [] })),
+      getContributionStreak().catch(() => ({ success: false, data: null }))
+    ]);
+    return {
+      success: true,
+      data: {
+        profile: profileRes.success ? profileRes.data : null,
+        contributions: contribRes.success ? contribRes.data : [],
+        impact: impactRes.success ? impactRes.data : null,
+        bookmarks: bookmarksRes.success ? bookmarksRes.data : [],
+        streak: streakRes.success ? streakRes.data : null
+      }
+    }
+  } catch (err) {
+    return { success: false, error: "データ一括取得に失敗しました", data: null };
+  }
+}
 
 export async function getMyProfile() {
   try {

@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Settings, Bell, X, ArrowRight, ShieldCheck } from "@/components/icons";
-import { getMyProfile, getMyContributions, deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
-import { getImpactFeedback, getContributionStreak } from "@/app/actions/discover";
-import { getMyBookmarks } from "@/app/actions/wiki";
+import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
+
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
 import Image from "next/image";
@@ -94,32 +93,20 @@ export default function MyPage() {
 
   async function loadData() {
     setIsLoading(true);
-    const [profileResult, contribResult, impactResult, bookmarksResult] = await Promise.all([
-      getMyProfile(),
-      getMyContributions(),
-      getImpactFeedback(), // Changed from getMyImpact for richer Visual Data
-      getMyBookmarks(),
-    ]);
-
-    if (profileResult.success && profileResult.data) {
-      const p = profileResult.data as unknown as Profile;
-      setProfile(p);
-      setEditName(p.display_name);
-      setEditAvatar(p.avatar_url);
+    const { getFullMyPageData } = await import("@/app/actions/mypage");
+    const result = await getFullMyPageData();
+    if (result.success && result.data) {
+      const d = result.data;
+      if (d.profile) {
+        setProfile(d.profile as unknown as Profile);
+        setEditName((d.profile as any).display_name || "");
+        setEditAvatar((d.profile as any).avatar_url);
+      }
+      setContributions(d.contributions as unknown as Contribution[]);
+      setImpact(d.impact as unknown as ImpactData);
+      setBookmarks(d.bookmarks as unknown as BookmarkData[]);
+      setStreakData(d.streak as { currentStreak: number; longestStreak: number; totalDays: number } | null);
     }
-
-    if (contribResult.success && contribResult.data) {
-      setContributions(contribResult.data as unknown as Contribution[]);
-    }
-
-    if (impactResult.success && impactResult.data) {
-      setImpact(impactResult.data as unknown as ImpactData);
-    }
-
-    if (bookmarksResult.success && bookmarksResult.data) {
-      setBookmarks(bookmarksResult.data as unknown as BookmarkData[]);
-    }
-
     setIsLoading(false);
   }
 
@@ -128,7 +115,6 @@ export default function MyPage() {
     setTimeout(() => {
       if (!mounted) return;
       loadData();
-      getContributionStreak().then(r => { if (r.success && r.data && mounted) setStreakData(r.data); });
     }, 0);
     return () => { mounted = false; };
   }, []);

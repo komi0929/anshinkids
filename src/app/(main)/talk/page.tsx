@@ -1,10 +1,9 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Suspense } from "react";
 import { MessageCircle, ArrowRight } from "@/components/icons";
 import { getTalkRooms } from "@/app/actions/messages";
 import { getTrendingTopics, getPersonalizedWikiEntries, getContributionStreak, getWeeklyDigest } from "@/app/actions/discover";
+import { getMyProfile } from "@/app/actions/mypage";
 
 interface Room {
   id: string;
@@ -14,7 +13,6 @@ interface Room {
   icon_emoji: string;
   sort_order: number;
 }
-
 
 interface TrendingTopic {
   slug: string;
@@ -46,68 +44,48 @@ interface DigestData {
   uniqueContributors: number;
 }
 
+function TalkSkeleton() {
+  return (
+    <div className="fade-in px-5 pt-8 w-full max-w-2xl mx-auto">
+      <div className="shimmer h-10 w-48 rounded-xl mb-6"></div>
+      <div className="shimmer h-24 w-full rounded-2xl mb-4"></div>
+      <div className="shimmer h-[80px] w-full rounded-2xl mb-3"></div>
+      <div className="shimmer h-[80px] w-full rounded-2xl mb-3"></div>
+      <div className="shimmer h-[80px] w-full rounded-2xl mb-3"></div>
+    </div>
+  );
+}
 
-export default function TalkRoomsPage() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+async function TalkContent() {
+  // Parallel fetch everything required
+  const [roomsRes, profileRes, trendRes, wikiRes, streakRes, digestRes] = await Promise.all([
+    getTalkRooms().catch(() => ({ success: false, data: null })),
+    getMyProfile().catch(() => ({ success: false, data: null })),
+    getTrendingTopics().catch(() => ({ success: false, data: null })),
+    getPersonalizedWikiEntries().catch(() => ({ success: false, data: null, isPersonalized: false, personalizationLabel: "" })),
+    getContributionStreak().catch(() => ({ success: false, data: null })),
+    getWeeklyDigest().catch(() => ({ success: false, data: null })),
+  ]);
 
-  // === v2: Self-evolving platform features ===
-  const [trending, setTrending] = useState<TrendingTopic[]>([]);
-  const [personalizedWiki, setPersonalizedWiki] = useState<PersonalizedEntry[]>([]);
-  const [isPersonalized, setIsPersonalized] = useState(false);
-  const [personalizationLabel, setPersonalizationLabel] = useState("");
-  const [streak, setStreak] = useState<StreakData | null>(null);
-  const [digest, setDigest] = useState<DigestData | null>(null);
+  const rooms = (roomsRes.success && roomsRes.data ? roomsRes.data : []) as Room[];
+  let recommendedRooms: Room[] = [];
+  
+  if (profileRes.success && profileRes.data && profileRes.data.interests) {
+    const userInterests = profileRes.data.interests as string[];
+    if (userInterests.length > 0) {
+      recommendedRooms = rooms.filter(r => userInterests.includes(r.slug));
+    }
+  }
 
-  const [recommendedRooms, setRecommendedRooms] = useState<Room[]>([]);
-
-  // Phase 1: Core data — show room list ASAP
-  useEffect(() => {
-    getTalkRooms().then(({ data }) => {
-      if (data) {
-        const roomList = data as Room[];
-        setRooms(roomList);
-        setIsLoading(false);
-        // Profile fetch for recommendations (non-blocking)
-        import("@/app/actions/mypage").then(({ getMyProfile }) => {
-          getMyProfile().then(res => {
-            if (res.success && res.data && res.data.interests) {
-              const userInterests = res.data.interests as string[];
-              if (userInterests.length > 0) {
-                setRecommendedRooms(roomList.filter(r => userInterests.includes(r.slug)));
-              }
-            }
-          }).catch(() => {});
-        });
-      } else {
-        setIsLoading(false);
-      }
-    });
-  }, []);
-
-  // Phase 2: Enhancement data — load after rooms are visible (non-blocking)
-  useEffect(() => {
-    if (isLoading) return; // Wait until rooms are rendered
-    const timer = setTimeout(() => {
-      getTrendingTopics().then(r => { if (r.success) setTrending(r.data as TrendingTopic[]); }).catch(() => {});
-      getPersonalizedWikiEntries().then(r => {
-        if (r.success) {
-          setPersonalizedWiki(r.data as PersonalizedEntry[]);
-          setIsPersonalized(r.isPersonalized || false);
-          setPersonalizationLabel(r.personalizationLabel || "");
-        }
-      }).catch(() => {});
-      getContributionStreak().then(r => { if (r.success && r.data) setStreak(r.data); }).catch(() => {});
-      getWeeklyDigest().then(r => { if (r.success && r.data) setDigest(r.data as DigestData); }).catch(() => {});
-    }, 100); // Small delay to let rooms paint first
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
-
-
+  const trending = trendRes.success && trendRes.data ? trendRes.data as TrendingTopic[] : [];
+  const personalizedWiki = wikiRes.success && wikiRes.data ? wikiRes.data as PersonalizedEntry[] : [];
+  const isPersonalized = wikiRes.isPersonalized || false;
+  const personalizationLabel = wikiRes.personalizationLabel || "";
+  const streak = streakRes.success && streakRes.data ? streakRes.data as StreakData : null;
+  const digest = digestRes.success && digestRes.data ? digestRes.data as DigestData : null;
 
   return (
-    <div className="fade-in">
+    <div className="fade-in w-full max-w-2xl mx-auto pb-12">
       {/* Clean Header */}
       <div className="px-5 pt-8 pb-5">
         <h1 className="text-[26px] font-black tracking-tight leading-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
@@ -228,53 +206,41 @@ export default function TalkRoomsPage() {
 
       {/* Room List */}
       <div className="px-4 space-y-3 pb-4">
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="shimmer h-[80px] rounded-2xl" />
-            ))}
-          </div>
-        ) : (
-          rooms.map((room, index) => {
-            const isRecommended = recommendedRooms.some((r) => r.slug === room.slug);
-            return (
-              <Link
-                key={room.id || index}
-                href={`/talk/${room.slug}`}
-                className={`card card-tilt card-active block p-4 stagger-item group ${isRecommended ? "ring-1 ring-[var(--color-primary)]/20 bg-[var(--color-surface-warm)]/30" : ""}`}
-                id={`talk-room-${room.slug}`}
-              >
-                <div className="flex items-center gap-4">
-                  {/* Emoji container with subtle gradient */}
-                  <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[var(--color-surface-warm)] to-white flex items-center justify-center text-[24px] flex-shrink-0 shadow-sm border border-[var(--color-border-light)] group-hover:scale-105 transition-transform">
-                    {room.icon_emoji}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-[15px] group-hover:text-[var(--color-primary)] transition-colors" style={{ color: 'var(--color-text)' }}>
-                        {room.name}
-                      </h3>
-                      {isRecommended && (
-                        <span className="text-[9px] font-bold text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] px-2 py-0.5 rounded-full flex-shrink-0">
-                          おすすめ
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[13px] font-medium mt-0.5 truncate leading-relaxed" style={{ color: 'var(--color-subtle)' }}>
-                      {room.description}
-                    </p>
-                  </div>
-                  {/* Clean arrow */}
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
-                    <ArrowRight size={14} className="text-[var(--color-muted)] group-hover:text-white transition-colors" />
-                  </div>
+        {rooms.map((room, index) => {
+          const isRecommended = recommendedRooms.some((r) => r.slug === room.slug);
+          return (
+            <Link
+              key={room.id || index}
+              href={`/talk/${room.slug}`}
+              className={`card card-tilt card-active block p-4 stagger-item group ${isRecommended ? "ring-1 ring-[var(--color-primary)]/20 bg-[var(--color-surface-warm)]/30" : ""}`}
+              id={`talk-room-${room.slug}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[var(--color-surface-warm)] to-white flex items-center justify-center text-[24px] flex-shrink-0 shadow-sm border border-[var(--color-border-light)] group-hover:scale-105 transition-transform">
+                  {room.icon_emoji}
                 </div>
-              </Link>
-            );
-          })
-        )}
-
-
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-[15px] group-hover:text-[var(--color-primary)] transition-colors" style={{ color: 'var(--color-text)' }}>
+                      {room.name}
+                    </h3>
+                    {isRecommended && (
+                      <span className="text-[9px] font-bold text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] px-2 py-0.5 rounded-full flex-shrink-0">
+                        おすすめ
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[13px] font-medium mt-0.5 truncate leading-relaxed" style={{ color: 'var(--color-subtle)' }}>
+                    {room.description}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
+                  <ArrowRight size={14} className="text-[var(--color-muted)] group-hover:text-white transition-colors" />
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       {/* === Personalized Wiki Recommendations === */}
@@ -309,7 +275,14 @@ export default function TalkRoomsPage() {
         </div>
       )}
 
-
     </div>
+  );
+}
+
+export default function TalkRoomsPage() {
+  return (
+    <Suspense fallback={<TalkSkeleton />}>
+      <TalkContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,5 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Suspense } from "react";
 import { 
   Sparkles, MessageCircle, BookOpen, Leaf, TrendingUp, Heart, ChevronRight, Bookmark, ArrowRight
 } from "@/components/icons";
@@ -28,12 +26,6 @@ export interface WikiEntryPreview {
   source_count: number;
 }
 
-interface RecommendedWiki {
-  isPersonalized: boolean;
-  personalizationLabel: string;
-  data: WikiEntryPreview[];
-}
-
 export interface BookmarkData {
   id: string;
   snippet_title: string;
@@ -55,81 +47,38 @@ export interface ImpactData {
   recentImpacts: ImpactItem[];
 }
 
-export default function HomePage() {
-  const [tierData, setTierData] = useState<{tier: "guest"| "reader" | "contributor", postCount: number} | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
-  const [trending, setTrending] = useState<TrendingRoom[]>([]);
-  const [recommended, setRecommended] = useState<RecommendedWiki | null>(null);
-  const [bookmarks, setBookmarks] = useState<BookmarkData[]>([]);
-  const [impact, setImpact] = useState<ImpactData | null>(null);
-  
-  useEffect(() => {
-    let mounted = true;
-    // Phase 1: Determine tier fast — show skeleton-free UI ASAP
-    async function loadTier() {
-      const tierRes = await getEngagementTier().catch(() => ({ success: false, data: undefined }));
-      if (!mounted) return;
-      const tierDataFromRes = (tierRes.success && tierRes.data) 
-        ? tierRes.data as { tier: "guest"|"reader"|"contributor", postCount: number }
-        : { tier: "guest" as const, postCount: 0 };
-      setTierData(tierDataFromRes);
-      setIsLoading(false);
-    }
-    loadTier();
-    return () => { mounted = false; };
-  }, []);
+function HomeSkeleton() {
+  return (
+    <div className="fade-in px-5 pt-8 w-full max-w-2xl mx-auto">
+      <div className="shimmer h-10 w-48 rounded-xl mb-6"></div>
+      <div className="shimmer h-40 w-full rounded-3xl mb-4"></div>
+      <div className="shimmer h-32 w-full rounded-3xl mb-4"></div>
+    </div>
+  );
+}
 
-  // Phase 2: Enhancement data — load after tier UI is visible
-  useEffect(() => {
-    if (isLoading || !tierData) return;
-    let mounted = true;
-    const timer = setTimeout(async () => {
-      const currentTier = tierData.tier;
-      const [trendRes, recRes, impactRes, bmRes] = await Promise.all([
-        getTrendingTopics().catch(() => ({ success: false, data: null })),
-        getPersonalizedWikiEntries().catch(() => ({ success: false, data: null, isPersonalized: false, personalizationLabel: "" })),
-        currentTier === "contributor" ? getImpactFeedback().catch(() => ({ success: false, data: null })) : Promise.resolve({ success: false, data: null }),
-        currentTier !== "guest" ? getMyBookmarks().catch(() => ({ success: false, data: null })) : Promise.resolve({ success: false, data: [] }),
-      ]);
-      if (!mounted) return;
-      if (trendRes.success && trendRes.data) setTrending(trendRes.data as TrendingRoom[]);
-      if (recRes.success && recRes.data) setRecommended({ isPersonalized: !!recRes.isPersonalized, personalizationLabel: String(recRes.personalizationLabel || ""), data: recRes.data as WikiEntryPreview[]});
-      if (impactRes.success && impactRes.data) setImpact(impactRes.data as unknown as ImpactData);
-      if (bmRes.success && bmRes.data) setBookmarks(bmRes.data as BookmarkData[]);
-    }, 50);
-    return () => { mounted = false; clearTimeout(timer); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, tierData]);
+async function HomeContent() {
+  const tierRes = await getEngagementTier().catch(() => ({ success: false, data: undefined }));
+  const tierData = (tierRes.success && tierRes.data) 
+    ? tierRes.data as { tier: "guest"|"reader"|"contributor", postCount: number }
+    : { tier: "guest" as const, postCount: 0 };
+    
+  const tier = tierData.tier;
 
-  if (errorMsg) {
-    return (
-      <div className="fade-in px-5 pt-12 text-center text-[var(--color-danger)]">
-        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">⚠️</span>
-        </div>
-        <p className="font-bold text-sm">{errorMsg}</p>
-        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-[var(--color-surface-warm)] rounded-lg text-xs font-bold text-[var(--color-text)] border border-[var(--color-border)]">再読み込み</button>
-      </div>
-    );
-  }
+  const [trendRes, recRes, impactRes, bmRes] = await Promise.all([
+    getTrendingTopics().catch(() => ({ success: false, data: null })),
+    getPersonalizedWikiEntries().catch(() => ({ success: false, data: null, isPersonalized: false, personalizationLabel: "" })),
+    tier === "contributor" ? getImpactFeedback().catch(() => ({ success: false, data: null })) : Promise.resolve({ success: false, data: null }),
+    tier !== "guest" ? getMyBookmarks().catch(() => ({ success: false, data: null })) : Promise.resolve({ success: false, data: [] }),
+  ]);
 
-  if (isLoading) {
-    return (
-      <div className="fade-in px-5 pt-8">
-        <div className="shimmer h-10 w-48 rounded-xl mb-6"></div>
-        <div className="shimmer h-40 w-full rounded-3xl mb-4"></div>
-        <div className="shimmer h-32 w-full rounded-3xl mb-4"></div>
-      </div>
-    );
-  }
-
-  const { tier } = tierData || { tier: "guest" };
+  const trending = trendRes.success && trendRes.data ? trendRes.data as TrendingRoom[] : [];
+  const recommended = recRes.success && recRes.data ? { isPersonalized: !!recRes.isPersonalized, personalizationLabel: String(recRes.personalizationLabel || ""), data: recRes.data as WikiEntryPreview[]} : null;
+  const impact = impactRes.success && impactRes.data ? impactRes.data as unknown as ImpactData : null;
+  const bookmarks = bmRes.success && bmRes.data ? bmRes.data as BookmarkData[] : [];
 
   return (
     <div className="fade-in pb-12 w-full max-w-2xl mx-auto">
-      {/* Dynamic Header */}
       <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-md">
@@ -143,11 +92,8 @@ export default function HomePage() {
       </div>
 
       <div className="px-5 pt-6 space-y-8">
-        {/* =======================
-            GUEST HERO BANNER
-            ======================= */}
         {tier === "guest" && (
-          <div className="rounded-3xl bg-gradient-to-br from-[var(--color-primary-light)] to-[var(--color-success-light)] p-6 relative overflow-hidden shadow-sm group slide-up border border-[var(--color-border-light)] cursor-pointer" onClick={() => window.location.href='/login'}>
+          <Link href="/login" className="block rounded-3xl bg-gradient-to-br from-[var(--color-primary-light)] to-[var(--color-success-light)] p-6 relative overflow-hidden shadow-sm group slide-up border border-[var(--color-border-light)]">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 rounded-full blur-2xl -mr-10 -mt-10"></div>
             <div className="relative z-10 text-center">
                <span className="text-4xl mb-3 block drop-shadow-sm">🌱</span>
@@ -161,12 +107,9 @@ export default function HomePage() {
                  30秒で始める（無料登録）
                </button>
             </div>
-          </div>
+          </Link>
         )}
 
-        {/* =======================
-            READER & CONTRIBUTOR: Welcome / Impact
-            ======================= */}
         {tier !== "guest" && (
           <div className="slide-up relative">
              <div className="flex items-center justify-between mb-4">
@@ -180,7 +123,7 @@ export default function HomePage() {
 
              {tier === "contributor" && impact && (
                <div className="grid grid-cols-2 gap-3 mb-2">
-                 <Link href="/mypage" className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 flex flex-col justify-between h-24 shadow-sm relative overflow-hidden group hover:border-[var(--color-success)]/40 transition-colors cursor-pointer">
+                 <Link href="/mypage" className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 flex flex-col justify-between h-24 shadow-sm relative overflow-hidden group hover:border-[var(--color-success)]/40 transition-colors">
                    <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">📖</div>
                    <p className="text-[10px] font-bold text-[var(--color-text-secondary)]">反映された知恵</p>
                    <div className="flex items-end gap-1.5">
@@ -188,7 +131,7 @@ export default function HomePage() {
                      <span className="text-[10px] font-bold text-[var(--color-success)] mb-1">件</span>
                    </div>
                  </Link>
-                 <Link href="/mypage" className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-pink-50 border border-pink-100 flex flex-col justify-between h-24 shadow-sm relative overflow-hidden group hover:border-[var(--color-heart)]/40 transition-colors cursor-pointer">
+                 <Link href="/mypage" className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-pink-50 border border-pink-100 flex flex-col justify-between h-24 shadow-sm relative overflow-hidden group hover:border-[var(--color-heart)]/40 transition-colors">
                    <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">❤️</div>
                    <p className="text-[10px] font-bold text-[var(--color-text-secondary)]">みんなへのお役立ち</p>
                    <div className="flex items-end gap-1.5">
@@ -201,11 +144,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* =======================
-            READER (No Posts): Encourage First Post
-            ======================= */}
         {tier === "reader" && (
-           <div className="card-elevated p-5 flex items-start gap-4 slide-up border-l-4 border-l-[var(--color-accent)] cursor-pointer group hover:bg-[var(--color-surface-warm)] transition-colors" onClick={() => window.location.href='/talk'}>
+           <Link href="/talk" className="block card-elevated p-5 flex items-start gap-4 slide-up border-l-4 border-l-[var(--color-accent)] group hover:bg-[var(--color-surface-warm)] transition-colors">
              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-accent-light)] to-[var(--color-bg-warm)] flex items-center justify-center shadow-inner mt-1">
                 <span className="text-2xl drop-shadow-sm group-hover:scale-110 transition-transform">💬</span>
              </div>
@@ -218,12 +158,9 @@ export default function HomePage() {
                  気軽に投稿しにいく <ArrowRight className="w-3.5 h-3.5" />
                </div>
              </div>
-           </div>
+           </Link>
         )}
 
-        {/* =======================
-            SHARED: For You Wiki (Personalized RAG highlights)
-            ======================= */}
         {recommended && recommended.data && recommended.data.length > 0 && (
           <div className="slide-up">
             <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center justify-between">
@@ -254,7 +191,6 @@ export default function HomePage() {
                     {item.title}
                   </h4>
                   <div className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed line-clamp-2 bg-[var(--color-surface-warm)] p-2 rounded-lg border border-[var(--color-border-light)] relative">
-                    {/* Render standard snippet logic */}
                     {item.summary.startsWith("💡") ? (
                       <>
                         <span className="font-bold text-[var(--color-primary)] mr-1">💡抜粋:</span>
@@ -268,9 +204,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* =======================
-            SHARED: Trending Rooms (Proactive Topic)
-            ======================= */}
         {trending.length > 0 && (
           <div className="slide-up" style={{ animationDelay: '100ms' }}>
             <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center justify-between">
@@ -302,9 +235,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* =======================
-            READER/CONTRIBUTOR: Micro-Bookmarks Quick Access
-            ======================= */}
         {bookmarks.length > 0 && (
           <div className="slide-up pb-4" style={{ animationDelay: '150ms' }}>
             <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center justify-between">
@@ -329,8 +259,15 @@ export default function HomePage() {
             </div>
           </div>
         )}
-
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomeSkeleton />}>
+      <HomeContent />
+    </Suspense>
   );
 }
