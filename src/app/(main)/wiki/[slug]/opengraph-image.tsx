@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "edge";
-export const alt = "あんしんキッズ 知恵袋まとめ";
+export const alt = "あんしんキッズ 体験まとめ";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +20,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     entry = data;
   }
 
-  const title = entry?.title || "お悩み・知恵袋まとめ";
+  const title = entry?.title || "お悩み・体験まとめ";
   const category = entry?.category || "アレルギー・育児";
   const sourceCount = entry?.source_count || 0;
 
@@ -73,7 +73,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             </div>
             <div style={{ display: "flex", flexDirection: "column", marginLeft: "20px" }}>
               <span style={{ fontSize: "42px", fontWeight: "900", color: "#e76f51", letterSpacing: "-0.02em" }}>あんしんキッズ</span>
-              <span style={{ fontSize: "24px", fontWeight: "bold", color: "#e76f51", opacity: 0.7 }}>アレルギーと育児の知恵袋</span>
+              <span style={{ fontSize: "24px", fontWeight: "bold", color: "#e76f51", opacity: 0.7 }}>アレルギーと育児のまとめ記事</span>
             </div>
           </div>
           <div style={{ display: "flex" }}>

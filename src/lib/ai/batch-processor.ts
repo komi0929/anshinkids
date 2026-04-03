@@ -238,14 +238,14 @@ export async function runBatchExtraction() {
       if (roomUpdated && actualSourcesAdded >= 3) {
         try {
            const facPrompt = `あなたは活発な保護者コミュニティのファシリテーターです。先ほど参加者の会話から新しい知恵を抽出しました。
-以下の「現在の知恵袋の見出し」を見て、参加者への短い感謝と、『次に聞きたい関連の話題（まだ不足していそうなもの）」を1〜2文で投げかけてください。
+以下の「現在の記事の見出し」を見て、参加者への短い感謝と、『次に聞きたい関連の話題（まだ不足していそうなもの）」を1〜2文で投げかけてください。
 
 ルール:
 ・100〜150文字以内で、短く、温かい保護者目線のトーンにする
 ・「先ほど皆さんのお話をまとめました！」のように報告をいれる
 ・必ず最後は「〇〇について工夫していることはありますか？」のように質問で終わる
 
-直近の知恵袋の見出し:
+直近の記事の見出し:
 ${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
 
            const facResult = await model.generateContent({
@@ -267,7 +267,7 @@ ${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
               await supabase.from("messages").insert({
                 room_id: roomId,
                 topic_id: bestTopicId,
-                content: `📖 知恵袋を更新しました！\n${facMessage}`,
+                content: `📖 まとめ記事を更新しました！\n${facMessage}`,
                 is_system_bot: true,
               });
 

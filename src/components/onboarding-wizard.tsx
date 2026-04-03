@@ -405,7 +405,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
         )}
       </div>
 
-      <div className="px-6 pt-3 border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+      <div className="px-6 pt-3 border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <button
           onClick={handleNext}
           disabled={!canProceed}

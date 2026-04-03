@@ -262,7 +262,7 @@ export async function getPersonalizedWikiEntries() {
       .order("avg_trust_score", { ascending: false })
       .limit(5);
 
-    return { success: true, data: top || [], isPersonalized: false, personalizationLabel: "📖 人気の知恵袋記事" };
+    return { success: true, data: top || [], isPersonalized: false, personalizationLabel: "📖 人気のまとめ記事" };
   } catch (err) {
     console.error("[getPersonalizedWikiEntries]", err);
     return { success: false, data: [] };
@@ -499,7 +499,7 @@ export async function getImpactFeedback() {
                   title: entry.title,
                   slug: entry.slug,
                   category: entry.category,
-                  snippet: (src.original_message_snippet as string) || "コミュニティへの投稿が採用されました",
+                  snippet: (src.original_message_snippet as string) || "コミュニティへの体験の共有が役立ちました",
                   trustScore: entry.avg_trust_score || 0,
                   extractedAt: String(src.extracted_at),
                 });
@@ -526,13 +526,13 @@ export async function getImpactFeedback() {
     if (uniqueArticles >= 5 && thanks >= 10) {
       message = `🌟 あなたの知恵は${uniqueArticles}件の記事に反映され、${thanks}人に感謝されています`;
     } else if (uniqueArticles >= 3) {
-      message = `📖 あなたの体験が${uniqueArticles}件の知恵袋記事に活かされています`;
+      message = `📖 あなたの体験が${uniqueArticles}件のまとめ記事に活かされています`;
     } else if (uniqueArticles >= 1) {
-      message = `💚 あなたの投稿が知恵袋に反映されました！後世の保護者の助けになります`;
+      message = `💚 あなたの大切な体験が、みんなの知恵として役立っています！`;
     } else if (thanks > 0) {
-      message = `❤️ ${thanks}人があなたの投稿に「ありがとう」を送りました`;
+      message = `❤️ ${thanks}人のパパ・ママがあなたのお声に「ありがとう」を送りました`;
     } else {
-      message = `🌱 あなたの体験は、24h後にAIが知恵袋に整理します`;
+      message = `🌱 あなたの体験は、みんなの資産としてあと少しでまとめ記事に整理されます`;
     }
 
     return {

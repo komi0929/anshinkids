@@ -25,18 +25,18 @@ const CATEGORIES: Category[] = [
     desc: "ユーザー同士が助け合い、ポジティブなループを生み出すための機能群",
     colorClass: "from-pink-100/50 to-rose-50 border-rose-100 text-rose-600 bg-rose-500/10",
     features: [
-      { title: "完全匿名トークルーム", desc: "LINEのアカウント名や実名を出さず、安全に投稿できるルーム設計。各ユーザーには匿名ID（Slug）が発行されます。", icon: <User className="w-5 h-5" />, tags: ["Privacy", "Auth"] },
-      { title: "「ありがとう」フィードバック", desc: "誰かの知恵が役に立った時、ワンタップで感謝を伝えられる共感機能。「投稿してよかった」という体験を作ります。", icon: <Heart className="w-5 h-5" />, tags: ["Engagement"] },
-      { title: "連続参加のあしあと（🔥）", desc: "続けて投稿した日数をマイページで可視化。誰かの助けになり続けている実感を届けます。", icon: <TrendingUp className="w-5 h-5" />, tags: ["UX"] },
+      { title: "完全匿名トークルーム", desc: "LINEのアカウント名や実名を出さず、安全にお話しできるルーム設計。各ユーザーには匿名ID（Slug）が発行されます。", icon: <User className="w-5 h-5" />, tags: ["Privacy", "Auth"] },
+      { title: "「ありがとう」フィードバック", desc: "誰かの知恵が役に立った時、ワンタップで感謝を伝えられる共感機能。「お話ししてよかった」という体験を作ります。", icon: <Heart className="w-5 h-5" />, tags: ["Engagement"] },
+      { title: "連続参加のあしあと（🔥）", desc: "続けて体験をお話しした日数をマイページで可視化。誰かの助けになり続けている実感を届けます。", icon: <TrendingUp className="w-5 h-5" />, tags: ["UX"] },
       { title: "影響の可視化", desc: "「あなたの体験が〇人の親御さんに読まれています」など、あなたの声がどれだけ誰かの役に立っているかを温かく伝えます。", icon: <Sparkles className="w-5 h-5" />, tags: ["MyPage"] },
-      { title: "声の数バッジ", desc: "その知恵袋にどれだけの実体験が反映されたかを「たくさんの声・つながる声・はじめの声」として温かく表示。全員の体験が平等に価値をもちます。", icon: <ShieldCheck className="w-5 h-5" />, tags: ["Trust"] },
+      { title: "声の数バッジ", desc: "そのまとめ記事にどれだけの実体験が反映されたかを「たくさんの声・つながる声・はじめの声」として温かく表示。全員の体験が平等に価値をもちます。", icon: <ShieldCheck className="w-5 h-5" />, tags: ["Trust"] },
       { title: "トピックへの「召喚」CTA", desc: "回答が少ない時に「みんなの経験を教えてください」と協力を促す、SNS的なダイナミックコールトゥアクション。", icon: <MessageCircle className="w-5 h-5" /> },
-      { title: "あなたの声が届いた通知", desc: "投稿した体験がAIに整理されて知恵袋に反映されたとき、温かくお知らせするフィードバック。", icon: <TrendingUp className="w-5 h-5" /> },
+      { title: "あなたの声が届いた通知", desc: "あなたの体験がAIに整理されて「みんなのまとめ」に反映されたとき、温かくお知らせするフィードバック。", icon: <TrendingUp className="w-5 h-5" /> },
       { title: "トークルームの共感ボタン", desc: "コメントを返さなくても、「わかる！」という共感だけを手軽に残せる機能。", icon: <Heart className="w-5 h-5" /> },
-      { title: "アカウント削除と資産の匿名化", desc: "退会時には個人情報を完全消去しつつ、知恵袋に抽出されたノウハウのみをコミュニティの資産として匿名で保持するセキュアシステム。", icon: <Shield className="w-5 h-5" />, tags: ["Privacy"] },
+      { title: "アカウント削除と資産の匿名化", desc: "退会時には個人情報を完全消去しつつ、まとめ記事に抽出されたノウハウのみをコミュニティの資産として匿名で保持するセキュアシステム。", icon: <Shield className="w-5 h-5" />, tags: ["Privacy"] },
       { title: "カテゴリ別おすすめルーム", desc: "ユーザーのアレルゲン情報から、現在最も盛り上がっている最適なトークルームを自動推薦。", icon: <Sparkles className="w-5 h-5" /> },
       { title: "Micro-Bookmarking（スニペット保存）", desc: "長いWiki記事全体ではなく、本当に自分に役立つ一行単位の「知恵（スニペット）」だけを抽出してマイページにブックマークできる機能。", icon: <BookOpen className="w-5 h-5" />, tags: ["Engagement", "UX"] },
-      { title: "ティア別ダイナミックダッシュボード", desc: "階層や称号といった権威的なバッジを一切廃止し、未ログイン、閲覧のみ、投稿者の3つの状態ごとにフラットに最適なアクションを提案するダッシュボード。", icon: <User className="w-5 h-5" />, tags: ["Egalitarian", "UX"] },
+      { title: "ティア別ダイナミックダッシュボード", desc: "階層や称号といった権威的なバッジを一切廃止し、未ログイン、閲覧のみ、お話し参加者の3つの状態ごとにフラットに最適なアクションを提案するダッシュボード。", icon: <User className="w-5 h-5" />, tags: ["Egalitarian", "UX"] },
       { title: "SOS Ripple 拡散連携", desc: "深刻な悩みや助けを求める声を、美しいOG画像付きのカードとしてSNS（X等）へシームレスに拡散し、外部から知恵を集める機能。", icon: <TrendingUp className="w-5 h-5" />, tags: ["Growth", "Share"] },
     ]
   },
@@ -45,12 +45,12 @@ const CATEGORIES: Category[] = [
     desc: "データ抽出・整理から安全性担保まで、プラットフォームを自動で育てるAI基盤",
     colorClass: "from-[var(--color-primary)]/10 to-[var(--color-success)]/10 border-[var(--color-success)]/20 text-[var(--color-success-deep)] bg-[var(--color-success)]/10",
     features: [
-      { title: "3日間の非アクティブ時パージ", desc: "トークルームで72時間（3日間）新しい投稿がなかった場合、自動で会話をアーカイブしタイムラインを常に最新に保ちます。", icon: <Clock className="w-5 h-5" />, tags: ["Cron", "DB"] },
-      { title: "みんなの声 → 知恵袋抽出ループ", desc: "上記のパージ時、Gemini AIが会話の文脈を読み取り、一次情報（Snippet）として自動抽出・要約を行う自律システム。", icon: <RefreshCw className="w-5 h-5" />, tags: ["Gemini 2.0"] },
+      { title: "3日間のお声リセット（非アクティブ時）", desc: "トークルームで72時間（3日間）新しいお声がなかった場合、自動で会話をアーカイブしタイムラインを常に最新に保ちます。", icon: <Clock className="w-5 h-5" />, tags: ["Cron", "DB"] },
+      { title: "みんなの声 → まとめ抽出ループ", desc: "上記のリセット時、Gemini AIが会話の文脈を読み取り、一次情報（Snippet）として自動抽出・要約を行う自律システム。", icon: <RefreshCw className="w-5 h-5" />, tags: ["Gemini 2.0"] },
       { title: "8テーマのHub & Spoke分配", desc: "抽出された知識を「外食」「代替レシピ」「保育園」などの8つの巨大なメガWikiへ自動的に分類・紐付けする情報ハブ構造。", icon: <BookOpen className="w-5 h-5" /> },
       { title: "文脈考慮のAIコンシェルジュ", desc: "個々のプロフィール（年齢枠・アレルゲン）を常に暗黙のコンテキストとして保持し、それに寄り添って回答する相談AI。", icon: <MessageCircle className="w-5 h-5" /> },
       { title: "AI回答の信頼度バッジ", desc: "回答に必要な「保護者の一次情報」のデータ量に基づき、回答の確かさを判定してバッジ（緑/橙/赤）で視覚的警告を出す機能。", icon: <ShieldCheck className="w-5 h-5" /> },
-      { title: "情報ソース（参照元）の透明性追跡", desc: "AIがどの投稿（wiki_sources）を参考にしたかカウントを追跡することで、AI特有のハルシネーションを極小化。", icon: <Search className="w-5 h-5" /> },
+      { title: "情報ソース（参照元）の透明性追跡", desc: "AIがどのお声（wiki_sources）を参考にしたかカウントを追跡することで、AI特有のハルシネーションを極小化。", icon: <Search className="w-5 h-5" /> },
       { title: "緊急度判定ガード（119番誘導）", desc: "「息苦しい」「蕁麻疹が広がった」等のアナフィラキシー疑いをAIが検知し、即座に回答を停止して119番を促すセーフティガード。", icon: <Shield className="w-5 h-5" />, tags: ["Safety", "Urgent"] },
       { title: "AI検索システムの自律制御", desc: "データ品質を最優先し、圧倒的な良質な一次情報が十分蓄積されるまではAI検索機能を意図的にロック・不可視化するクオリティコントロール機構。", icon: <ShieldCheck className="w-5 h-5" /> },
       { title: "バウンスアニメーションUI", desc: "AIが思考中であることを伝える、心地よくリズミカルなWaiting UIパターン。", icon: <Sparkles className="w-5 h-5" /> },
@@ -71,20 +71,20 @@ const CATEGORIES: Category[] = [
         tags: ["RAG", "相談"]
       },
       {
-        title: "投稿の引用返信 (Quoted Reply)",
+        title: "お声の引用返信 (Quoted Reply)",
         desc: "気になる体験談をワンタップで引用し、コンテキスト付きでスムーズにトークを継続できるシステム",
         icon: <MessageCircle className="w-5 h-5" />,
         tags: ["みんなの声"]
       },
       {
         title: "自身の発言の取り消し・削除",
-        desc: "リアルタイムな削除権限の検証を行い、誤った投稿や後悔した投稿を即座に削除できる安心安全機能",
+        desc: "リアルタイムな削除権限の検証を行い、誤ったお声や後悔したお声を即座に取り消せる安心安全機能",
         icon: <Trash2 className="w-5 h-5" />,
         tags: ["みんなの声"]
       },
       {
         title: "統合通知フィード",
-        desc: "記事の閲覧数アップ、感謝リアクションの獲得、知恵袋への採用などのポジティブなアクションをひとまとめに確認",
+        desc: "記事の閲覧数アップ、感謝リアクションの獲得、まとめ記事への採用などのポジティブなアクションをひとまとめに確認",
         icon: <Bell className="w-5 h-5" />,
         tags: ["インセンティブ"]
       },
@@ -104,7 +104,7 @@ const CATEGORIES: Category[] = [
       { title: "「一番の悩み」に基づくAI例文生成", desc: "「市販品探し」「外食」などの選択に応じ、コンシェルジュ画面に「この質問をしてみよう」というサジェストを兄弟それぞれのプロファイルから動的に提示。", icon: <MessageCircle className="w-5 h-5" /> },
       { title: "Bento UIベースのマイページ", desc: "複雑な各種設定や貢献ステータスを、視覚的境界が美しい角丸（Bento）カードとして整列。", icon: <BookOpen className="w-5 h-5" />, tags: ["Nani Style"] },
       { title: "シームレスなプロファイル再編集", desc: "情報の整合性を保ちながら、複数こどもの名前・年齢・アレルゲン設定をウィザード形式でスムーズに再編集できる体験。", icon: <Check className="w-5 h-5" /> },
-      { title: "知恵袋の28品目＋フル対応フィルター", desc: "特定原材料8品目に加え、準ずる20品目で知恵（Wiki）を正確に横断検索・絞り込みできる動的タグフィルター機構。", icon: <Search className="w-5 h-5" />, tags: ["Search", "UX"] },
+      { title: "体験ノートの28品目＋フル対応フィルター", desc: "特定原材料8品目に加え、準ずる20品目で知恵（Wiki）を正確に横断検索・絞り込みできる動的タグフィルター機構。", icon: <Search className="w-5 h-5" />, tags: ["Search", "UX"] },
     ]
   },
   {
@@ -132,7 +132,7 @@ export default function FeaturesPage() {
   return (
     <div className="fade-in pb-12 w-full max-w-2xl mx-auto">
       {/* Header */}
-      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
+      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-md">
             <BookOpen className="w-5 h-5 text-white" />

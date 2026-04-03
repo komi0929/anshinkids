@@ -181,7 +181,7 @@ export default function ConciergePage() {
   return (
     <div className="flex flex-col h-[100dvh]">
       {/* Header */}
-      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm flex items-center justify-between">
+      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-md">
             <Sparkles className="w-5 h-5 text-white" />
@@ -312,12 +312,12 @@ export default function ConciergePage() {
               <div className="flex justify-end mt-2 fade-in">
                 <div className="max-w-[280px] p-3 rounded-2xl bg-gradient-to-r from-[var(--color-success-light)] to-[var(--color-surface-warm)] border border-[var(--color-success)]/15">
                   <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed mb-2">
-                    💡 この相談内容を匿名で知恵袋に追加しますか？<br/>
+                    💡 この相談内容を匿名で体験まとめに追加しますか？<br/>
                     <span className="text-[10px] text-[var(--color-muted)]">他の同じ悩みの方の助けになります</span>
                   </p>
                   <div className="flex gap-2">
                     <button onClick={() => handleContributeToWiki(index)} disabled={isContributing} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-success)] text-white text-[11px] font-bold hover:opacity-90 transition-all disabled:opacity-50" id={`contrib-wiki-${index}`}>
-                      {isContributing ? <><Loader2 className="w-3 h-3 animate-spin" /> 追加中</> : <><Plus className="w-3 h-3" /> 知恵袋に追加</>}
+                      {isContributing ? <><Loader2 className="w-3 h-3 animate-spin" /> 追加中</> : <><Plus className="w-3 h-3" /> まとめに追加</>}
                     </button>
                     <button onClick={() => setShowContribPrompt(null)} className="px-3 py-1.5 rounded-xl text-[11px] text-[var(--color-subtle)] hover:bg-[var(--color-surface)] transition-all">今回はスキップ</button>
                   </div>
@@ -329,7 +329,7 @@ export default function ConciergePage() {
               <div className="flex justify-end mt-2 fade-in">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--color-success-light)] text-[var(--color-success-deep)]">
                   <Check className="w-3 h-3" />
-                  <span className="text-[10px] font-bold">知恵袋に追加しました 🌿</span>
+                  <span className="text-[10px] font-bold">体験まとめに追加しました 🌿</span>
                 </div>
               </div>
             )}
@@ -356,7 +356,7 @@ export default function ConciergePage() {
 
 
       {/* Input */}
-      <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm p-4 safe-bottom">
+      <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md p-4 safe-bottom">
         {isGuest ? (
           <div className="flex flex-col items-center justify-center py-2 text-center">
             <span className="text-2xl mb-1">🔒</span>

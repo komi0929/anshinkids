@@ -361,13 +361,16 @@ export default function TopicChatPage() {
                       <button
                         onClick={() => handleShareMessage(msg.id)}
                         className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-primary)] flex items-center transition-colors mr-1"
-                        aria-label="シェアして助けを求める"
+                        aria-label="先輩パパ・ママに助けを呼ぶ"
+                        title="SNS等でシェアして助けを呼ぶ"
                       >
                         <Share className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(msg.id)}
                         className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-danger)] flex items-center transition-colors"
+                        aria-label="お声を取り消す"
+                        title="投稿を取り消す"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -430,6 +433,7 @@ export default function TopicChatPage() {
                   <button
                     onClick={() => handleShareMessage(msg.id)}
                     className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-surface)] border border-[var(--color-border-light)] text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-all"
+                    title="SNS等でシェアして助けを呼ぶ"
                   >
                     <Share className="w-3 h-3" />
                   </button>
@@ -445,7 +449,7 @@ export default function TopicChatPage() {
   return (
     <div className="flex flex-col h-[100dvh] bg-[var(--color-bg)]">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between border-b border-[var(--color-border-light)] bg-white/95 backdrop-blur-sm sticky top-0 z-40 shadow-sm">
+      <div className="px-4 py-3 flex items-center justify-between border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
         <Link
           href={`/talk/${slug}`}
           className="p-1.5 -ml-1.5 rounded-full hover:bg-[var(--color-surface-warm)] transition-colors active:scale-95 text-[var(--color-text)]"
@@ -497,7 +501,7 @@ export default function TopicChatPage() {
               ref={textareaRef}
               value={newMessage}
               onChange={handleTextareaChange}
-              placeholder="メッセージを入力..."
+              placeholder="あなたの体験や、今悩んでいることを共有してみませんか？"
               className="w-full bg-transparent border-none outline-none resize-none text-[15px] p-0 text-[var(--color-text)] placeholder-[var(--color-muted)] placeholder:font-medium leading-[1.5] max-h-[120px]"
               rows={1}
               onKeyDown={(e) => {

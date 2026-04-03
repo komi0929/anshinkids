@@ -84,6 +84,8 @@ export default function MyPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [streakData, setStreakData] = useState<{ currentStreak: number; longestStreak: number; totalDays: number } | null>(null);
+  const [hasError, setHasError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   // Profile Basic Info Edit Modal
   const [showProfileEdit, setShowProfileEdit] = useState(false);
@@ -102,10 +104,17 @@ export default function MyPage() {
         setEditName((d.profile as any).display_name || "");
         setEditAvatar((d.profile as any).avatar_url);
       }
-      setContributions(d.contributions as unknown as Contribution[]);
-      setImpact(d.impact as unknown as ImpactData);
       setBookmarks(d.bookmarks as unknown as BookmarkData[]);
       setStreakData(d.streak as { currentStreak: number; longestStreak: number; totalDays: number } | null);
+      if (d.contributions) setContributions(d.contributions as unknown as Contribution[]);
+      if (d.impact) setImpact(d.impact as unknown as ImpactData);
+    } else {
+      setHasError(true);
+      if (result.error && result.error.includes("ログイン")) {
+         // It's a genuine auth error, keep profile as null
+      } else {
+         setErrorMsg(result.error || "データの取得に失敗しました。再読み込みをお試しください。");
+      }
     }
     setIsLoading(false);
   }
@@ -187,7 +196,7 @@ export default function MyPage() {
 
   const handleShareImpact = async () => {
     if (!impact) return;
-    const shareText = `あんしんキッズの知恵袋で、私の体験談が「${impact.articlesHelped}件の記事」に反映され、「${impact.thanks}人」から感謝されました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
+    const shareText = `あんしんキッズで、私の体験が「${impact.articlesHelped}件の知恵」に変わり、「${impact.thanks}人」のパパ・ママの助けになりました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
     const url = `${window.location.origin}/`;
     if (navigator.share) {
       try {
@@ -216,6 +225,26 @@ export default function MyPage() {
           <div className="shimmer h-56 rounded-2xl mb-4" />
           <div className="shimmer h-28 rounded-2xl mb-3" />
           <div className="shimmer h-28 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (hasError && errorMsg) {
+    return (
+      <div className="fade-in">
+        <div className="empty-state mt-16">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2 shadow-sm">
+            <span className="text-3xl">⚠️</span>
+          </div>
+          <h3>エラーが発生しました</h3>
+          <p className="text-[13px] text-[var(--color-text-secondary)] mt-2">{errorMsg}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="btn-primary mt-6 inline-flex items-center gap-2"
+          >
+            ページを再読み込み
+          </button>
         </div>
       </div>
     );
@@ -408,7 +437,7 @@ export default function MyPage() {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 flex flex-col justify-between h-28 shadow-sm relative overflow-hidden group hover:border-[var(--color-success)]/40 transition-colors">
               <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">📖</div>
-              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">知恵袋への採用</p>
+              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">まとめ記事への採用</p>
               <div className="flex items-end gap-1.5">
                 <span className="text-3xl font-extrabold text-[var(--color-success-deep)]">{impact.articlesHelped}</span>
                 <span className="text-[11px] font-semibold text-[var(--color-success)] mb-1">件</span>
@@ -437,7 +466,7 @@ export default function MyPage() {
                    </div>
                    <div className="flex-1 min-w-0">
                      <p className="text-[10px] text-[var(--color-success)] font-bold mb-1 flex items-center gap-1">
-                       <Check className="w-3 h-3" /> 知恵袋に採用されました
+                       <Check className="w-3 h-3" /> まとめ記事に採用されました
                      </p>
                      <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">
                        {imp.title}
@@ -505,7 +534,7 @@ export default function MyPage() {
         <div className="px-4 pb-4">
           <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
             <span className="text-lg">🌱</span>
-            過去の共有
+            今までのお話し
           </h3>
             <div className="space-y-3">
               {contributions.map((contrib) => (
@@ -526,14 +555,14 @@ export default function MyPage() {
                         </h4>
                       )}
                       <p className="text-[12px] text-[var(--color-subtle)] mt-1 line-clamp-2 leading-relaxed">
-                        あなたの投稿: 「{contrib.original_message_snippet}」
+                        あなたの体験: 「{contrib.original_message_snippet}」
                       </p>
                       <div className="flex items-center gap-3 mt-2">
                         <span className="text-[10px] text-[var(--color-muted)] bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-full">
                           {new Date(contrib.extracted_at).toLocaleDateString("ja-JP")}に反映
                         </span>
                         <span className="text-[10px] text-[var(--color-success)] font-semibold">
-                          知恵袋を確認する →
+                          まとめ記事を確認する →
                         </span>
                       </div>
                     </div>
@@ -551,10 +580,10 @@ export default function MyPage() {
               <Sparkles className="w-7 h-7 text-[var(--color-success)]" />
             </div>
             <p className="text-[14px] text-[var(--color-text)] mb-1 font-bold">
-              まだ知恵に反映された投稿はありません
+              まだ知恵に反映されたお声はありません
             </p>
             <p className="text-[12px] text-[var(--color-subtle)] leading-relaxed mb-4">
-              「みんなの声」で体験を共有すると、<br/>AIがあなたの知恵を整理してプラットフォームの資産として残してくれます
+              「みんなの声」で体験をお話しすると、<br/>AIがあなたの知恵を整理してプラットフォームの資産として残してくれます
             </p>
             <Link href="/talk" className="btn-primary inline-flex items-center gap-2" id="go-talk-from-mypage">
               💬 みんなの声で話してみる
@@ -578,10 +607,10 @@ export default function MyPage() {
                 {(() => {
                   if (!profile) return "データを読み込み中...";
                   const count = profile.total_contributions;
-                  if (count === 0) return "まだ投稿がありません。日々の小さな気づきが誰かのヒントになります。";
-                  if (count < 5) return `${count}投稿 — いい調子ですね！少しずつ知恵が集まっています 🌱`;
-                  if (count < 10) return `${count}投稿 — たくさんの共有ありがとうございます。あなたの声が誰かの支えになっています 🍀`;
-                  return `${count}投稿 — いつも活動を支えてくださり、本当にありがとうございます 💐`;
+                  if (count === 0) return "まだお話しがありません。日々の小さな気づきが誰かのヒントになります。";
+                  if (count < 5) return `${count}回のお話し — いい調子ですね！少しずつ知恵が集まっています 🌱`;
+                  if (count < 10) return `${count}回のお話し — たくさんの体験を共有いただきありがとうございます。あなたのお声が誰かの支えになっています 🍀`;
+                  return `${count}回のお話し — いつも活動を支えてくださり、本当にありがとうございます 💐`;
                 })()}
               </p>
             </div>
@@ -604,11 +633,11 @@ export default function MyPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>投稿は自動的に消去されますが、知恵は永久に残ります</span>
+              <span>あなたのお声は一定時間でリセットされるので安心です</span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>知恵袋の記事は匿名化されて保存されます</span>
+              <span>まとめ記事は匿名化されて保存されます</span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
@@ -621,8 +650,8 @@ export default function MyPage() {
         <div className="card p-4 border-[var(--color-danger)]/30">
           <h4 className="text-[13px] font-bold text-[var(--color-danger)] mb-2 break-keep text-balance">⚠️ アカウントとデータの削除</h4>
           <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed mb-3">
-            すべてのデータ（プロフィール、投稿履歴、共有記録）を完全に削除します。
-            知恵袋に匿名化済みの情報は残りますが、あなたへの紐付けは解除されます。
+            すべてのデータ（プロフィール、共有記録）を完全に削除します。
+            まとめ記事に匿名化済みの情報は残りますが、あなたへの紐付けは解除されます。
           </p>
           {showDeleteConfirm ? (
             <div className="space-y-3">

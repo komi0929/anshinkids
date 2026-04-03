@@ -16,7 +16,7 @@ const STEPS = [
   },
   {
     num: "2",
-    title: "知恵袋で調べる",
+    title: "まとめで調べる",
     desc: "みんなの投稿をAIが自動で整理して、8つの大きなテーマ記事にまとめています。",
     points: [
       "「毎日のごはん」「外食情報」など8テーマ別に探せます",
@@ -199,7 +199,7 @@ export default function AboutPage() {
         </h3>
         <div className="space-y-3 max-w-sm mx-auto">
           <Link href="/wiki" className="btn-primary w-full text-center block" id="go-to-wiki-cta" style={{ background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))" }}>
-            📖 今すぐ知恵袋を見てみる
+            📖 今すぐみんなのまとめを見てみる
           </Link>
           <Link href="/talk" className="btn-secondary w-full text-center block" id="go-to-talk-cta">
             💬 みんなの声を見てみる
@@ -209,7 +209,7 @@ export default function AboutPage() {
           </Link>
         </div>
         <p className="text-[12px] font-medium text-center mt-4" style={{ color: "var(--color-subtle)" }}>
-          ログインしなくても知恵袋の閲覧・AI相談はご利用いただけます
+          ログインしなくてもまとめ記事の閲覧・AI相談はご利用いただけます
         </p>
       </div>
 

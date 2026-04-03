@@ -10,7 +10,7 @@ export function getExtractionPrompt(themeSlug: string, messagesText: string, exi
   const theme = THEME_BY_SLUG[themeSlug];
   if (!theme) return "";
 
-  return `あなたは食物アレルギー知恵袋の専門編集AIです。
+  return `あなたは体験まとめ記事の専門編集AIです。
 以下のトークルーム「${theme.name}」の直近の会話内容から、保護者にとって価値のある実体験（ナレッジ）を抽出し、Mega-Wiki（総合まとめ記事）の該当セクションへ格納するためのJSONを生成してください。
 
 ## テーマ: ${theme.name}

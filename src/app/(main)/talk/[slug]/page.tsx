@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   getTalkRoomBySlug,
@@ -44,13 +44,16 @@ function timeAgo(dateStr: string): string {
 
 export default function TalkThemeHubPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+  const initialTopic = searchParams.get("topic");
+
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const [newTopicTitle, setNewTopicTitle] = useState("");
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newTopicTitle, setNewTopicTitle] = useState(initialTopic || "");
+  const [showCreateForm, setShowCreateForm] = useState(!!initialTopic);
 
   useEffect(() => {
     async function init() {
@@ -92,7 +95,7 @@ export default function TalkThemeHubPage() {
   return (
     <div className="flex flex-col h-[100dvh] bg-[var(--color-bg)]">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-white/95 backdrop-blur-sm sticky top-0 z-40 shadow-sm">
+      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
         <Link
           href="/talk"
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors active:scale-95"

@@ -237,7 +237,7 @@ export default function WikiDetailPage() {
         }}
       />
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
+      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md sticky top-0 z-40">
         <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors" id="back-to-wiki">
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
@@ -421,7 +421,7 @@ export default function WikiDetailPage() {
                       
                       {/* Topic Summoning Button */}
                       <Link 
-                        href={`/talk/${talkSlug}?summon=${encodeURIComponent("【知恵袋から】" + sec.heading + "の「" + item.title + "」について、最新の体験や工夫を教えてください！")}`}
+                        href={`/talk/${talkSlug}?summon=${encodeURIComponent("【まとめ記事から】" + sec.heading + "の「" + item.title + "」について、最新の体験や工夫を教えてください！")}`}
                         className="mt-4 block w-full py-2.5 rounded-xl bg-white text-[12px] font-bold text-center text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors shadow-sm"
                       >
                         💬 この項目について最新の体験を聞く
@@ -435,7 +435,7 @@ export default function WikiDetailPage() {
         ) : (
           <div className="card-elevated p-5 mb-6 text-center">
             <p className="text-[13px] text-[var(--color-subtle)] italic leading-relaxed">
-              情報は整理中です。<br/>トークルームに体験を投稿すると、AIが知恵袋にまとめてくれます。
+              情報は整理中です。<br/>トークルームで体験をお話しすると、AIがまとめ記事を作成してくれます。
             </p>
           </div>
         )}

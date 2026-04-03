@@ -118,11 +118,11 @@ export default async function AmuletCardPage({ params }: { params: { id: string 
         <div className="bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-warm)] p-5 rounded-2xl border border-[var(--color-border-light)] shadow-sm">
           <h2 className="text-[13px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">周りにアレルギーでお悩みの方はいませんか？</h2>
           <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed mb-4">
-            このお守りカードは「あんしんキッズ」で作成されました。同じようにアレルギーを持つ親御さんのための、国内最大級の体験知恵袋です。
+            このお守りカードは「あんしんキッズ」で作成されました。同じようにアレルギーを持つ親御さんのための、国内最大級の体験ライブラリです。
           </p>
           <Link href="/" className="w-full flex items-center justify-between p-3 rounded-xl bg-white border border-[var(--color-border)] shadow-sm group hover:border-[var(--color-primary)] transition-all">
             <div className="flex flex-col">
-              <span className="text-[12px] font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">知恵袋を見てみる</span>
+              <span className="text-[12px] font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">みんなのまとめを見てみる</span>
               <span className="text-[10px] text-[var(--color-muted)]">無料で専門知識やみんなの体験を探せます</span>
             </div>
             <div className="w-8 h-8 rounded-full bg-[var(--color-primary-light)]/10 flex items-center justify-center shrink-0">

@@ -129,7 +129,7 @@ async function TalkContent() {
             <div className="flex gap-4 text-center">
               <div>
                 <p className="text-[20px] font-black" style={{ color: 'var(--color-primary)' }}>{digest.messageCount}</p>
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--color-subtle)' }}>件の投稿</p>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--color-subtle)' }}>件のお声</p>
               </div>
               <div>
                 <p className="text-[20px] font-black" style={{ color: 'var(--color-primary)' }}>{digest.uniqueContributors}</p>
@@ -142,7 +142,7 @@ async function TalkContent() {
             </div>
             {digest.newArticles.length > 0 && (
               <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
-                <p className="text-[12px] font-bold mb-2" style={{ color: 'var(--color-subtle)' }}>🆕 新しい知恵袋まとめ</p>
+                <p className="text-[12px] font-bold mb-2" style={{ color: 'var(--color-subtle)' }}>🆕 新しいみんなのまとめ</p>
                 {digest.newArticles.slice(0, 2).map((a) => (
                   <Link key={a.slug} href={`/wiki/${a.slug}`} className="block text-[13px] font-semibold hover:underline truncate mb-1 whitespace-nowrap" style={{ color: 'var(--color-primary)' }}>
                     → {a.title}
@@ -174,7 +174,7 @@ async function TalkContent() {
                 <div>
                   <p className="text-[13px] font-bold whitespace-nowrap" style={{ color: 'var(--color-text)' }}>{t.name}</p>
                   <p className="text-[11px] font-medium" style={{ color: 'var(--color-subtle)' }}>
-                    {t.messageCount}件の投稿 · 💚{t.thanksTotal}
+                    {t.messageCount}件のお声 · 💚{t.thanksTotal}
                   </p>
                 </div>
               </Link>
@@ -183,12 +183,43 @@ async function TalkContent() {
         </div>
       )}
 
+      {/* === Icebreaker / Talk Examples === */}
+      <div className="px-5 mb-6 slide-up" style={{ animationDelay: '100ms' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-sm bg-[var(--color-surface-warm)] px-1 py-0.5 rounded border border-[var(--color-border-light)] shadow-inner-soft">💡</span>
+          <h2 className="text-[14px] font-bold break-keep text-balance" style={{ color: 'var(--color-text)' }}>話題のきっかけ（タップですぐに話せます）</h2>
+        </div>
+        <div className="grid grid-cols-1 gap-2.5">
+          <Link
+            href="/talk/products?topic=最近使ってよかった市販のおやつ"
+            className="card-elevated px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group"
+          >
+            <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">🛒 最近使ってよかった市販のおやつ</span>
+            <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">話す</span>
+          </Link>
+          <Link
+            href="/talk/eating-out?topic=外食チェーンのアレルギー対応、みんなどうしてる？"
+            className="card-elevated px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group"
+          >
+            <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">🍽️ 外食チェーンのアレルギー対応について</span>
+            <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">話す</span>
+          </Link>
+          <Link
+            href="/talk/school-life?topic=保育園・幼稚園への対応について"
+            className="card-elevated px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group"
+          >
+            <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">🏫 保育園・幼稚園への対応について</span>
+            <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">話す</span>
+          </Link>
+        </div>
+      </div>
+
       {/* Info chip */}
       <div className="px-5 mb-5">
         <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-primary)' }} />
           <span className="text-[13px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-            投稿は自動消去、会話の知恵はAIが知恵袋に保存
+            あなたのお声は一定時間でリセットされ、会話の知恵はAIが「みんなのまとめ」に保存します
           </span>
         </div>
       </div>
@@ -248,7 +279,7 @@ async function TalkContent() {
         <div className="px-4 pb-4">
           <div className="flex items-center gap-2 mb-2.5 px-1">
             <h2 className="text-[14px] font-bold break-keep text-balance" style={{ color: 'var(--color-text)' }}>
-              {personalizationLabel || (isPersonalized ? "✨ あなたへのおすすめ記事" : "📖 人気の知恵袋記事")}
+              {personalizationLabel || (isPersonalized ? "✨ あなたへのおすすめまとめ" : "📖 人気のみんなのまとめ")}
             </h2>
           </div>
           <div className="space-y-2">

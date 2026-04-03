@@ -5,13 +5,12 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import OnboardingWizard, { isOnboardingComplete } from "@/components/onboarding-wizard";
-import { Home, MessageCircle, Book, Sparkles, User, LogIn } from "@/components/icons";
+import { MessageCircle, Book, Sparkles, User, LogIn } from "@/components/icons";
 import { ImpactToast } from "@/components/ui/ImpactToast";
 
 const navItems = [
-  { href: "/home", label: "ホーム", Icon: Home },
+  { href: "/wiki", label: "まとめ", Icon: Book },
   { href: "/talk", label: "みんなの声", Icon: MessageCircle },
-  { href: "/wiki", label: "知恵袋", Icon: Book },
   { href: "/concierge", label: "AI相談", Icon: Sparkles },
   { href: "/mypage", label: "マイページ", Icon: User },
 ];

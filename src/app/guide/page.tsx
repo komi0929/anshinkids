@@ -12,8 +12,8 @@ const steps = [
     number: 1,
     title: "みんなの声で体験をシェア",
     description:
-      "テーマ別のトークルームで、日々の悩みや発見を気軽に投稿できます。「毎日のごはん」「外食・お出かけ」など、生活シーンに合ったテーマを選んでタップするだけ。",
-    tip: "あなたの投稿は一定時間で消えるので、気兼ねなく書けます。知恵はAIが知恵袋に永久保存します。",
+      "テーマ別のトークルームで、日々の悩みや発見を気軽にお話しできます。「毎日のごはん」「外食・お出かけ」など、生活シーンに合ったテーマを選んでタップするだけ。",
+    tip: "あなたのお声は一定時間でリセットされるので、気兼ねなくお話しできます。会話から生まれた体験はAIが「みんなのまとめ」に整理します。",
     image: "/guide-talk.png",
     alt: "みんなの声 - テーマ一覧画面",
     color: "var(--color-primary)",
@@ -22,20 +22,20 @@ const steps = [
     number: 2,
     title: "トークルームで話す",
     description:
-      "ルームに入ったら、テキストを入力して送信するだけ。他の保護者の体験も読めます。「いいね」で共感を伝えたり、返信で会話を深めることもできます。",
-    tip: "投稿はすべて匿名。LINEの表示名は他のユーザーには見えません。",
+      "ルームに入ったら、テキストを入力して送るだけ。他の保護者の体験も読めます。「いいね」で共感を伝えたり、返信で会話を深めることもできます。",
+    tip: "会話はすべて匿名。LINEの表示名は他のユーザーには見えません。",
     image: "/guide-talk-room.png",
     alt: "トークルーム内のチャット画面",
     color: "var(--color-accent)",
   },
   {
     number: 3,
-    title: "知恵袋で知識を探す",
+    title: "みんなのまとめで知識を探す",
     description:
-      "みんなの投稿をAIが会話の流れから知恵を抽出し、検索できる知識ライブラリに。「毎日のごはん」など8つの大きなテーマ別に探せます。",
+      "みんなの体験をAIが読み解き、検索できる知識ライブラリに。「毎日のごはん」など8つの大きなテーマ別に探せます。",
     tip: "各記事の「情報を追加」から、あなたの体験を書き足せます。みんなで記事を育てましょう。",
     image: "/guide-wiki.png",
-    alt: "知恵袋 - 知識ライブラリ画面",
+    alt: "みんなのまとめ - 知識ライブラリ画面",
     color: "var(--color-success)",
   },
   {
@@ -103,13 +103,13 @@ export default function GuidePage() {
             <div className="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-[var(--color-accent)]" />
             </div>
-            <p className="text-[11px] font-bold text-[var(--color-text)]">知恵袋に蓄積</p>
+            <p className="text-[11px] font-bold text-[var(--color-text)]">まとめに蓄積</p>
             <p className="text-[9px] text-[var(--color-subtle)]">みんなの資産</p>
           </div>
         </div>
         <p className="text-[11px] text-[var(--color-subtle)] text-center mt-3 leading-relaxed">
           あなたの体験が、次に悩む誰かの助けになります。<br />
-          使うほど知恵袋が育ち、回答も正確になっていきます。
+          使うほど「まとめ」が育ち、AI回答も正確になっていきます。
         </p>
       </div>
 
@@ -123,13 +123,13 @@ export default function GuidePage() {
           <div>
             <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1 break-keep text-balance">💚 「ありがとう」が目に見える資産に</h3>
             <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
-              トークルームで共感を集めたり、知恵袋に体験を追加すると「ありがとう」が届きます。あなたの日々の奮闘が、コミュニティを守る力としてマイページに記録され、お互いの助け合いがひと目で分かります。
+              トークルームで共感を集めたり、まとめ記事に体験を追加すると「ありがとう」が届きます。あなたの日々の奮闘が、コミュニティを守る力としてマイページに記録され、お互いの助け合いがひと目で分かります。
             </p>
           </div>
           <div>
             <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1 break-keep text-balance">⚡ 病院の地下でもサクサク安心</h3>
             <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
-              最新の超高速技術を搭載し、画面の読み込み待ち時間を「ゼロ」にしました。一度開いた知恵袋は裏で自動保存されるため、電波の悪い病院の待合室や災害時でも、お守りのようにサクサク閲覧できます。
+              最新の超高速技術を搭載し、画面の読み込み待ち時間を「ゼロ」にしました。一度開いたまとめ記事は裏で自動保存されるため、電波の悪い病院の待合室や災害時でも、お守りのようにサクサク閲覧できます。
             </p>
           </div>
         </div>
@@ -186,7 +186,7 @@ export default function GuidePage() {
             さっそく使ってみよう 🌿
           </h2>
           <p className="text-[12px] text-white/80 mb-4 leading-relaxed">
-            ログインなしでも、みんなの声と知恵袋は<br />今すぐ読めます。
+            ログインなしでも、みんなの声とまとめ記事は<br />今すぐ読めます。
           </p>
           <Link
             href="/talk"

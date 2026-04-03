@@ -20,7 +20,7 @@ export default function PrivacyPage() {
             <ol className="list-decimal pl-5 space-y-2">
               <li><strong>LINE認証情報</strong>: LINEアカウントとの連携により取得するユーザーID、表示名、プロフィール画像URL</li>
               <li><strong>ユーザーが任意に提供する情報</strong>: お子さまのアレルゲン情報、月齢等のプロフィール情報</li>
-              <li><strong>投稿コンテンツ</strong>: トークルームへの投稿内容、AIコンシェルジュへの相談内容</li>
+              <li><strong>コンテンツ</strong>: トークルームへのお話し内容、AIコンシェルジュへの相談内容</li>
               <li><strong>利用履歴</strong>: 本サービス内でのアクセスログ、「ありがとう」ボタンの押下履歴</li>
               <li><strong>Cookie等の技術的情報</strong>: セッション管理に必要なCookie情報</li>
             </ol>
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             <ol className="list-decimal pl-5 space-y-2">
               <li>本サービスの提供・運営のため</li>
               <li>ユーザーからのお問い合わせに回答するため（本人確認を行うことを含む）</li>
-              <li>AIによる情報抽出・構造化処理（AI動的Wiki生成）のため</li>
+              <li>AIによる情報抽出・構造化処理（みんなの体験まとめ等の生成）のため</li>
               <li>AIコンシェルジュによる相談回答のため</li>
               <li>情報の品質維持およびコミュニティの安全性確保のため</li>
               <li>利用規約に違反したユーザーや、不正・不当な目的でサービスを利用しようとするユーザーの特定をし、ご利用をお断りするため</li>
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
             <ol className="list-decimal pl-5 space-y-2">
               <li>本サービスでは、Google Gemini AI（以下「外部AIサービス」）を利用して、投稿された情報の解析・構造化を行います。</li>
               <li>外部AIサービスへ送信するデータには、投稿テキストの内容のみが含まれ、ユーザーの氏名、LINE ID等の個人識別情報は送信しません。</li>
-              <li>AI処理により生成されたWiki記事（パブリックWiki含む）では、個人を特定できる情報は除去されます。ただし、完全な除去を保証するものではなく、万が一個人情報が含まれていた場合は、当社にご連絡ください。速やかに対応いたします。</li>
+              <li>AI処理により生成されたまとめ記事（パブリックWiki含む）では、個人を特定できる情報は除去されます。ただし、完全な除去を保証するものではなく、万が一個人情報が含まれていた場合は、当社にご連絡ください。速やかに対応いたします。</li>
             </ol>
           </div>
 

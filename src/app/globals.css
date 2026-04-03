@@ -59,6 +59,7 @@
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-2xl: 24px;
+  --radius-3xl: 32px;
   --radius-full: 9999px;
 
   /* Shadows - warm toned */
@@ -68,8 +69,12 @@
     0 4px 14px rgba(28, 25, 23, 0.06), 0 2px 4px rgba(28, 25, 23, 0.03);
   --shadow-lg:
     0 8px 28px rgba(28, 25, 23, 0.08), 0 4px 8px rgba(28, 25, 23, 0.04);
-  --shadow-glow: 0 0 20px rgba(26, 143, 110, 0.12);
+  --shadow-glow: 0 4px 24px rgba(26, 143, 110, 0.15);
   --shadow-accent: 0 4px 20px rgba(232, 116, 97, 0.15);
+  
+  /* Claymorphism (tactile) */
+  --shadow-clay-primary: 0 4px 12px rgba(26, 143, 110, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.15), inset 0 2px 2px rgba(255, 255, 255, 0.25);
+  --shadow-clay-accent: 0 4px 12px rgba(232, 116, 97, 0.25), inset 0 -3px 0 rgba(180, 50, 30, 0.2), inset 0 2px 2px rgba(255, 255, 255, 0.3);
 }
 
 @layer base {
@@ -128,13 +133,12 @@
     background: linear-gradient(
       120deg,
       var(--color-bg),
-      #f6faf8,
-      #fbf8f4,
-      #ebf3f0
+      #f2f5f4,
+      #fdfbf7,
+      #e0efe8
     );
-    background-size: 300% 300%;
-    animation: ambient-breathe 18s cubic-bezier(0.4, 0, 0.2, 1) infinite
-      alternate;
+    background-size: 400% 400%;
+    animation: ambient-breathe 14s ease-in-out infinite alternate;
   }
 
   @keyframes ambient-breathe {
@@ -163,6 +167,7 @@
   /* Scrollbar */
   ::-webkit-scrollbar {
     width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -170,6 +175,15 @@
   ::-webkit-scrollbar-thumb {
     background: var(--color-muted);
     border-radius: 4px;
+  }
+
+  /* Utility: Hide Scrollbar entirely */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   /* Focus */
@@ -224,13 +238,13 @@
 
   .card {
     background: var(--color-surface);
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-3xl);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-soft);
     transition:
-      box-shadow 0.3s ease,
-      transform 0.3s ease,
-      border-color 0.3s ease;
+      box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+      transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+      border-color 0.4s ease;
     position: relative;
   }
 
@@ -241,14 +255,14 @@
   }
 
   .card-active:active {
-    transform: scale(0.98) translateY(0);
-    transition: transform 0.1s ease;
+    transform: scale(0.96) translateY(2px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   /* Elevated = same as card but stronger shadow */
   .card-elevated {
     background: var(--color-surface);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-3xl);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-md);
   }
@@ -256,9 +270,9 @@
   /* Dashed card */
   .card-dashed {
     background: var(--color-surface);
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-2xl);
     border: 1.5px dashed var(--color-border);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .card-dashed:hover {
     border-color: var(--color-primary);
@@ -316,21 +330,21 @@
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(26, 143, 110, 0.25);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: var(--shadow-clay-primary);
     letter-spacing: 0.01em;
     white-space: nowrap;
   }
 
   .btn-primary:hover {
     background: var(--color-primary-dark);
-    box-shadow: 0 4px 16px rgba(26, 143, 110, 0.3);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(26, 143, 110, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.15), inset 0 2px 2px rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
   }
 
   .btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(26, 143, 110, 0.2);
+    transform: translateY(2px);
+    box-shadow: 0 1px 4px rgba(26, 143, 110, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.15);
   }
 
   .btn-secondary {
@@ -342,7 +356,7 @@
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     white-space: nowrap;
   }
 
@@ -361,14 +375,19 @@
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: var(--shadow-accent);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: var(--shadow-clay-accent);
     white-space: nowrap;
   }
 
   .btn-accent:hover {
-    box-shadow: 0 6px 24px rgba(232, 116, 97, 0.3);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(232, 116, 97, 0.3), inset 0 -3px 0 rgba(180, 50, 30, 0.2), inset 0 2px 2px rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .btn-accent:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 4px rgba(232, 116, 97, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.15);
   }
 
   .btn-thanks {
@@ -463,13 +482,13 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.96); /* Higher opacity to prevent text legibility bleed */
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
     border-top: 1px solid var(--color-border);
     padding: 8px 0;
     padding-bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 40;
+    z-index: 50; /* Increased to ensure it's always above content */
   }
 
   .nav-item {

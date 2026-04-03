@@ -76,7 +76,7 @@ export default function NotificationsPage() {
             notifs.push({
               id: `notif-${idCounter++}`,
               type: "wiki_extracted",
-              message: <span>あなたの投稿がAIによって整理され、知恵袋 <strong className="text-[var(--color-success)]">「{c.wiki_entries?.title || "新しい記事"}」</strong> に採用されました 🌱</span>,
+              message: <span>あなたのお声がAIによって整理され、まとめ記事 <strong className="text-[var(--color-success)]">「{c.wiki_entries?.title || "新しい記事"}」</strong> に採用されました 🌱</span>,
               dateStr: new Date(c.extracted_at).toLocaleDateString("ja-JP"),
               isRead: false,
               link: c.wiki_entries ? `/wiki/${c.wiki_entries.slug}` : "/wiki"
@@ -117,7 +117,7 @@ export default function NotificationsPage() {
   return (
     <div className="fade-in pb-4">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/95 backdrop-blur-sm sticky top-0 z-40">
+      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md sticky top-0 z-40">
         <Link href="/mypage" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors active:scale-95">
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>

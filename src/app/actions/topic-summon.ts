@@ -23,7 +23,7 @@ export async function generateSummonText(themeSlug: string, sectionHeading: stri
 
   try {
     const model = getGeminiFlash(`あなたは「${theme.name}」というテーマの保護者コミュニティのファシリテーターです。
-知恵袋の「${sectionHeading}」について、「${itemTitle}」に関する新しい体験談やエピソードを募集したいです。
+まとめ記事の「${sectionHeading}」について、「${itemTitle}」に関する新しい体験談やエピソードを募集したいです。
 
 以下のルールで、保護者が思わずコメントを返したくなるような、短く温かい「問いかけ（話題の投下）」を1〜2文で生成してください。
 - 100文字以内
@@ -56,18 +56,18 @@ export async function generateSummonText(themeSlug: string, sectionHeading: stri
       const parsed = JSON.parse(result.response.text());
       text = parsed.questionText;
     } catch {
-      text = `【知恵袋から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
+      text = `【まとめ記事から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
     }
 
     return {
       success: true,
-      text: text || `【知恵袋の知恵】${itemTitle}について、最近の体験を教えてください！`,
+      text: text || `【みんなのまとめ】${itemTitle}について、最近の体験を教えてください！`,
       roomSlug: themeSlug,
     };
   } catch (error) {
     console.error("[generateSummonText] AI Error:", error);
     // Fallback in case AI is unreachable
-    const text = `【知恵袋から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
+    const text = `【まとめ記事から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
     return {
       success: true,
       text,

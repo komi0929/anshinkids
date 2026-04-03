@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const tags = result.data.allergen_tags || [];
     // Answer-first description optimized for AI extraction
     const summary = result.data.summary 
-      || `${title}について、${sourceCount}人の親御さんの実体験をもとにまとめた知恵袋です。${category}に関する具体的な体験談・対処法・おすすめ情報を掲載しています。`;
+      || `${title}について、${sourceCount}人の親御さんの実体験をもとにまとめた記事です。${category}に関する具体的な体験談・対処法・おすすめ情報を掲載しています。`;
     const pageUrl = `${SITE_URL}/wiki/${resolvedParams.slug}`;
     
     return {
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         canonical: pageUrl,
       },
       openGraph: {
-        title: `${title} | あんしんキッズ知恵袋`,
+        title: `${title} | あんしんキッズ 体験まとめ`,
         description: `${sourceCount}人の親御さんの実体験に基づく${title}の情報。${summary}`,
         url: pageUrl,
         siteName: "あんしんキッズ",
@@ -37,11 +37,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       twitter: {
         card: "summary_large_image",
         title: `${title} | あんしんキッズ`,
-        description: `${sourceCount}人の実体験に基づく知恵袋。${summary}`,
+        description: `${sourceCount}人の実体験に基づくまとめ記事。${summary}`,
       },
     };
   }
-  return { title: 'みんなの知恵袋' };
+  return { title: 'みんなのまとめ' };
 }
 
 export default function WikiDynamicLayout({ children }: { children: React.ReactNode }) {

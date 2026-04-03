@@ -10,7 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: ["/", "/about", "/wiki", "/features"],
         disallow: [
           "/mypage", 
-          "/home", 
           "/talk", 
           "/concierge", 
           "/login",
