@@ -89,7 +89,7 @@ async function TalkContent() {
       {/* Clean Header */}
       <div className="px-5 pt-8 pb-5">
         <h1 className="text-[26px] font-black tracking-tight leading-tight break-keep text-balance" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
-          みんなの声
+          トークルーム
         </h1>
         <p className="text-[14px] font-medium mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
           食物アレルギーの実体験をテーマ別にシェアする場所
@@ -189,7 +189,7 @@ async function TalkContent() {
         <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-primary)' }} />
           <span className="text-[13px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-            あなたのお声は一定時間でリセットされ、会話の知恵はAIが「みんなのまとめ」に保存します
+            あなたのお声は一定時間でリセットされ、会話のヒントはAIが「みんなのまとめ」に保存します
           </span>
         </div>
       </div>

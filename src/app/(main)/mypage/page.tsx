@@ -196,7 +196,7 @@ export default function MyPage() {
 
   const handleShareImpact = async () => {
     if (!impact) return;
-    const shareText = `あんしんキッズで、私の体験が「${impact.articlesHelped}件の知恵」に変わり、「${impact.thanks}人」のパパ・ママの助けになりました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
+    const shareText = `あんしんキッズで、私の体験が「${impact.articlesHelped}件のヒント」に変わり、「${impact.thanks}人」のパパ・ママの助けになりました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
     const url = `${window.location.origin}/`;
     if (navigator.share) {
       try {
@@ -281,7 +281,7 @@ export default function MyPage() {
             マイページ
           </h1>
           <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-            あなたの体験が、新しい知恵に変わっています
+            あなたの体験が、新しいヒントに変わっています
           </p>
         </div>
         <Link href="/notifications" className="w-10 h-10 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-border-light)] transition-colors relative" aria-label="通知を見る">
@@ -337,7 +337,7 @@ export default function MyPage() {
                 <div className="bg-gradient-to-br from-[var(--color-success-light)] to-green-50/50 rounded-2xl p-3.5 text-center">
                   <TrendingUp className="w-4 h-4 text-[var(--color-success)] mx-auto mb-1.5" />
                   <div className="text-[20px] font-extrabold text-[var(--color-text)]">{contributions.length}</div>
-                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">知恵に反映</div>
+                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">ヒントに反映</div>
                 </div>
               </div>
 
@@ -431,7 +431,7 @@ export default function MyPage() {
             みんなへのお役立ち
           </h3>
           <p className="text-[12px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
-            ここで共有していただいたお話は、同じ悩みを抱える親御さんのための大切な知恵として残っていきます。
+            ここで共有していただいたお話は、同じ悩みを抱える親御さんのための大切なヒントとして残っていきます。
           </p>
           
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -502,7 +502,7 @@ export default function MyPage() {
             お気に入り
           </h3>
           <p className="text-[12px] text-[var(--color-subtle)] mb-3 leading-relaxed">
-            保存した役立つ知恵にいつでもアクセスできます。
+            保存した役立つヒントにいつでもアクセスできます。
           </p>
           <div className="space-y-3">
             {bookmarks.map((bm) => (
@@ -580,13 +580,13 @@ export default function MyPage() {
               <Sparkles className="w-7 h-7 text-[var(--color-success)]" />
             </div>
             <p className="text-[14px] text-[var(--color-text)] mb-1 font-bold">
-              まだ知恵に反映されたお声はありません
+              まだヒントに反映されたお声はありません
             </p>
             <p className="text-[12px] text-[var(--color-subtle)] leading-relaxed mb-4">
-              「みんなの声」で体験をお話しすると、<br/>AIがあなたの知恵を整理してプラットフォームの資産として残してくれます
+              「トークルーム」で体験をお話しすると、<br/>AIがあなたのヒントを整理してプラットフォームの資産として残してくれます
             </p>
             <Link href="/talk" className="btn-primary inline-flex items-center gap-2" id="go-talk-from-mypage">
-              💬 みんなの声で話してみる
+              💬 トークルームで話してみる
             </Link>
           </div>
          </div>
@@ -608,7 +608,7 @@ export default function MyPage() {
                   if (!profile) return "データを読み込み中...";
                   const count = profile.total_contributions;
                   if (count === 0) return "まだお話しがありません。日々の小さな気づきが誰かのヒントになります。";
-                  if (count < 5) return `${count}回のお話し — いい調子ですね！少しずつ知恵が集まっています 🌱`;
+                  if (count < 5) return `${count}回のお話し — いい調子ですね！少しずつヒントが集まっています 🌱`;
                   if (count < 10) return `${count}回のお話し — たくさんの体験を共有いただきありがとうございます。あなたのお声が誰かの支えになっています 🍀`;
                   return `${count}回のお話し — いつも活動を支えてくださり、本当にありがとうございます 💐`;
                 })()}

@@ -249,7 +249,7 @@ export default function TopicChatPage() {
       try {
         await navigator.share({
           title: "教えて！あんしんキッズ",
-          text: "食物アレルギーの先輩パパ・ママ、知恵を貸してください🙏",
+          text: "食物アレルギーの先輩パパ・ママ、ヒントを貸してください🙏",
           url: url,
         });
       } catch (e) {

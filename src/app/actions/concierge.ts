@@ -90,7 +90,7 @@ export async function contributeFromConcierge(questionText: string) {
 
     const { error: insertError } = await supabase.from("messages").insert({
       room_id: room.id,
-      content: `【AI相談室からの匿名知恵共有】\n${questionText.slice(0, 1000)}`,
+      content: `【AI相談室からの匿名ヒント共有】\n${questionText.slice(0, 1000)}`,
       user_id: user?.id || null, // Guest or properly anonymized
       is_system_bot: false, // We treat this as user-contributed insight for trust score propagation
     });

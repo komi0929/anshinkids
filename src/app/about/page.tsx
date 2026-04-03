@@ -6,11 +6,11 @@ import { ArrowLeft, Leaf, Check, Shield, ChevronRight, Sparkles } from "@/compon
 const STEPS = [
   {
     num: "1",
-    title: "みんなの声で話す・見る",
+    title: "トークルームで話す・見る",
     desc: "テーマごとに分かれた部屋で、体験談やおすすめ情報を読んだり、気軽に書き込んだりできます。",
     points: [
       "見るだけでもOK — ログインしなくても読めます",
-      "書き込みは自動消去 — 知恵はAIが永久保存",
+      "書き込みは自動消去 — ヒントはAIが永久保存",
       "匿名のニックネームで参加できます",
     ],
   },
@@ -38,7 +38,7 @@ const STEPS = [
 
 const SAFETY_POINTS = [
   { title: "匿名で参加できます", desc: "ニックネームで投稿。本名は出ません。" },
-  { title: "投稿は自動消去", desc: "発言が流れる心配なく、知恵はAIが永久保存します。" },
+  { title: "投稿は自動消去", desc: "発言が流れる心配なく、ヒントはAIが永久保存します。" },
   { title: "信頼できる情報づくり", desc: "多くの体験に基づく情報ほど信頼度が高く表示されます。" },
   { title: "当事者だけの安心空間", desc: "同じ悩みを持つ保護者同士で情報を共有します。" },
 ];
@@ -77,7 +77,7 @@ export default function AboutPage() {
           <Leaf className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-[22px] font-black leading-tight tracking-tight break-keep text-balance" style={{ color: "var(--color-text)" }}>
-          食物アレルギーの知恵を<br />みんなで、安心して
+          食物アレルギーのヒントを<br />みんなで、安心して
         </h2>
         <p className="text-[15px] font-medium mt-3 leading-[1.9] max-w-sm mx-auto" style={{ color: "var(--color-text-secondary)" }}>
           お子さまの食物アレルギーに悩むママ・パパが
@@ -95,7 +95,7 @@ export default function AboutPage() {
             明日、同じことで悩むどこかの親子にとっての
             <br />
             やさしい
-            <span className="font-extrabold" style={{ color: "var(--color-primary)" }}>「役立つ知恵」</span>
+            <span className="font-extrabold" style={{ color: "var(--color-primary)" }}>「役立つヒント」</span>
             に変わります。
           </p>
         </div>
@@ -202,7 +202,7 @@ export default function AboutPage() {
             📖 今すぐみんなのまとめを見てみる
           </Link>
           <Link href="/talk" className="btn-secondary w-full text-center block" id="go-to-talk-cta">
-            💬 みんなの声を見てみる
+            💬 トークルームを見てみる
           </Link>
           <Link href="/login" className="btn-secondary w-full text-center block" id="login-cta">
             LINEでログインして参加する

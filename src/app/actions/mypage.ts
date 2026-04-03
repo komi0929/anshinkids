@@ -1,12 +1,14 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { getImpactFeedback, getContributionStreak } from "./discover";
 import { getMyBookmarks } from "./wiki";
 
 export async function getFullMyPageData() {
+  noStore();
   try {
+
     const [profileRes, contribRes, impactRes, bookmarksRes, streakRes] = await Promise.all([
       getMyProfile().catch(() => ({ success: false, data: null })),
       getMyContributions().catch(() => ({ success: true, data: [] })),
@@ -14,6 +16,12 @@ export async function getFullMyPageData() {
       getMyBookmarks().catch(() => ({ success: false, data: [] })),
       getContributionStreak().catch(() => ({ success: false, data: null }))
     ]);
+    if (!profileRes.success && profileRes.error?.includes("ログイン")) {
+      return { success: false, error: "ログインが必要です", data: null };
+    } else if (!profileRes.success) {
+      return { success: false, error: profileRes.error || "プロフィールの取得に失敗しました", data: null };
+    }
+
     return {
       success: true,
       data: {
@@ -52,11 +60,11 @@ export async function getMyProfile() {
 
       const { data: newProfile, error: insertError } = await supabase
         .from("profiles")
-        .insert({
+        .upsert({
           id: user.id,
           display_name: displayName,
           avatar_url: avatarUrl,
-        })
+        }, { onConflict: "id" })
         .select("id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months, children_profiles, interests")
         .maybeSingle();
 

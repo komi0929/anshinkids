@@ -80,7 +80,7 @@ export default function LoginPage() {
               className="text-[15px] font-medium mt-2"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              食物アレルギーの知恵を、みんなでつくる
+              食物アレルギーのヒントを、みんなでつくる
             </p>
           </div>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
                 },
                 {
                   icon: <BookOpen className="w-5 h-5" />,
-                  title: "知恵に",
+                  title: "ヒントに",
                   sub: "未来へ残す",
                 },
               ].map((step, i) => (

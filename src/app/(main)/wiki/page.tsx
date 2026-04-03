@@ -221,11 +221,11 @@ export default function WikiPage() {
                 </div>
 
                 <h3 className="text-[19px] font-black text-[var(--color-text)] tracking-tight mb-2.5">
-                  AIが知恵を抽出しています
+                  AIがヒントを抽出しています
                 </h3>
                 
                 <p className="text-[13.5px] font-medium text-[var(--color-text-secondary)] leading-[1.8] max-w-[260px] mb-6">
-                  みんなの声に投稿された様々な体験から、役立つ情報だけを整理してWiki記事を自動生成します。
+                  トークルームに投稿された様々な体験から、役立つ情報だけを整理してWiki記事を自動生成します。
                 </p>
 
                 <Link
@@ -234,7 +234,7 @@ export default function WikiPage() {
                   id="go-to-talk-from-wiki"
                 >
                   <Sparkles className="w-4.5 h-4.5" />
-                  みんなの声を見てみる
+                  トークルームを見てみる
                 </Link>
               </div>
 

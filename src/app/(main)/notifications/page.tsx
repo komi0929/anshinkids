@@ -88,7 +88,7 @@ export default function NotificationsPage() {
           notifs.push({
             id: "welcome",
             type: "impact_milestone",
-            message: "あんしんキッズへようこそ！「みんなの声」で体験を共有して、最初の知恵をつくりましょう。",
+            message: "あんしんキッズへようこそ！「トークルーム」で体験を共有して、最初のヒントをつくりましょう。",
             dateStr: "システム通知",
             isRead: true,
             link: "/talk"

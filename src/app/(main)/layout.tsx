@@ -10,7 +10,7 @@ import { ImpactToast } from "@/components/ui/ImpactToast";
 
 const navItems = [
   { href: "/wiki", label: "まとめ", Icon: Book },
-  { href: "/talk", label: "みんなの声", Icon: MessageCircle },
+  { href: "/talk", label: "トークルーム", Icon: MessageCircle },
   { href: "/concierge", label: "AI相談", Icon: Sparkles },
   { href: "/mypage", label: "マイページ", Icon: User },
 ];

@@ -143,7 +143,7 @@ export async function getPersonalizedWikiEntries() {
     } else if (tagLabel) {
       personalizationLabel = `✨ ${tagLabel} をもつ方へ`;
     } else if (ageLabel) {
-      personalizationLabel = `✨ ${ageLabel} の知恵（一部抜粋）`;
+      personalizationLabel = `✨ ${ageLabel} のヒント（一部抜粋）`;
     }
 
     // Type for our queried data
@@ -524,11 +524,11 @@ export async function getImpactFeedback() {
     // Generate contextual impact message  
     let message: string;
     if (uniqueArticles >= 5 && thanks >= 10) {
-      message = `🌟 あなたの知恵は${uniqueArticles}件の記事に反映され、${thanks}人に感謝されています`;
+      message = `🌟 あなたのヒントは${uniqueArticles}件の記事に反映され、${thanks}人に感謝されています`;
     } else if (uniqueArticles >= 3) {
       message = `📖 あなたの体験が${uniqueArticles}件のまとめ記事に活かされています`;
     } else if (uniqueArticles >= 1) {
-      message = `💚 あなたの大切な体験が、みんなの知恵として役立っています！`;
+      message = `💚 あなたの大切な体験が、みんなのヒントとして役立っています！`;
     } else if (thanks > 0) {
       message = `❤️ ${thanks}人のパパ・ママがあなたのお声に「ありがとう」を送りました`;
     } else {
@@ -604,16 +604,16 @@ export async function getKnowledgeRipple(wikiSlug: string) {
     let maturityLabel: string;
     if (sourceCount >= 10 && trustScore >= 60) {
       maturityLevel = "authoritative";
-      maturityLabel = "🏆 権威ある知恵";
+      maturityLabel = "🏆 権威あるヒント";
     } else if (sourceCount >= 5 && trustScore >= 30) {
       maturityLevel = "established";
-      maturityLabel = "🌳 確立された知恵";
+      maturityLabel = "🌳 確立されたヒント";
     } else if (sourceCount >= 2) {
       maturityLevel = "growing";
-      maturityLabel = "🌿 成長中の知恵";
+      maturityLabel = "🌿 成長中のヒント";
     } else {
       maturityLevel = "seedling";
-      maturityLabel = "🌱 芽生えの知恵";
+      maturityLabel = "🌱 芽生えのヒント";
     }
 
     return {

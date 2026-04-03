@@ -10,12 +10,12 @@ export const metadata = {
 const steps = [
   {
     number: 1,
-    title: "みんなの声で体験をシェア",
+    title: "トークルームで体験をシェア",
     description:
       "テーマ別のトークルームで、日々の悩みや発見を気軽にお話しできます。「毎日のごはん」「外食・お出かけ」など、生活シーンに合ったテーマを選んでタップするだけ。",
     tip: "あなたのお声は一定時間でリセットされるので、気兼ねなくお話しできます。会話から生まれた体験はAIが「みんなのまとめ」に整理します。",
     image: "/guide-talk.png",
-    alt: "みんなの声 - テーマ一覧画面",
+    alt: "トークルーム - テーマ一覧画面",
     color: "var(--color-primary)",
   },
   {
@@ -88,7 +88,7 @@ export default function GuidePage() {
               <MessageCircle className="w-5 h-5 text-[var(--color-primary)]" />
             </div>
             <p className="text-[11px] font-bold text-[var(--color-text)]">話す</p>
-            <p className="text-[9px] text-[var(--color-subtle)]">みんなの声</p>
+            <p className="text-[9px] text-[var(--color-subtle)]">トークルーム</p>
           </div>
           <ArrowRight className="w-4 h-4 text-[var(--color-muted)] flex-shrink-0" />
           <div className="flex-1">
@@ -96,7 +96,7 @@ export default function GuidePage() {
               <Sparkles className="w-5 h-5 text-[var(--color-success)]" />
             </div>
             <p className="text-[11px] font-bold text-[var(--color-text)]">AIが編集</p>
-            <p className="text-[9px] text-[var(--color-subtle)]">会話から知恵に</p>
+            <p className="text-[9px] text-[var(--color-subtle)]">会話からヒントに</p>
           </div>
           <ArrowRight className="w-4 h-4 text-[var(--color-muted)] flex-shrink-0" />
           <div className="flex-1">
@@ -186,13 +186,13 @@ export default function GuidePage() {
             さっそく使ってみよう 🌿
           </h2>
           <p className="text-[12px] text-white/80 mb-4 leading-relaxed">
-            ログインなしでも、みんなの声とまとめ記事は<br />今すぐ読めます。
+            ログインなしでも、トークルームとまとめ記事は<br />今すぐ読めます。
           </p>
           <Link
             href="/talk"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[var(--color-primary)] font-bold text-[14px] shadow-sm hover:shadow-md transition-all"
           >
-            みんなの声を見る
+            トークルームを見る
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

@@ -224,7 +224,7 @@ export default function TalkThemeHubPage() {
                 まだ話題がありません
               </h3>
               <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed max-w-[260px]">
-                上のボタンから最初の話題を投稿してみませんか？みんなの知恵が集まるきっかけになります
+                上のボタンから最初の話題を投稿してみませんか？みんなのヒントが集まるきっかけになります
               </p>
             </div>
           ) : (

@@ -41,7 +41,7 @@ export async function seedMegaWikis() {
           .insert({
             slug: megaWikiSlug,
             title: `【総合】${theme.name}`,
-            summary: `${theme.name}に関するみんなの知恵袋・体験談の総合まとめです。`,
+            summary: `${theme.name}に関するみんなのヒント集・体験談の総合まとめです。`,
             category: theme.name,
             theme_slug: theme.slug,
             is_mega_wiki: true,

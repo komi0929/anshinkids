@@ -100,7 +100,7 @@ export async function GET(request: Request) {
                 alignItems: 'center',
               }}
             >
-              教えて！みんなの知恵
+              教えて！みんなのヒント
             </div>
 
             {/* Text Content */}

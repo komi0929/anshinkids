@@ -100,7 +100,7 @@ export async function askConcierge(
   // Build prompt with RAG context + social proof
   const totalSources = wikiResults.reduce((sum, w) => sum + ((w.source_count as number) || 0), 0);
   const sourceProof = totalSources > 0
-    ? `\n\n## 重要な回答スタイル:\n回答の冒頭で「この情報は${totalSources}件の保護者の実体験にもとづいています」と伝えてください。\n具体的な体験の引用がある場合は「ある保護者の方は〜」のように紹介してください。\n回答の最後に「このテーマについてあなたの体験もぜひトークルームで共有してください。みんなの知恵がさらに育ちます」と添えてください。`
+    ? `\n\n## 重要な回答スタイル:\n回答の冒頭で「この情報は${totalSources}件の保護者の実体験にもとづいています」と伝えてください。\n具体的な体験の引用がある場合は「ある保護者の方は〜」のように紹介してください。\n回答の最後に「このテーマについてあなたの体験もぜひトークルームで共有してください。みんなのヒントがさらに育ちます」と添えてください。`
     : "";
 
   // Limit history sent to the LLM to the last 10 messages to prevent context overflow.

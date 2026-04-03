@@ -52,7 +52,7 @@ interface WikiEntryData {
 
 function getTrustLevel(score: number) {
   if (score >= 70) return { label: "定番情報", className: "trust-high", desc: "たくさんの保護者から共感されています" };
-  if (score >= 40) return { label: "役立つ知恵", className: "trust-medium", desc: "複数の体験からまとまりました" };
+  if (score >= 40) return { label: "役立つヒント", className: "trust-medium", desc: "複数の体験からまとまりました" };
   return { label: "新しい声", className: "trust-low", desc: "まだ体験が集まりはじめたばかりです" };
 }
 
@@ -197,9 +197,9 @@ export default function WikiDetailPage() {
             <BookOpen className="w-8 h-8 text-[var(--color-primary)]" />
           </div>
           <h3>この記事はまだ存在しません</h3>
-          <p>みんなの声で体験を共有すると、AIが自動的に記事を作成します。</p>
+          <p>トークルームで体験を共有すると、AIが自動的に記事を作成します。</p>
           <Link href="/talk" className="btn-primary mt-6 inline-flex items-center gap-2" id="go-to-talk-from-wiki-detail">
-            💬 みんなの声で話してみる
+            💬 トークルームで話してみる
           </Link>
         </div>
       </div>
@@ -477,7 +477,7 @@ export default function WikiDetailPage() {
           <div className="mb-6">
             <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
               <MessageCircle className="w-4 h-4 text-[var(--color-subtle)]" />
-              この知恵のもとになった声
+              このヒントのもとになった声
             </h3>
             <div className="space-y-3">
               {entry.wiki_sources.map((src, i) => (
@@ -497,7 +497,7 @@ export default function WikiDetailPage() {
             </div>
             <div className="flex-1">
               <p className="text-[12px] text-[var(--color-text)] font-bold leading-snug">
-                この知恵をもっと充実させませんか？
+                このヒントをもっと充実させませんか？
               </p>
               <p className="text-[10px] text-[var(--color-subtle)] mt-0.5">
                 トークルームで体験をシェアすると、あなたの声がここに抽出されてみんなの役に立ちます。
