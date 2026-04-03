@@ -43,6 +43,7 @@ interface Message {
   author_name?: string;
   author_avatar?: string | null;
   author_trust?: number;
+  author_allergens?: string[];
 }
 
 interface RoomInfo {
@@ -174,6 +175,7 @@ export default function TopicChatPage() {
       author_name: "あなた",
       author_avatar: null,
       author_trust: 0,
+      author_allergens: [],
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
@@ -307,18 +309,24 @@ export default function TopicChatPage() {
       );
     }
 
-    if (messages.length === 0) {
+      if (messages.length === 0) {
       return (
-        <div className="py-16 flex flex-col items-center text-center">
+        <div className="py-16 flex flex-col items-center text-center px-4">
           <div className="w-16 h-16 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center mb-4">
             <MessageCircle className="w-8 h-8 text-[var(--color-primary)]" style={{ opacity: 0.4 }} />
           </div>
-          <h3 className="text-[16px] font-bold text-[var(--color-text)] break-keep text-balance px-4">
+          <h3 className="text-[16px] font-bold text-[var(--color-text)] break-keep text-balance px-4 mb-2">
             {topicInfo?.title}
           </h3>
-          <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed max-w-[240px]">
-            最初の投稿をしてみませんか？
-          </p>
+          <div className="bg-white p-4 rounded-2xl border border-[var(--color-border-light)] max-w-sm w-full shadow-sm">
+            <p className="text-[13px] font-bold text-[var(--color-text)] mb-2">💡 最初の声を届けてみませんか？</p>
+            <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed text-left">
+              たとえば…<br />
+              ・「うちの子は卵アレルギーなのですが、皆さんはどうしてますか？」<br />
+              ・「最近、こんなアレルギー対応のレシピを見つけました」<br />
+              あなたのささいな疑問や体験が、他の親御さんの「安心」に繋がります🍀
+            </p>
+          </div>
         </div>
       );
     }
@@ -383,10 +391,16 @@ export default function TopicChatPage() {
                 {renderAvatar(msg.author_avatar || null, msg.user_id, msg.author_name || "参加者")}
               </div>
               <div className="flex flex-col items-start">
-                <div className="flex items-center gap-1.5 ml-1 mb-0.5">
-                  <span className="text-[11px] font-bold text-[var(--color-primary)]">
+                <div className="flex items-center gap-1.5 ml-1 mb-0.5 flex-wrap">
+                  <span className="text-[12px] font-bold text-[var(--color-primary)]">
                     {msg.author_name || "参加者"}
                   </span>
+                  {msg.author_allergens && msg.author_allergens.length > 0 && (
+                    <span className="text-[10px] bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">
+                      {msg.author_allergens.slice(0, 2).join(", ")}
+                      {msg.author_allergens.length > 2 ? "..." : ""}
+                    </span>
+                  )}
                 </div>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
                   {msg.content}

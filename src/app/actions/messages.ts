@@ -92,7 +92,8 @@ export async function getTopicMessages(topicId: string) {
         profiles:user_id (
           display_name,
           avatar_url,
-          trust_score
+          trust_score,
+          allergen_tags
         )
       `)
       .eq("topic_id", topicId)
@@ -112,13 +113,14 @@ export async function getTopicMessages(topicId: string) {
       if (thanksData) thankedIds = thanksData.map((t) => t.message_id);
     }
     const enhancedData = recentData.map((msg) => {
-      const prof = msg.profiles as unknown as { display_name?: string, avatar_url?: string, trust_score?: number };
+      const prof = msg.profiles as unknown as { display_name?: string, avatar_url?: string, trust_score?: number, allergen_tags?: string[] };
       return {
         ...msg,
         has_thanked: thankedIds.includes(msg.id),
         author_name: prof?.display_name || "参加者",
         author_avatar: prof?.avatar_url || null,
         author_trust: prof?.trust_score || 0,
+        author_allergens: prof?.allergen_tags || [],
         profiles: undefined
       };
     });
