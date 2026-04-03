@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getWikiEntry } from "@/app/actions/wiki";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://anshin-kids.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.anshin.kids";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;

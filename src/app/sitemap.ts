@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { getTalkRooms } from "@/app/actions/messages";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://anshin-kids.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.anshin.kids";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [

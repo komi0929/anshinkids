@@ -9,7 +9,7 @@ const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto-sans-jp" 
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.anshin.kids";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
