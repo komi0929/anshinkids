@@ -88,12 +88,13 @@ export async function runBatchExtraction() {
       return { processed: 0 };
     }
 
-    // 2. ルームIDごとのグルーピング
+    // 2. ルームIDごと→トピックIDごとのグルーピング
     const messageTexts = allMessages.map((m: Record<string, unknown>) => ({
       id: String(m.id),
       user_id: String(m.user_id),
       content: String(m.content),
       room_id: String(m.room_id),
+      topic_id: m.topic_id ? String(m.topic_id) : null,
       trust_score: (m.profiles as Record<string, unknown>)?.trust_score || 0,
     }));
 
@@ -104,10 +105,20 @@ export async function runBatchExtraction() {
       for (const r of rooms) roomIdToSlug[r.id] = r.slug;
     }
 
+    // トピック名を取得してコンテキストに付与
+    const topicIds = [...new Set(messageTexts.map(m => m.topic_id).filter(Boolean))] as string[];
+    const topicTitles: Record<string, string> = {};
+    if (topicIds.length > 0) {
+      const { data: topics } = await supabase.from("talk_topics").select("id, title").in("id", topicIds);
+      if (topics) {
+        for (const t of topics) topicTitles[t.id] = t.title;
+      }
+    }
+
     const messagesByRoom: Record<string, typeof messageTexts> = {};
     for (const m of messageTexts) {
       const slug = roomIdToSlug[m.room_id];
-      if (!slug || !THEME_BY_SLUG[slug]) continue; // 既存の8テーマ以外は除外
+      if (!slug || !THEME_BY_SLUG[slug]) continue;
       if (!messagesByRoom[slug]) messagesByRoom[slug] = [];
       messagesByRoom[slug].push(m);
     }
@@ -141,7 +152,10 @@ export async function runBatchExtraction() {
         // RAG Limit: Truncate existing headings to max 150 items to prevent context bloom
         const existingHeadings = currentSections.slice(0, 150).map(s => `- ${s.heading} (${s.items.length}件のアイテム)`).join("\n");
         // RAG Limit: strictly limit message bounds (Gemini flash supports 1M, but keep it tight for RAG coherence)
-        let messagesText = chunk.map(m => `[ID:${m.id}] ${m.content}`).join("\n");
+        let messagesText = chunk.map(m => {
+          const topicLabel = m.topic_id && topicTitles[m.topic_id] ? `[トピック:${topicTitles[m.topic_id]}]` : '';
+          return `[ID:${m.id}] ${topicLabel} ${m.content}`;
+        }).join("\n");
         if (messagesText.length > 50000) messagesText = messagesText.slice(0, 50000) + "\n...[TRUNCATED]";
 
         const prompt = getExtractionPrompt(roomSlug, messagesText, existingHeadings);
@@ -242,16 +256,28 @@ ${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
 
            const roomId = Object.keys(roomIdToSlug).find(id => roomIdToSlug[id] === roomSlug);
            if (roomId) {
-             await supabase.from("messages").insert({
-               room_id: roomId,
-               content: `📖 知恵袋を更新しました！\n${facMessage}`,
-               is_system_bot: true,
-             });
+              // 最も活発なトピックにファシリテーションメッセージを投下
+              const topicCounts: Record<string, number> = {};
+              for (const m of roomMessages) {
+                if (m.topic_id) topicCounts[m.topic_id] = (topicCounts[m.topic_id] || 0) + 1;
+              }
+              const bestTopicId = Object.entries(topicCounts)
+                .sort(([,a], [,b]) => b - a)[0]?.[0] || null;
 
-             // 部屋の寿命を延長（ファシリテーションによって復活させる）
-             const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
-             await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", roomId);
-           }
+              await supabase.from("messages").insert({
+                room_id: roomId,
+                topic_id: bestTopicId,
+                content: `📖 知恵袋を更新しました！\n${facMessage}`,
+                is_system_bot: true,
+              });
+
+              const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+              if (bestTopicId) {
+                await supabase.from("messages").update({ expires_at: newExpiry }).eq("topic_id", bestTopicId);
+              } else {
+                await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", roomId);
+              }
+            }
         } catch (facErr) {
            console.error(`[Batch] Facilitator error for ${roomSlug}`, facErr);
         }

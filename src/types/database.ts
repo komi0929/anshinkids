@@ -53,6 +53,7 @@ export interface Database {
           room_id: string
           creator_id: string | null
           title: string
+          last_message_preview: string | null
           message_count: number
           is_active: boolean
           created_at: string
