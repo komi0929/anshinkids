@@ -183,36 +183,6 @@ async function TalkContent() {
         </div>
       )}
 
-      {/* === Icebreaker / Talk Examples === */}
-      <div className="px-5 mb-6 slide-up" style={{ animationDelay: '100ms' }}>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm bg-[var(--color-surface-warm)] px-1 py-0.5 rounded border border-[var(--color-border-light)] shadow-inner-soft">💡</span>
-          <h2 className="text-[14px] font-bold break-keep text-balance" style={{ color: 'var(--color-text)' }}>話題のきっかけ（タップですぐに話せます）</h2>
-        </div>
-        <div className="grid grid-cols-1 gap-2.5">
-          <Link
-            href="/talk/products?topic=最近使ってよかった市販のおやつ"
-            className="card-elevated px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group"
-          >
-            <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">🛒 最近使ってよかった市販のおやつ</span>
-            <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">話す</span>
-          </Link>
-          <Link
-            href="/talk/eating-out?topic=外食チェーンのアレルギー対応、みんなどうしてる？"
-            className="card-elevated px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group"
-          >
-            <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">🍽️ 外食チェーンのアレルギー対応について</span>
-            <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">話す</span>
-          </Link>
-          <Link
-            href="/talk/school-life?topic=保育園・幼稚園への対応について"
-            className="card-elevated px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group"
-          >
-            <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">🏫 保育園・幼稚園への対応について</span>
-            <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">話す</span>
-          </Link>
-        </div>
-      </div>
 
       {/* Info chip */}
       <div className="px-5 mb-5">

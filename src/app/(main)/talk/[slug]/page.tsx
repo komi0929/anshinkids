@@ -11,6 +11,7 @@ import {
 import { ArrowLeft, MessageCircle, Plus } from "@/components/icons";
 import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
+import { THEME_PROMPTS } from "@/lib/theme-prompts";
 
 interface RoomInfo {
   id: string;
@@ -54,8 +55,24 @@ export default function TalkThemeHubPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [newTopicTitle, setNewTopicTitle] = useState(initialTopic || "");
   const [showCreateForm, setShowCreateForm] = useState(!!initialTopic);
+  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
 
   useEffect(() => {
+    async function loadTopics(roomId: string) {
+      setIsLoading(true);
+      const res = await getTalkTopics(roomId);
+      if (res.success && res.data) {
+        const allTopics = res.data as Topic[];
+        setTopics(allTopics);
+        
+        const themePrompts = THEME_PROMPTS[slug] || [];
+        const nonOverlapping = themePrompts.filter(p => !allTopics.some(t => t.title === p));
+        const shuffled = [...nonOverlapping].sort(() => 0.5 - Math.random());
+        setSuggestedPrompts(shuffled.slice(0, 3));
+      }
+      setIsLoading(false);
+    }
+
     async function init() {
       const result = await getTalkRoomBySlug(slug);
       if (result.success && result.data && result.data.id !== "temp-id") {
@@ -67,15 +84,6 @@ export default function TalkThemeHubPage() {
     }
     init();
   }, [slug]);
-
-  async function loadTopics(roomId: string) {
-    setIsLoading(true);
-    const res = await getTalkTopics(roomId);
-    if (res.success && res.data) {
-      setTopics(res.data as Topic[]);
-    }
-    setIsLoading(false);
-  }
 
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,8 +130,39 @@ export default function TalkThemeHubPage() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 py-4 space-y-4 max-w-2xl mx-auto">
+          {/* Conversation Starters / Icebreakers */}
+          {!isLoading && suggestedPrompts.length > 0 && (
+            <div className="mb-2 slide-up" style={{ animationDelay: '50ms' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm bg-[var(--color-surface-warm)] px-1 py-0.5 rounded border border-[var(--color-border-light)] shadow-inner-soft">💡</span>
+                <h2 className="text-[14px] font-bold text-[var(--color-text)]">話題のきっかけ（タップですぐに話せます）</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-2.5">
+                {suggestedPrompts.map((prompt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setNewTopicTitle(prompt);
+                      setShowCreateForm(true);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="card-elevated text-left px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group bg-white w-full"
+                  >
+                    <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors pr-2 break-keep text-balance line-clamp-1">
+                      {prompt}
+                    </span>
+                    <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      話す
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mt-6">
             <h2 className="text-[14px] font-bold text-[var(--color-text)]">
               話題一覧
             </h2>
