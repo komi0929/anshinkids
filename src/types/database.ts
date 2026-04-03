@@ -47,10 +47,26 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['talk_rooms']['Row']>
         Relationships: any[]
       }
+      talk_topics: {
+        Row: {
+          id: string
+          room_id: string
+          creator_id: string | null
+          title: string
+          message_count: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['talk_topics']['Row']>
+        Update: Partial<Database['public']['Tables']['talk_topics']['Row']>
+        Relationships: any[]
+      }
       messages: {
         Row: {
           id: string
           room_id: string
+          topic_id: string | null
           user_id: string | null
           content: string
           is_system_bot: boolean
