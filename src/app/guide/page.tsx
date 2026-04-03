@@ -67,7 +67,7 @@ export default function GuidePage() {
             <Leaf className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-[22px] font-extrabold text-[var(--color-text)] tracking-tight">
+            <h1 className="text-[22px] font-extrabold text-[var(--color-text)] tracking-tight break-keep text-balance">
               使い方ガイド
             </h1>
             <p className="text-[12px] text-[var(--color-subtle)]">
@@ -79,7 +79,7 @@ export default function GuidePage() {
 
       {/* How the loop works */}
       <div className="mx-5 mb-6 p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] shadow-sm">
-        <h2 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3">
+        <h2 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 break-keep text-balance">
           🔄 あんしんキッズの仕組み
         </h2>
         <div className="flex items-center justify-between gap-2 text-center">
@@ -115,19 +115,19 @@ export default function GuidePage() {
 
       {/* Feature Highlights (UX & Growth) */}
       <div className="mx-5 mb-8 p-5 rounded-2xl bg-[#FBF8F4] border border-[var(--color-border-light)] shadow-sm">
-        <h2 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-1.5">
+        <h2 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-1.5 break-keep text-balance">
           <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
           あんしんキッズのやさしい特徴
         </h2>
         <div className="space-y-4">
           <div>
-            <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1">💚 「ありがとう」が目に見える資産に</h3>
+            <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1 break-keep text-balance">💚 「ありがとう」が目に見える資産に</h3>
             <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
               トークルームで共感を集めたり、知恵袋に体験を追加すると「ありがとう」が届きます。あなたの日々の奮闘が、コミュニティを守る力としてマイページに記録され、お互いの助け合いがひと目で分かります。
             </p>
           </div>
           <div>
-            <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1">⚡ 病院の地下でもサクサク安心</h3>
+            <h3 className="text-[12px] font-bold text-[var(--color-text)] mb-1 break-keep text-balance">⚡ 病院の地下でもサクサク安心</h3>
             <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
               最新の超高速技術を搭載し、画面の読み込み待ち時間を「ゼロ」にしました。一度開いた知恵袋は裏で自動保存されるため、電波の悪い病院の待合室や災害時でも、お守りのようにサクサク閲覧できます。
             </p>
@@ -147,7 +147,7 @@ export default function GuidePage() {
               >
                 {step.number}
               </div>
-              <h2 className="text-[16px] font-extrabold text-[var(--color-text)]">
+              <h2 className="text-[16px] font-extrabold text-[var(--color-text)] break-keep text-balance">
                 {step.title}
               </h2>
             </div>
@@ -182,7 +182,7 @@ export default function GuidePage() {
       {/* CTA */}
       <div className="px-5 pb-10">
         <div className="p-5 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] text-center shadow-lg">
-          <h2 className="text-[17px] font-extrabold text-white mb-2">
+          <h2 className="text-[17px] font-extrabold text-white mb-2 break-keep text-balance">
             さっそく使ってみよう 🌿
           </h2>
           <p className="text-[12px] text-white/80 mb-4 leading-relaxed">

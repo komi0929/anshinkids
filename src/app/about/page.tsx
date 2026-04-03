@@ -65,7 +65,7 @@ export default function AboutPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-[16px] font-extrabold" style={{ color: "var(--color-text)" }}>
+        <h1 className="text-[16px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
           あんしんキッズとは
         </h1>
       </div>
@@ -76,7 +76,7 @@ export default function AboutPage() {
           style={{ background: "var(--color-primary)" }}>
           <Leaf className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-[22px] font-black leading-tight tracking-tight" style={{ color: "var(--color-text)" }}>
+        <h2 className="text-[22px] font-black leading-tight tracking-tight break-keep text-balance" style={{ color: "var(--color-text)" }}>
           食物アレルギーの知恵を<br />みんなで、安心して
         </h2>
         <p className="text-[15px] font-medium mt-3 leading-[1.9] max-w-sm mx-auto" style={{ color: "var(--color-text-secondary)" }}>
@@ -104,7 +104,7 @@ export default function AboutPage() {
       {/* こんな方に */}
       <div className="px-5 mb-8">
         <div className="card p-6">
-          <h3 className="text-[17px] font-extrabold mb-5" style={{ color: "var(--color-text)" }}>
+          <h3 className="text-[17px] font-extrabold mb-5 break-keep text-balance" style={{ color: "var(--color-text)" }}>
             こんなとき、使ってください
           </h3>
           <ul className="space-y-4">
@@ -120,7 +120,7 @@ export default function AboutPage() {
 
       {/* 3 Steps */}
       <div className="px-5 mb-3">
-        <h3 className="text-[17px] font-extrabold" style={{ color: "var(--color-text)" }}>
+        <h3 className="text-[17px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
           使い方はかんたん3ステップ
         </h3>
       </div>
@@ -134,7 +134,7 @@ export default function AboutPage() {
                   style={{ background: "var(--color-primary)", color: "white" }}>
                   {step.num}
                 </div>
-                <h4 className="text-[16px] font-extrabold" style={{ color: "var(--color-text)" }}>
+                <h4 className="text-[16px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
                   {step.title}
                 </h4>
               </div>
@@ -162,7 +162,7 @@ export default function AboutPage() {
       {/* Safety Points */}
       <div className="px-5 mb-8">
         <div className="card p-6">
-          <h3 className="text-[17px] font-extrabold mb-5" style={{ color: "var(--color-text)" }}>
+          <h3 className="text-[17px] font-extrabold mb-5 break-keep text-balance" style={{ color: "var(--color-text)" }}>
             安心して使えるポイント
           </h3>
           <div className="space-y-4">
@@ -173,7 +173,7 @@ export default function AboutPage() {
                   <Shield size={18} style={{ color: "var(--color-primary)" }} />
                 </div>
                 <div>
-                  <h4 className="text-[14px] font-bold" style={{ color: "var(--color-text)" }}>{title}</h4>
+                  <h4 className="text-[14px] font-bold break-keep text-balance" style={{ color: "var(--color-text)" }}>{title}</h4>
                   <p className="text-[13px] font-medium mt-0.5 leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{desc}</p>
                 </div>
               </div>
@@ -194,7 +194,7 @@ export default function AboutPage() {
 
       {/* CTA */}
       <div className="px-5 pb-8">
-        <h3 className="text-[18px] font-extrabold text-center mb-5" style={{ color: "var(--color-text)" }}>
+        <h3 className="text-[18px] font-extrabold text-center mb-5 break-keep text-balance" style={{ color: "var(--color-text)" }}>
           さっそく使ってみましょう！
         </h3>
         <div className="space-y-3 max-w-sm mx-auto">
@@ -219,7 +219,7 @@ export default function AboutPage() {
           <div className="w-12 h-12 mx-auto mb-3 rounded-[16px] bg-[var(--color-primary)]/10 flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
           </div>
-          <h3 className="text-[17px] font-extrabold text-[var(--color-text)] mb-2">
+          <h3 className="text-[17px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">
             開発者・協力者の方へ
           </h3>
           <p className="text-[13px] font-medium text-[var(--color-text-secondary)] leading-relaxed mb-5">

@@ -88,7 +88,7 @@ async function TalkContent() {
     <div className="fade-in w-full max-w-2xl mx-auto pb-12">
       {/* Clean Header */}
       <div className="px-5 pt-8 pb-5">
-        <h1 className="text-[26px] font-black tracking-tight leading-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
+        <h1 className="text-[26px] font-black tracking-tight leading-tight break-keep text-balance" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
           みんなの声
         </h1>
         <p className="text-[14px] font-medium mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
@@ -159,7 +159,7 @@ async function TalkContent() {
         <div className="px-4 mb-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm">🔥</span>
-            <h2 className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>いま盛り上がっている</h2>
+            <h2 className="text-[14px] font-bold break-keep text-balance" style={{ color: 'var(--color-text)' }}>いま盛り上がっている</h2>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {trending.map((t) => (
@@ -221,7 +221,7 @@ async function TalkContent() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-[15px] group-hover:text-[var(--color-primary)] transition-colors" style={{ color: 'var(--color-text)' }}>
+                    <h3 className="font-bold text-[15px] group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance" style={{ color: 'var(--color-text)' }}>
                       {room.name}
                     </h3>
                     {isRecommended && (
@@ -247,7 +247,7 @@ async function TalkContent() {
       {personalizedWiki.length > 0 && (
         <div className="px-4 pb-4">
           <div className="flex items-center gap-2 mb-2.5 px-1">
-            <h2 className="text-[14px] font-bold" style={{ color: 'var(--color-text)' }}>
+            <h2 className="text-[14px] font-bold break-keep text-balance" style={{ color: 'var(--color-text)' }}>
               {personalizationLabel || (isPersonalized ? "✨ あなたへのおすすめ記事" : "📖 人気の知恵袋記事")}
             </h2>
           </div>
@@ -264,7 +264,7 @@ async function TalkContent() {
                     📖
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-[14px] font-bold group-hover:text-[var(--color-primary)] transition-colors truncate" style={{ color: 'var(--color-text)' }}>{entry.title}</h4>
+                    <h4 className="text-[14px] font-bold group-hover:text-[var(--color-primary)] transition-colors truncate break-keep text-balance" style={{ color: 'var(--color-text)' }}>{entry.title}</h4>
                     <p className="text-[12px] font-medium truncate mt-0.5" style={{ color: 'var(--color-subtle)' }}>{entry.summary}</p>
                   </div>
                   <span className="text-[11px] font-semibold flex-shrink-0" style={{ color: 'var(--color-muted)' }}>{entry.source_count}件</span>

@@ -190,7 +190,7 @@ export default function WikiDetailPage() {
           <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors">
             <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
           </Link>
-          <h1 className="text-[15px] font-bold text-[var(--color-text)]">記事が見つかりません</h1>
+          <h1 className="text-[15px] font-bold text-[var(--color-text)] break-keep text-balance">記事が見つかりません</h1>
         </div>
         <div className="empty-state">
           <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2">
@@ -222,7 +222,7 @@ export default function WikiDetailPage() {
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-[15px] font-bold text-[var(--color-text)] truncate">{entry.title}</h1>
+          <h1 className="text-[15px] font-bold text-[var(--color-text)] truncate break-keep text-balance">{entry.title}</h1>
           <p className="text-[10px] text-[var(--color-subtle)]">{entry.category}</p>
         </div>
       </div>
@@ -300,7 +300,7 @@ export default function WikiDetailPage() {
           </div>
           <div className="flex items-center gap-1.5 relative z-10 mb-1">
             <span className="text-[16px]">👩‍⚕️</span>
-            <h3 className="text-[13px] font-extrabold text-blue-900 tracking-tight">公式からの道しるべ</h3>
+            <h3 className="text-[13px] font-extrabold text-blue-900 tracking-tight break-keep text-balance">公式からの道しるべ</h3>
             <span className="ml-auto text-[9px] font-bold bg-white text-blue-600 px-2 py-0.5 rounded-full shadow-sm">最新ガイドライン</span>
           </div>
           <p className="text-[10px] text-blue-800 leading-relaxed font-medium relative z-10 mb-1">
@@ -329,7 +329,7 @@ export default function WikiDetailPage() {
           <div className="space-y-6 mb-6">
             {entry.sections.map((sec, i) => (
               <div key={i} className="card-elevated p-5">
-                <h2 className="text-[16px] font-black tracking-tight mb-4 flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
+                <h2 className="text-[16px] font-black tracking-tight mb-4 flex items-center gap-2 break-keep text-balance" style={{ color: 'var(--color-primary)' }}>
                   <span className="w-1.5 h-4 bg-[var(--color-primary)] rounded-full inline-block"></span>
                   {sec.heading}
                 </h2>
@@ -337,7 +337,7 @@ export default function WikiDetailPage() {
                   {sec.items.map((item, j) => (
                     <div key={j} className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
                       <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-[14px] font-bold text-[var(--color-text)] leading-tight flex-1 pr-2">{item.title}</h3>
+                        <h3 className="text-[14px] font-bold text-[var(--color-text)] leading-tight flex-1 pr-2 break-keep text-balance">{item.title}</h3>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           {item.is_recommended && (
                             <span className="text-[10px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-1 rounded-full shadow-sm mr-1">
@@ -455,7 +455,7 @@ export default function WikiDetailPage() {
         {/* Sources Traceability */}
         {entry.wiki_sources && entry.wiki_sources.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+            <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
               <MessageCircle className="w-4 h-4 text-[var(--color-subtle)]" />
               この知恵のもとになった声
             </h3>

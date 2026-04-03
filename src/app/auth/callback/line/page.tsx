@@ -95,7 +95,7 @@ export default function LineCallbackPage() {
     <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-[var(--color-bg)]">
       <div
         className={`w-20 h-20 mb-6 rounded-2xl flex items-center justify-center ${
-          hasError ? "bg-red-500" : "bg-[#06C755] animate-pulse"
+          hasError ? "bg-[var(--color-danger-light)]00" : "bg-[#06C755] animate-pulse"
         }`}
       >
         {hasError ? (
@@ -109,7 +109,7 @@ export default function LineCallbackPage() {
           </svg>
         )}
       </div>
-      <p className={`font-medium ${hasError ? "text-red-500" : "text-[var(--color-text)]"}`}>
+      <p className={`font-medium ${hasError ? "text-[var(--color-danger)]" : "text-[var(--color-text)]"}`}>
         {status}
       </p>
       {hasError && (

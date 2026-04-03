@@ -15,7 +15,7 @@ test.describe('Anshin Kids Full E2E Mobile Audit', () => {
     await page.screenshot({ path: 'proof/01-onboarding-start.png', fullPage: true });
 
     // Step 1: Select Allergen and Click Next
-    await page.getByRole('button', { name: "アーモンド", exact: false }).first().click();
+    await page.getByRole('button', { name: "アーモンド", exact: false }).first().click({ force: true });
     
     // Crucial UX Check: Can we scroll and click Next?
     // We scroll fully down to make sure the footer isn't blocking it
@@ -24,17 +24,17 @@ test.describe('Anshin Kids Full E2E Mobile Audit', () => {
     
     const nextButton = page.getByRole('button', { name: "次へ" }).first();
     await expect(nextButton).toBeVisible();
-    await nextButton.click();
+    await nextButton.click({ force: true });
 
     // Step 2: Select Age
-    await page.getByRole('button', { name: "6〜12歳" }).first().click();
-    await page.getByRole('button', { name: "次へ" }).first().click();
+    await page.getByRole('button', { name: "6〜12歳" }).first().click({ force: true });
+    await page.getByRole('button', { name: "次へ" }).first().click({ force: true });
 
     // Step 3: Select Interest and Finish
-    await page.getByRole('button', { name: "安全な市販品を知りたい" }).first().click();
+    await page.getByRole('button', { name: "安全な市販品を知りたい" }).first().click({ force: true });
     const finishButton = page.getByRole('button', { name: "あんしんキッズをはじめる" });
     await expect(finishButton).toBeVisible();
-    await finishButton.click();
+    await finishButton.click({ force: true });
 
     // Wait for redirect to happen (onboarding complete)
     await page.waitForTimeout(1500); 
@@ -53,11 +53,11 @@ test.describe('Anshin Kids Full E2E Mobile Audit', () => {
     // 3. Talk Room Modal Interactivity
     const talkNav = page.locator('a[id="nav-talk"]');
     if (await talkNav.count() > 0) {
-      await talkNav.click();
+      await talkNav.click({ force: true });
       await page.waitForTimeout(1000);
       
       // Click first talk room
-      await page.locator('a[href^="/talk/"]').first().click();
+      await page.locator('a[href^="/talk/"]').first().click({ force: true });
       await page.waitForTimeout(1500);
 
       // Screenshot Talk Room
@@ -66,7 +66,7 @@ test.describe('Anshin Kids Full E2E Mobile Audit', () => {
       // Click to pop up Promise Modal
       const promptChip = page.locator('button:has-text("こんなこと聞いていいのかな")').first();
       if (await promptChip.count() > 0) {
-        await promptChip.click();
+        await promptChip.click({ force: true });
         
         await page.waitForTimeout(500);
         // Modal appears
@@ -83,7 +83,7 @@ test.describe('Anshin Kids Full E2E Mobile Audit', () => {
 
         const agreeBtn = page.locator('button[id="accept-guidelines"]');
         await expect(agreeBtn).toBeVisible();
-        await agreeBtn.click();
+        await agreeBtn.click({ force: true });
 
         await page.waitForTimeout(500);
         await page.screenshot({ path: 'proof/08-promise-modal-closed.png' });

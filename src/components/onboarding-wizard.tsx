@@ -223,7 +223,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
           <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-lg scale-in">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-[20px] font-extrabold text-[var(--color-text)] mb-2">準備完了！</h2>
+          <h2 className="text-[20px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">準備完了！</h2>
           <p className="text-[14px] text-[var(--color-subtle)]">あなたに合った情報をお届けします 🌿</p>
         </div>
       </div>
@@ -254,7 +254,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
                 <Leaf className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-[18px] font-extrabold text-[var(--color-text)]">
+                <h1 className="text-[18px] font-extrabold text-[var(--color-text)] break-keep text-balance">
                   {step === 0 ? "お子さまのアレルゲン設定" : "お子さまの年齢設定"}
                 </h1>
                 <p className="text-[12px] text-[var(--color-subtle)]">あとから変更できます（複数こども対応）</p>
@@ -288,7 +288,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
 
         {step === 0 && (
           <div className="fade-in pb-10">
-            <h3 className="text-[13px] font-bold text-[var(--color-text-secondary)] mb-3 flex items-center gap-1.5">
+            <h3 className="text-[13px] font-bold text-[var(--color-text-secondary)] mb-3 flex items-center gap-1.5 break-keep text-balance">
               <span className="w-1.5 h-3 bg-[var(--color-primary)] rounded-full block"></span> 特定原材料8品目
             </h3>
             <div className="grid grid-cols-3 gap-2.5 mb-6">
@@ -310,7 +310,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
               })}
             </div>
 
-            <h3 className="text-[13px] font-bold text-[var(--color-text-secondary)] mb-3 flex items-center gap-1.5">
+            <h3 className="text-[13px] font-bold text-[var(--color-text-secondary)] mb-3 flex items-center gap-1.5 break-keep text-balance">
               <span className="w-1.5 h-3 bg-[var(--color-accent)] rounded-full block"></span> 特定原材料に準ずるもの20品目
             </h3>
             <div className="flex flex-wrap gap-2 mb-6">
@@ -330,7 +330,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
               })}
             </div>
 
-            <h3 className="text-[13px] font-bold text-[var(--color-text-secondary)] mb-3 flex items-center gap-1.5">
+            <h3 className="text-[13px] font-bold text-[var(--color-text-secondary)] mb-3 flex items-center gap-1.5 break-keep text-balance">
               <span className="w-1.5 h-3 bg-gray-400 rounded-full block"></span> その他の自由設定
             </h3>
             <div className="mb-4">
@@ -381,7 +381,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
 
         {step === 2 && (
           <div className="fade-in pb-10">
-            <h1 className="text-[18px] font-extrabold text-[var(--color-text)] mb-1">一番知りたいことは？</h1>
+            <h1 className="text-[18px] font-extrabold text-[var(--color-text)] mb-1 break-keep text-balance">一番知りたいことは？</h1>
             <p className="text-[12px] text-[var(--color-subtle)] mb-5">あなたに合ったコンテンツを優先設定します</p>
             <div className="space-y-2.5">
               {INTERESTS.map((interest) => {

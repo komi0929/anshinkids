@@ -95,7 +95,7 @@ export default function WikiPage() {
   return (
     <div className="fade-in">
       <div className="px-5 pt-7 pb-4">
-        <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
+        <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight break-keep text-balance">
           知恵袋 📖
         </h1>
         <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
@@ -249,7 +249,7 @@ export default function WikiPage() {
             return (
               <div key={entry.id} className="card overflow-hidden stagger-item">
                 <Link href={`/wiki/${entry.slug}`} className="block p-4 hover:bg-[var(--color-surface-warm)]/30 transition-colors" id={`wiki-entry-${entry.slug}`}>
-                  <h3 className="font-bold text-[15px] text-[var(--color-text)] mb-2">{entry.title}</h3>
+                  <h3 className="font-bold text-[15px] text-[var(--color-text)] mb-2 break-keep text-balance">{entry.title}</h3>
                   <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mb-3 line-clamp-2">{entry.summary}</p>
                   <div className="flex items-center flex-wrap gap-2">
                     <span className={`trust-badge ${trust.className}`}>

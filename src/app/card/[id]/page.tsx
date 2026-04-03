@@ -49,12 +49,12 @@ export default async function AmuletCardPage({ params }: { params: { id: string 
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "12px 12px" }}></div>
             
             <Leaf className="w-10 h-10 mb-2 relative z-10" />
-            <h1 className="text-[22px] font-extrabold tracking-tight relative z-10 mb-1">お守りカード</h1>
+            <h1 className="text-[22px] font-extrabold tracking-tight relative z-10 mb-1 break-keep text-balance">お守りカード</h1>
             <p className="text-[11px] font-bold opacity-80 relative z-10 tracking-widest uppercase">Anshin Kids Amulet</p>
           </div>
 
           <div className="px-6 py-8">
-            <h2 className="text-[12px] font-bold text-[var(--color-subtle)] mb-4 flex items-center justify-center gap-1.5 line-before-after">
+            <h2 className="text-[12px] font-bold text-[var(--color-subtle)] mb-4 flex items-center justify-center gap-1.5 line-before-after break-keep text-balance">
               <ShieldCheck className="w-4 h-4 text-[var(--color-success)]" /> 除去が必要な食品
             </h2>
 
@@ -76,7 +76,7 @@ export default async function AmuletCardPage({ params }: { params: { id: string 
                         {combinedAllergens.map((a: string) => (
                           <span
                             key={a}
-                            className="bg-red-100 text-red-700 font-extrabold text-[15px] px-3 py-1.5 rounded-lg border border-red-200 shadow-sm"
+                            className="bg-[var(--color-danger-light)]00 text-red-700 font-extrabold text-[15px] px-3 py-1.5 rounded-lg border border-[var(--color-danger)]/30 shadow-sm"
                           >
                             {a}
                           </span>
@@ -116,7 +116,7 @@ export default async function AmuletCardPage({ params }: { params: { id: string 
       {/* 300-point Growth Loop (Non-intrusive utility CTA) */}
       <div className="max-w-[360px] w-full px-5 mt-10 slide-up">
         <div className="bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-warm)] p-5 rounded-2xl border border-[var(--color-border-light)] shadow-sm">
-          <h2 className="text-[13px] font-extrabold text-[var(--color-text)] mb-2">周りにアレルギーでお悩みの方はいませんか？</h2>
+          <h2 className="text-[13px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">周りにアレルギーでお悩みの方はいませんか？</h2>
           <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed mb-4">
             このお守りカードは「あんしんキッズ」で作成されました。同じようにアレルギーを持つ親御さんのための、国内最大級の体験知恵袋です。
           </p>

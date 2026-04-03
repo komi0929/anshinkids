@@ -18,89 +18,56 @@ Test timeout of 60000ms exceeded.
 ```
 Error: locator.click: Test timeout of 60000ms exceeded.
 Call log:
-  - waiting for locator('a[id="nav-talk"]')
-    - locator resolved to <a href="/talk" id="nav-talk" class="nav-item " aria-label="みんなの声">…</a>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <nextjs-portal></nextjs-portal> from <script data-nextjs-dev-overlay="true">…</script> subtree intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <nextjs-portal></nextjs-portal> from <script data-nextjs-dev-overlay="true">…</script> subtree intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    85 × waiting for element to be visible, enabled and stable
-       - element is visible, enabled and stable
-       - scrolling into view if needed
-       - done scrolling
-       - <nextjs-portal></nextjs-portal> from <script data-nextjs-dev-overlay="true">…</script> subtree intercepts pointer events
-     - retrying click action
-       - waiting 500ms
-    - waiting for element to be visible, enabled and stable
+  - waiting for locator('a[href^="/talk/"]').first()
 
 ```
 
 # Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e6] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e7]:
-      - img [ref=e8]
-    - generic [ref=e11]:
-      - button "Open issues overlay" [ref=e12]:
-        - generic [ref=e13]:
-          - generic [ref=e14]: "1"
-          - generic [ref=e15]: "2"
-        - generic [ref=e16]:
-          - text: Issue
-          - generic [ref=e17]: s
-      - button "Collapse issues badge" [ref=e18]:
-        - img [ref=e19]
-  - generic [ref=e21]:
-    - generic [ref=e22]:
-      - generic [ref=e24]:
-        - img [ref=e26]
-        - generic [ref=e29]:
-          - heading "あんしんキッズ" [level=1] [ref=e30]
-          - paragraph [ref=e31]: みんなで育てる知恵袋コミュニティ
-      - generic [ref=e35] [cursor=pointer]:
-        - generic [ref=e36]: 🌱
-        - heading "ようこそ！ 子どものアレルギーの知恵を、 みんなで共有しましょう" [level=2] [ref=e37]:
-          - text: ようこそ！
-          - text: 子どものアレルギーの知恵を、
-          - text: みんなで共有しましょう
-        - paragraph [ref=e38]: ログインすると、アレルゲン情報に合わせた「あなた専用の知恵袋」が届き、みんなの投稿にリアクションできるようになります。
-        - button "30秒で始める（無料登録）" [ref=e39]
-    - navigation "メインナビゲーション" [ref=e40]:
-      - generic [ref=e41]:
-        - link "ホーム" [ref=e42] [cursor=pointer]:
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e14]:
+        - img [ref=e16]
+        - generic [ref=e19]:
+          - heading "あんしんキッズ" [level=1] [ref=e20]
+          - paragraph [ref=e21]: みんなで育てる知恵袋コミュニティ
+      - link "ようこそ！ 子どものアレルギーの知恵を、 みんなで共有しましょう ログインすると、アレルゲン情報に合わせた「あなた専用の知恵袋」が届き、みんなの投稿にリアクションできるようになります。 30秒で始める（無料登録）" [ref=e23] [cursor=pointer]:
+        - /url: /login
+        - generic [ref=e25]:
+          - img [ref=e27]
+          - heading "ようこそ！ 子どものアレルギーの知恵を、 みんなで共有しましょう" [level=2] [ref=e30]:
+            - text: ようこそ！
+            - text: 子どものアレルギーの知恵を、
+            - text: みんなで共有しましょう
+          - paragraph [ref=e31]: ログインすると、アレルゲン情報に合わせた「あなた専用の知恵袋」が届き、みんなの投稿にリアクションできるようになります。
+          - button "30秒で始める（無料登録）" [ref=e32]
+    - navigation "メインナビゲーション" [ref=e33]:
+      - generic [ref=e34]:
+        - link "ホーム" [ref=e35] [cursor=pointer]:
           - /url: /home
-          - img [ref=e43]
-          - generic [ref=e46]: ホーム
-        - link "みんなの声" [ref=e47] [cursor=pointer]:
+          - img [ref=e36]
+          - generic [ref=e39]: ホーム
+        - link "みんなの声" [ref=e40] [cursor=pointer]:
           - /url: /talk
-          - img [ref=e48]
-          - generic [ref=e50]: みんなの声
-        - link "知恵袋" [ref=e51] [cursor=pointer]:
+          - img [ref=e41]
+          - generic [ref=e43]: みんなの声
+        - link "知恵袋" [ref=e44] [cursor=pointer]:
           - /url: /wiki
-          - img [ref=e52]
-          - generic [ref=e55]: 知恵袋
-        - generic "AI相談（準備中）" [ref=e56]:
-          - img [ref=e57]
-          - generic [ref=e59]: AI相談
-          - generic [ref=e60]: 準備中
-        - link "ログイン" [ref=e61] [cursor=pointer]:
+          - img [ref=e45]
+          - generic [ref=e48]: 知恵袋
+        - generic "AI相談（準備中）" [ref=e49]:
+          - img [ref=e50]
+          - generic [ref=e52]: AI相談
+          - generic [ref=e53]: 準備中
+        - link "ログイン" [ref=e54] [cursor=pointer]:
           - /url: /login
-          - img [ref=e62]
-          - generic [ref=e65]: ログイン
-  - alert [ref=e66]
+          - img [ref=e55]
+          - generic [ref=e58]: ログイン
+  - alert [ref=e59]
 ```
 
 # Test source
@@ -123,7 +90,7 @@ Call log:
   15 |     await page.screenshot({ path: 'proof/01-onboarding-start.png', fullPage: true });
   16 | 
   17 |     // Step 1: Select Allergen and Click Next
-  18 |     await page.getByRole('button', { name: "アーモンド", exact: false }).first().click();
+  18 |     await page.getByRole('button', { name: "アーモンド", exact: false }).first().click({ force: true });
   19 |     
   20 |     // Crucial UX Check: Can we scroll and click Next?
   21 |     // We scroll fully down to make sure the footer isn't blocking it
@@ -132,17 +99,17 @@ Call log:
   24 |     
   25 |     const nextButton = page.getByRole('button', { name: "次へ" }).first();
   26 |     await expect(nextButton).toBeVisible();
-  27 |     await nextButton.click();
+  27 |     await nextButton.click({ force: true });
   28 | 
   29 |     // Step 2: Select Age
-  30 |     await page.getByRole('button', { name: "6〜12歳" }).first().click();
-  31 |     await page.getByRole('button', { name: "次へ" }).first().click();
+  30 |     await page.getByRole('button', { name: "6〜12歳" }).first().click({ force: true });
+  31 |     await page.getByRole('button', { name: "次へ" }).first().click({ force: true });
   32 | 
   33 |     // Step 3: Select Interest and Finish
-  34 |     await page.getByRole('button', { name: "安全な市販品を知りたい" }).first().click();
+  34 |     await page.getByRole('button', { name: "安全な市販品を知りたい" }).first().click({ force: true });
   35 |     const finishButton = page.getByRole('button', { name: "あんしんキッズをはじめる" });
   36 |     await expect(finishButton).toBeVisible();
-  37 |     await finishButton.click();
+  37 |     await finishButton.click({ force: true });
   38 | 
   39 |     // Wait for redirect to happen (onboarding complete)
   40 |     await page.waitForTimeout(1500); 
@@ -161,12 +128,12 @@ Call log:
   53 |     // 3. Talk Room Modal Interactivity
   54 |     const talkNav = page.locator('a[id="nav-talk"]');
   55 |     if (await talkNav.count() > 0) {
-> 56 |       await talkNav.click();
-     |                     ^ Error: locator.click: Test timeout of 60000ms exceeded.
+  56 |       await talkNav.click({ force: true });
   57 |       await page.waitForTimeout(1000);
   58 |       
   59 |       // Click first talk room
-  60 |       await page.locator('a[href^="/talk/"]').first().click();
+> 60 |       await page.locator('a[href^="/talk/"]').first().click({ force: true });
+     |                                                       ^ Error: locator.click: Test timeout of 60000ms exceeded.
   61 |       await page.waitForTimeout(1500);
   62 | 
   63 |       // Screenshot Talk Room
@@ -175,7 +142,7 @@ Call log:
   66 |       // Click to pop up Promise Modal
   67 |       const promptChip = page.locator('button:has-text("こんなこと聞いていいのかな")').first();
   68 |       if (await promptChip.count() > 0) {
-  69 |         await promptChip.click();
+  69 |         await promptChip.click({ force: true });
   70 |         
   71 |         await page.waitForTimeout(500);
   72 |         // Modal appears
@@ -192,7 +159,7 @@ Call log:
   83 | 
   84 |         const agreeBtn = page.locator('button[id="accept-guidelines"]');
   85 |         await expect(agreeBtn).toBeVisible();
-  86 |         await agreeBtn.click();
+  86 |         await agreeBtn.click({ force: true });
   87 | 
   88 |         await page.waitForTimeout(500);
   89 |         await page.screenshot({ path: 'proof/08-promise-modal-closed.png' });

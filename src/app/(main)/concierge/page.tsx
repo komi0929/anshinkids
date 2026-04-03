@@ -187,7 +187,7 @@ export default function ConciergePage() {
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-[17px] font-extrabold text-[var(--color-text)]">AI相談 ✨</h1>
+            <h1 className="text-[17px] font-extrabold text-[var(--color-text)] break-keep text-balance">AI相談 ✨</h1>
             <p className="text-[11px] text-[var(--color-subtle)]">みんなの体験をもとにAIがお答えします</p>
           </div>
         </div>
@@ -203,20 +203,20 @@ export default function ConciergePage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* === F2: Emergency Banner === */}
         {showEmergency && (
-          <div className="p-4 rounded-2xl bg-red-50 border-2 border-red-300 mb-3 slide-up">
+          <div className="p-4 rounded-2xl bg-[var(--color-danger-light)]0 border-2 border-red-300 mb-3 slide-up">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-                <h3 className="text-[14px] font-extrabold text-red-700">{EMERGENCY_GUIDANCE.title}</h3>
+                <AlertTriangle className="w-5 h-5 text-[var(--color-danger)]" />
+                <h3 className="text-[14px] font-extrabold text-red-700 break-keep text-balance">{EMERGENCY_GUIDANCE.title}</h3>
               </div>
-              <button onClick={() => setShowEmergency(false)} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+              <button onClick={() => setShowEmergency(false)} className="text-[var(--color-danger)] hover:text-[var(--color-danger)]"><X className="w-4 h-4" /></button>
             </div>
             <div className="space-y-1.5 mb-3">
               {EMERGENCY_GUIDANCE.steps.map((step, i) => (
                 <p key={i} className="text-[12px] text-red-700 font-medium">{step}</p>
               ))}
             </div>
-            <p className="text-[11px] text-red-600 font-bold">{EMERGENCY_GUIDANCE.important}</p>
+            <p className="text-[11px] text-[var(--color-danger)] font-bold">{EMERGENCY_GUIDANCE.important}</p>
             <a href="tel:119" className="mt-3 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 text-white font-bold text-[14px]">
               <Phone className="w-5 h-5" /> 119番に電話する
             </a>
@@ -228,7 +228,7 @@ export default function ConciergePage() {
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center shadow-sm mb-4">
               <Leaf className="w-7 h-7 text-[var(--color-success)]" />
             </div>
-            <h2 className="text-[17px] font-extrabold text-[var(--color-text)] mb-1">なんでも聞いてね 🌿</h2>
+            <h2 className="text-[17px] font-extrabold text-[var(--color-text)] mb-1 break-keep text-balance">なんでも聞いてね 🌿</h2>
 
             {/* Single compact disclaimer */}
             <p className="text-[12px] font-medium leading-relaxed mb-6 max-w-xs" style={{ color: 'var(--color-subtle)' }}>
@@ -298,7 +298,7 @@ export default function ConciergePage() {
                       </span>
                     </div>
                     {msg.confidence.level === "insufficient" && (
-                      <p className="text-[10px] text-amber-600 mt-1 leading-snug">
+                      <p className="text-[10px] text-[var(--color-warning)] mt-1 leading-snug">
                         ⚠️ まだ十分なデータがありません。トークルームで体験を共有すると、より正確な回答ができるようになります。
                       </p>
                     )}

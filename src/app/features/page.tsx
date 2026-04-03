@@ -138,7 +138,7 @@ export default function FeaturesPage() {
             <BookOpen className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-[17px] font-extrabold text-[var(--color-text)]">オープンな開発仕様</h1>
+            <h1 className="text-[17px] font-extrabold text-[var(--color-text)] break-keep text-balance">オープンな開発仕様</h1>
             <p className="text-[11px] text-[var(--color-subtle)]">これまでに実装された50の全機能・仕様</p>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function FeaturesPage() {
 
       <div className="px-5 py-6">
         <div className="mb-8 p-5 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)] slide-up shadow-sm">
-          <h2 className="text-[15px] font-extrabold text-[var(--color-text)] mb-2 flex items-center gap-2">
+          <h2 className="text-[15px] font-extrabold text-[var(--color-text)] mb-2 flex items-center gap-2 break-keep text-balance">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
             なぜ全ての仕様を公開するのか？
           </h2>
@@ -171,7 +171,7 @@ export default function FeaturesPage() {
                   <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[14px] bg-gradient-to-br ${category.colorClass} shadow-sm border`}>
                     {index + 1}
                   </span>
-                  <h3 className="text-[16px] font-extrabold text-[var(--color-text)]">{category.title}</h3>
+                  <h3 className="text-[16px] font-extrabold text-[var(--color-text)] break-keep text-balance">{category.title}</h3>
                 </div>
                 <p className="text-[12px] font-medium text-[var(--color-subtle)] ml-10 leading-snug">
                   {category.desc}
@@ -187,7 +187,7 @@ export default function FeaturesPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <h4 className="text-[14px] font-bold text-[var(--color-text)] leading-tight">{feature.title}</h4>
+                          <h4 className="text-[14px] font-bold text-[var(--color-text)] leading-tight break-keep text-balance">{feature.title}</h4>
                         </div>
                         <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
                           {feature.desc}
@@ -219,7 +219,7 @@ export default function FeaturesPage() {
             <div className="w-14 h-14 mx-auto bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md mb-3 shadow-inner border border-white/30">
               <Leaf className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-[18px] font-extrabold mb-2 text-shadow-sm">力を貸してください 🤝</h2>
+            <h2 className="text-[18px] font-extrabold mb-2 text-shadow-sm break-keep text-balance">力を貸してください 🤝</h2>
             <p className="text-[13px] font-medium text-white/90 mb-5 leading-relaxed max-w-[280px] mx-auto">
               これらの仕様を一緒に洗練させ、より多くのアレルギーっ子家族を救う開発メンバー・デザイナー・コミュニティリードを探しています。
             </p>

@@ -228,7 +228,7 @@ export default function MyPage() {
       {/* Top action bar */}
       <div className="flex justify-between items-center px-5 pt-6 pb-2">
         <div>
-          <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
+          <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight break-keep text-balance">
             マイページ
           </h1>
           <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
@@ -263,7 +263,7 @@ export default function MyPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-[18px] font-extrabold text-[var(--color-text)] truncate">{profile.display_name}</h2>
+                    <h2 className="text-[18px] font-extrabold text-[var(--color-text)] truncate break-keep text-balance">{profile.display_name}</h2>
                   </div>
                   <div className="flex items-center gap-2 mt-1.5">
                     <span className="text-[12px] text-[var(--color-subtle)] font-medium bg-[var(--color-surface-warm)] px-2.5 py-0.5 rounded-md">
@@ -294,14 +294,14 @@ export default function MyPage() {
 
               {/* Streak */}
               {streakData && streakData.totalDays > 0 && (
-                <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/40">
+                <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-[var(--color-warning)]/30">
                   <div className="flex items-center gap-2.5">
                     <span className="text-xl">🔥</span>
                     <div className="flex-1">
-                      <p className="text-[12px] font-bold text-amber-800">
+                      <p className="text-[12px] font-bold text-[var(--color-warning)]">
                         {streakData.currentStreak > 0 ? `${streakData.currentStreak}日連続で遊びにきてるね！` : `通算${streakData.totalDays}日参加`}
                       </p>
-                      <p className="text-[10px] text-amber-600">
+                      <p className="text-[10px] text-[var(--color-warning)]">
                         最長 {streakData.longestStreak}日連続アクセス
                       </p>
                     </div>
@@ -377,7 +377,7 @@ export default function MyPage() {
       {/* === F8: Visual Impact Dashboard (Bento UI) === */}
       {impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0)) && (
         <div className="px-4 mb-6">
-          <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+          <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
             みんなへのお役立ち
           </h3>
@@ -419,7 +419,7 @@ export default function MyPage() {
                      <p className="text-[10px] text-[var(--color-success)] font-bold mb-1 flex items-center gap-1">
                        <Check className="w-3 h-3" /> 知恵袋に採用されました
                      </p>
-                     <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">
+                     <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">
                        {imp.title}
                      </h4>
                      <div className="text-[12px] bg-[var(--color-surface-warm)] rounded-xl p-2.5 text-[var(--color-text-secondary)] leading-relaxed relative">
@@ -438,7 +438,7 @@ export default function MyPage() {
       {/* === F9: Bookmarked Snippets (Micro-Bookmarking) === */}
       {bookmarks.length > 0 && (
         <div className="px-4 mb-6">
-          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
             <span className="text-xl">🔖</span>
             お気に入り
           </h3>
@@ -457,7 +457,7 @@ export default function MyPage() {
                     <BookOpen className="w-3 h-3" />
                     {bm.wiki_entries.category} / {bm.wiki_entries.title}
                   </p>
-                  <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 leading-tight">
+                  <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 leading-tight break-keep text-balance">
                     {bm.snippet_title}
                   </h4>
                   <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed bg-[var(--color-surface-warm)] p-2.5 rounded-xl">
@@ -473,7 +473,7 @@ export default function MyPage() {
       {/* Contributions Fallback list (Historical data not in top 3 Bento UI) */}
       {contributions.length > 0 && !(impact && impact.recentImpacts && impact.recentImpacts.length > 0) && (
         <div className="px-4 pb-4">
-          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
             <span className="text-lg">🌱</span>
             過去の共有
           </h3>
@@ -491,7 +491,7 @@ export default function MyPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       {contrib.wiki_entries && (
-                        <h4 className="font-bold text-[14px] text-[var(--color-text)]">
+                        <h4 className="font-bold text-[14px] text-[var(--color-text)] break-keep text-balance">
                           {(contrib.wiki_entries as Record<string, string>).title}
                         </h4>
                       )}
@@ -561,7 +561,7 @@ export default function MyPage() {
 
       {/* === F6: Privacy & Data Controls === */}
       <div className="px-4 pb-4">
-        <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+        <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
           <span className="text-lg">🔒</span>
           プライバシー設定
         </h3>
@@ -588,17 +588,17 @@ export default function MyPage() {
         </div>
 
         {/* Delete Account */}
-        <div className="card p-4 border-red-200/50">
-          <h4 className="text-[13px] font-bold text-[var(--color-danger)] mb-2">⚠️ アカウントとデータの削除</h4>
+        <div className="card p-4 border-[var(--color-danger)]/30">
+          <h4 className="text-[13px] font-bold text-[var(--color-danger)] mb-2 break-keep text-balance">⚠️ アカウントとデータの削除</h4>
           <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed mb-3">
             すべてのデータ（プロフィール、投稿履歴、共有記録）を完全に削除します。
             知恵袋に匿名化済みの情報は残りますが、あなたへの紐付けは解除されます。
           </p>
           {showDeleteConfirm ? (
             <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200">
+              <div className="p-3 rounded-xl bg-[var(--color-danger-light)]0 border border-[var(--color-danger)]/30">
                 <p className="text-[12px] text-red-700 font-bold mb-1">本当に削除しますか？</p>
-                <p className="text-[10px] text-red-600">この操作は取り消せません。</p>
+                <p className="text-[10px] text-[var(--color-danger)]">この操作は取り消せません。</p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -621,7 +621,7 @@ export default function MyPage() {
           ) : (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full p-2.5 rounded-xl border border-red-200 text-[12px] text-red-500 hover:bg-red-50 transition-all"
+              className="w-full p-2.5 rounded-xl border border-[var(--color-danger)]/30 text-[12px] text-[var(--color-danger)] hover:bg-[var(--color-danger-light)]0 transition-all"
               id="show-delete"
             >
               アカウントを削除する
@@ -632,14 +632,14 @@ export default function MyPage() {
 
       {/* Support and Feedback */}
       <div className="px-4 mb-4">
-        <h3 className="text-[13px] font-extrabold text-[var(--color-subtle)] mb-2 px-1">運営・サポート</h3>
+        <h3 className="text-[13px] font-extrabold text-[var(--color-subtle)] mb-2 px-1 break-keep text-balance">運営・サポート</h3>
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
           <a
             href="mailto:support@anshin-kids.app?subject=アプリへのアイデア・バグ報告"
             className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <div className="w-8 h-8 rounded-full bg-[var(--color-warning-light)]0 flex items-center justify-center text-[var(--color-warning)]">
                 <span className="text-sm">💡</span>
               </div>
               <div>
@@ -685,7 +685,7 @@ export default function MyPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={(e) => { if (e.target === e.currentTarget) setShowProfileEdit(false); }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <div className="relative w-full max-w-sm bg-[var(--color-surface)] rounded-3xl shadow-2xl slide-up p-6">
-            <h2 className="text-[18px] font-extrabold text-[var(--color-text)] mb-5 text-center">プロフィール編集</h2>
+            <h2 className="text-[18px] font-extrabold text-[var(--color-text)] mb-5 text-center break-keep text-balance">プロフィール編集</h2>
             
             <div className="mb-5">
               <label className="block text-[12px] font-bold text-[var(--color-subtle)] mb-2">アイコン</label>
@@ -693,7 +693,7 @@ export default function MyPage() {
                 <div className="w-16 h-16 shrink-0 shadow-sm relative">
                   {renderAvatar(editAvatar, editName || profile?.display_name || "👤")}
                   {editAvatar && (
-                    <button onClick={() => setEditAvatar(null)} className="absolute top-[-4px] right-[-4px] w-5 h-5 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] hover:text-red-500">
+                    <button onClick={() => setEditAvatar(null)} className="absolute top-[-4px] right-[-4px] w-5 h-5 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] hover:text-[var(--color-danger)]">
                       <X className="w-3 h-3" />
                     </button>
                   )}

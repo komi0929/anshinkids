@@ -86,7 +86,7 @@ export default function MainLayout({
   return (
     <div className={`min-h-[100dvh] ${isTalkDetail ? "" : "pb-[72px]"} max-w-md mx-auto relative bg-[var(--color-bg)] shadow-md`}>
       {isOffline && (
-        <div className="fixed top-0 left-0 right-0 bg-red-500 text-white text-xs font-bold text-center py-1.5 z-50 animate-in slide-in-from-top flex items-center justify-center gap-2">
+        <div className="fixed top-0 left-0 right-0 bg-[var(--color-danger-light)]00 text-white text-xs font-bold text-center py-1.5 z-50 animate-in slide-in-from-top flex items-center justify-center gap-2">
           <span>⚠️ ネットワーク接続がありません</span>
         </div>
       )}

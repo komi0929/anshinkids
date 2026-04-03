@@ -51,7 +51,7 @@ export function ImpactToast({ currentHelpfulVotes }: ImpactToastProps) {
             <Heart className="w-5 h-5 fill-current" />
           </div>
           <div>
-            <h3 className="font-bold text-[15px] mb-0.5 drop-shadow-sm">
+            <h3 className="font-bold text-[15px] mb-0.5 drop-shadow-sm break-keep text-balance">
               嬉しいお知らせです！
             </h3>
             <p className="text-[13px] text-white/95 leading-snug">

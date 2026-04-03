@@ -47,7 +47,7 @@ export default function NotificationsPage() {
             notifs.push({
               id: `notif-${idCounter++}`,
               type: "trust_up",
-              message: <span>あなたの体験が多くの親御さんの参考になっています。<strong className="text-amber-600">ありがとうございます！</strong></span>,
+              message: <span>あなたの体験が多くの親御さんの参考になっています。<strong className="text-[var(--color-warning)]">ありがとうございます！</strong></span>,
               dateStr: "継続的な活動",
               isRead: true,
               link: "/mypage"
@@ -110,7 +110,7 @@ export default function NotificationsPage() {
       case "thanks": return <div className="w-10 h-10 rounded-full bg-[var(--color-heart-light)] flex items-center justify-center text-[var(--color-heart)]"><Heart className="w-5 h-5" /></div>;
       case "wiki_extracted": return <div className="w-10 h-10 rounded-full bg-[var(--color-success-light)] flex items-center justify-center text-[var(--color-success)]"><BookOpen className="w-5 h-5" /></div>;
       case "impact_milestone": return <div className="w-10 h-10 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]"><Sparkles className="w-5 h-5" /></div>;
-      case "trust_up": return <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><TrendingUp className="w-5 h-5" /></div>;
+      case "trust_up": return <div className="w-10 h-10 rounded-full bg-[var(--color-warning-light)]00 flex items-center justify-center text-[var(--color-warning)]"><TrendingUp className="w-5 h-5" /></div>;
     }
   }
 
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
           <div className="w-9 h-9 rounded-xl bg-[var(--color-surface-warm)] flex items-center justify-center shadow-sm">
             <Bell className="w-4 h-4 text-[var(--color-text)]" />
           </div>
-          <h1 className="text-[15px] font-bold text-[var(--color-text)]">お知らせ・通知</h1>
+          <h1 className="text-[15px] font-bold text-[var(--color-text)] break-keep text-balance">お知らせ・通知</h1>
         </div>
       </div>
 
