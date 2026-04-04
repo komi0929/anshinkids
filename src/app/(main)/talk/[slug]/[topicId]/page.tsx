@@ -310,22 +310,51 @@ export default function TopicChatPage() {
     }
 
       if (messages.length === 0) {
+      const quickExamples = [
+        "うちはこうしてます！",
+        "同じ悩みがあります",
+        "こんな方法を試しました",
+      ];
       return (
-        <div className="py-16 flex flex-col items-center text-center px-4">
-          <div className="w-16 h-16 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center mb-4">
-            <MessageCircle className="w-8 h-8 text-[var(--color-primary)]" style={{ opacity: 0.4 }} />
-          </div>
-          <h3 className="text-[16px] font-bold text-[var(--color-text)] break-keep text-balance px-4 mb-2">
-            {topicInfo?.title}
-          </h3>
-          <div className="bg-white p-4 rounded-2xl border border-[var(--color-border-light)] max-w-sm w-full shadow-sm">
-            <p className="text-[13px] font-bold text-[var(--color-text)] mb-2">💡 最初の声を届けてみませんか？</p>
-            <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed text-left">
-              たとえば…<br />
-              ・「うちの子は卵アレルギーなのですが、皆さんはどうしてますか？」<br />
-              ・「最近、こんなアレルギー対応のレシピを見つけました」<br />
-              あなたのささいな疑問や体験が、他の親御さんの「安心」に繋がります🍀
-            </p>
+        <div className="flex flex-col items-center px-4 pt-8 pb-4">
+          {/* コンパクトなウェルカム */}
+          <div className="w-full max-w-sm">
+            <div className="relative rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/10 p-5">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[20px] flex-shrink-0">
+                  {roomInfo?.icon_emoji || "💬"}
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <p className="text-[14px] font-bold text-[var(--color-text)] leading-snug mb-1">
+                    この話題にまだ声がありません
+                  </p>
+                  <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
+                    あなたの体験やヒントが、同じ悩みを持つ誰かの助けになります
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-bold text-[var(--color-subtle)] tracking-wide uppercase ml-0.5">こんなふうに書けます</p>
+                {quickExamples.map((ex) => (
+                  <button
+                    key={ex}
+                    type="button"
+                    onClick={() => {
+                      setNewMessage(ex);
+                      textareaRef.current?.focus();
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 rounded-xl bg-white border border-[var(--color-border-light)] text-[13px] font-medium text-[var(--color-text-secondary)] hover:border-[var(--color-primary)]/40 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all active:scale-[0.98]"
+                  >
+                    「{ex}」
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-[var(--color-muted)] text-center mt-4 leading-relaxed">
+                投稿は72時間後に自動削除されます。<br />有益な情報はAIが「みんなのまとめ」に保存します。
+              </p>
+            </div>
           </div>
         </div>
       );

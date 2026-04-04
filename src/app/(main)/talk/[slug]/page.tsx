@@ -218,16 +218,25 @@ export default function TalkThemeHubPage() {
               ))}
             </div>
           ) : topics.length === 0 ? (
-            <div className="py-16 flex flex-col items-center text-center">
-              <div className="w-16 h-16 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center mb-4">
-                <MessageCircle className="w-8 h-8 text-[var(--color-primary)]" style={{ opacity: 0.4 }} />
+            <div className="py-8 flex flex-col items-center px-2">
+              <div className="w-full max-w-sm rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-accent)]/8 border border-[var(--color-primary)]/10 p-5 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-[24px] mx-auto mb-3">
+                  {roomInfo?.icon_emoji || "💬"}
+                </div>
+                <p className="text-[15px] font-bold text-[var(--color-text)] mb-1.5">
+                  最初の話題を始めましょう
+                </p>
+                <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed mb-4 max-w-[240px] mx-auto">
+                  上の「💡話題のきっかけ」をタップするか、自分で話題を作成できます
+                </p>
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-[13px] font-bold shadow-sm active:scale-95 transition-transform"
+                >
+                  <Plus className="w-4 h-4" />
+                  話題を作成する
+                </button>
               </div>
-              <h3 className="text-[16px] font-bold text-[var(--color-text)] break-keep text-balance px-4">
-                まだ話題がありません
-              </h3>
-              <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed max-w-[260px]">
-                上のボタンから最初の話題を投稿してみませんか？みんなのヒントが集まるきっかけになります
-              </p>
             </div>
           ) : (
             <div className="space-y-2.5">
