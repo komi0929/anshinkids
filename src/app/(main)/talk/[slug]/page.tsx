@@ -203,7 +203,7 @@ export default function TalkThemeHubPage() {
                              )}
                           </div>
                           <span className="text-[11px] font-bold text-[var(--color-subtle)] truncate">
-                            {topic.creator_name || "参加者"}
+                            {(topic.creator_name && topic.creator_name !== "あんしんユーザー") ? topic.creator_name : "投稿者"}
                           </span>
                         </div>
                         <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-1.5 break-keep text-balance leading-snug">

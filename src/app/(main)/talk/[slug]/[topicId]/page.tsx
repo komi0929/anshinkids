@@ -10,7 +10,6 @@ import {
   Send,
   MessageCircle,
   Trash2,
-  User,
   Share,
 } from "@/components/icons";
 import {
@@ -261,36 +260,74 @@ export default function TopicChatPage() {
     }
   }, []);
 
-  function getAvatarColor(name: string) {
-    const colors = [
-      "from-blue-400 to-indigo-500",
-      "from-emerald-400 to-teal-500",
-      "from-rose-400 to-pink-500",
-      "from-amber-400 to-orange-500",
-      "from-purple-400 to-fuchsia-500",
-    ];
-    const hash = name
-      .split("")
-      .reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+  // Anonymous label generator — gives each unique user_id a stable, distinct label
+  const anonymousLabels = useMemo(() => {
+    const labelMap = new Map<string, string>();
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let idx = 0;
+    messages.forEach((msg) => {
+      if (!labelMap.has(msg.user_id)) {
+        labelMap.set(msg.user_id, chars[idx % chars.length]);
+        idx++;
+      }
+    });
+    return labelMap;
+  }, [messages]);
+
+  function getAnonymousName(user_id: string, original_name: string | undefined): string {
+    if (original_name && original_name !== "あんしんユーザー") return original_name;
+    const letter = anonymousLabels.get(user_id) || "?";
+    return `ゲスト${letter}`;
+  }
+
+  const AVATAR_COLORS = [
+    "bg-[#E8D5C4]", // warm beige
+    "bg-[#C9D6C8]", // sage
+    "bg-[#D4C5E2]", // lavender
+    "bg-[#C5D5E4]", // sky
+    "bg-[#E4D4C4]", // sand
+    "bg-[#D2C9B8]", // oat
+    "bg-[#C8D5CF]", // mint
+    "bg-[#E0C8C8]", // rose
+  ];
+
+  function getAvatarBg(user_id: string) {
+    const hash = user_id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+  }
+
+  function getAvatarInitial(user_id: string, name: string): string {
+    if (name && name !== "あんしんユーザー" && name !== "参加者") return name[0];
+    return anonymousLabels.get(user_id) || "?";
   }
 
   function renderAvatar(avatar_url: string | null, user_id: string, name: string) {
+    // LINEなどのURL画像
     if (avatar_url && avatar_url.startsWith("http")) {
       return (
-        <Image 
-          src={avatar_url} 
-          alt={name || ""} 
-          fill 
-          unoptimized 
-          className="object-cover rounded-full" 
+        <Image
+          src={avatar_url}
+          alt={name || ""}
+          fill
+          unoptimized
+          className="object-cover rounded-full"
         />
       );
     }
-    const color = getAvatarColor(user_id);
+    // プロフィールで設定した絵文字アバター (1〜4文字)
+    if (avatar_url && avatar_url.length <= 4) {
+      return (
+        <div className="w-full h-full bg-[var(--color-surface-warm)] flex items-center justify-center rounded-full border border-[var(--color-border-light)]">
+          <span className="text-[14px]">{avatar_url}</span>
+        </div>
+      );
+    }
+    // デフォルト: ミュートカラー + イニシャル
+    const bg = getAvatarBg(user_id);
+    const initial = getAvatarInitial(user_id, name);
     return (
-      <div className={`w-full h-full bg-gradient-to-br ${color} flex items-center justify-center`}>
-        <User className="w-4 h-4 text-white/90" />
+      <div className={`w-full h-full ${bg} flex items-center justify-center rounded-full`}>
+        <span className="text-[11px] font-bold text-[var(--color-text-secondary)]">{initial}</span>
       </div>
     );
   }
@@ -375,22 +412,14 @@ export default function TopicChatPage() {
           >
             <div className="flex gap-2 max-w-[85%] flex-row-reverse">
               <div
-                className={`w-8 h-8 mt-1 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm relative overflow-hidden`}
+                className="w-8 h-8 mt-1 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm relative overflow-hidden"
               >
-                {renderAvatar(msg.author_avatar || null, msg.user_id, msg.author_name || "あなた")}
+                {renderAvatar(msg.author_avatar || null, msg.user_id, getAnonymousName(msg.user_id, msg.author_name))}
               </div>
               <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1.5 mr-1 mb-0.5 flex-wrap flex-row-reverse">
-                  <span className="text-[12px] font-bold text-[var(--color-text)]">
-                    {msg.author_name || "あなた"}
-                  </span>
-                  {msg.author_allergens && msg.author_allergens.length > 0 && (
-                    <span className="text-[10px] bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">
-                      {msg.author_allergens.slice(0, 2).join(", ")}
-                      {msg.author_allergens.length > 2 ? "..." : ""}
-                    </span>
-                  )}
-                </div>
+                <span className="text-[11px] font-bold text-[var(--color-text-secondary)] mr-1 mb-0.5">
+                  {getAnonymousName(msg.user_id, msg.author_name)}
+                </span>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-br-[4px] bg-[var(--color-primary)] text-white shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
                   {msg.content}
                 </div>
@@ -434,26 +463,17 @@ export default function TopicChatPage() {
           >
             <div className="flex gap-2 max-w-[85%]">
               <div
-                className={`w-8 h-8 mt-1 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm relative overflow-hidden`}
+                className="w-8 h-8 mt-1 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm relative overflow-hidden"
               >
-                {renderAvatar(msg.author_avatar || null, msg.user_id, msg.author_name || "参加者")}
+                {renderAvatar(msg.author_avatar || null, msg.user_id, getAnonymousName(msg.user_id, msg.author_name))}
               </div>
               <div className="flex flex-col items-start">
-                <div className="flex items-center gap-1.5 ml-1 mb-0.5 flex-wrap">
-                  <span className="text-[12px] font-bold text-[var(--color-primary)]">
-                    {msg.author_name || "参加者"}
-                  </span>
-                  {msg.author_allergens && msg.author_allergens.length > 0 && (
-                    <span className="text-[10px] bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">
-                      {msg.author_allergens.slice(0, 2).join(", ")}
-                      {msg.author_allergens.length > 2 ? "..." : ""}
-                    </span>
-                  )}
-                </div>
+                <span className="text-[11px] font-bold text-[var(--color-primary)] ml-1 mb-0.5">
+                  {getAnonymousName(msg.user_id, msg.author_name)}
+                </span>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
                   {msg.content}
                 </div>
-
                 <div className="flex gap-2 items-center mt-1 ml-1">
                   <span className="text-[10px] font-medium text-[var(--color-muted)]">
                     {new Date(msg.created_at).toLocaleTimeString([], {
