@@ -131,171 +131,167 @@ export default function TalkThemeHubPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-4 space-y-4 max-w-2xl mx-auto">
-          {/* Conversation Starters / Icebreakers */}
-          {!isLoading && suggestedPrompts.length > 0 && (
-            <div className="mb-2 slide-up" style={{ animationDelay: '50ms' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm bg-[var(--color-surface-warm)] px-1 py-0.5 rounded border border-[var(--color-border-light)] shadow-inner-soft">💡</span>
-                <h2 className="text-[14px] font-bold text-[var(--color-text)]">話題のきっかけ（タップですぐに話せます）</h2>
+        <div className="px-4 py-4 space-y-5 max-w-2xl mx-auto">
+
+          {/* === セクション1: 話題を選ぶ === */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm bg-[var(--color-surface-warm)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">💬</span>
+              <h2 className="text-[15px] font-extrabold text-[var(--color-text)]">話題を選ぶ</h2>
+            </div>
+
+            {/* きっかけ提案 */}
+            {!isLoading && suggestedPrompts.length > 0 && (
+              <div className="mb-3 slide-up" style={{ animationDelay: '50ms' }}>
+                <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2 ml-0.5">💡 タップですぐに話題をスタートできます</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {suggestedPrompts.map((prompt, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setNewTopicTitle(prompt);
+                        setShowCreateForm(true);
+                        // Scroll to the create form
+                        setTimeout(() => {
+                          document.getElementById("create-topic-section")?.scrollIntoView({ behavior: "smooth" });
+                        }, 100);
+                      }}
+                      className="card-elevated text-left px-4 py-3 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group bg-white w-full"
+                    >
+                      <span className="text-[13px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors pr-2 break-keep text-balance line-clamp-1">
+                        {prompt}
+                      </span>
+                      <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0">
+                        話す
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-1 gap-2.5">
-                {suggestedPrompts.map((prompt, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      setNewTopicTitle(prompt);
-                      setShowCreateForm(true);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    className="card-elevated text-left px-4 py-3.5 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group bg-white w-full"
-                  >
-                    <span className="text-[13.5px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors pr-2 break-keep text-balance line-clamp-1">
-                      {prompt}
-                    </span>
-                    <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      話す
-                    </span>
-                  </button>
+            )}
+
+            {/* トピック一覧 */}
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="shimmer h-24 rounded-2xl" />
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center justify-between mt-6">
-            <h2 className="text-[14px] font-bold text-[var(--color-text)]">
-              話題一覧
-            </h2>
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[var(--color-primary)] text-white text-[12px] font-bold shadow-sm active:scale-95 transition-transform"
-            >
-              <Plus className="w-4 h-4" />
-              新しい話題を作る
-            </button>
+            ) : topics.length === 0 ? (
+              <div className="py-4 px-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] text-center">
+                <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
+                  まだ話題がありません。上のきっかけをタップするか、下の「話題をつくる」から始めましょう。
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {topics.map((topic) => (
+                  <Link
+                    key={topic.id}
+                    href={`/talk/${slug}/${topic.id}`}
+                    className="block p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <div className="w-5 h-5 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center overflow-hidden flex-shrink-0 border border-[var(--color-border-light)]">
+                             {topic.creator_avatar ? (
+                                <img src={topic.creator_avatar} alt="avatar" className="w-full h-full object-cover" />
+                             ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-indigo-500" />
+                             )}
+                          </div>
+                          <span className="text-[11px] font-bold text-[var(--color-subtle)] truncate">
+                            {topic.creator_name || "参加者"}
+                          </span>
+                        </div>
+                        <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-1.5 break-keep text-balance leading-snug">
+                          {topic.title}
+                        </h3>
+                        {topic.last_message_preview && (
+                          <p className="text-[12px] text-[var(--color-subtle)] truncate mb-2 leading-relaxed">
+                            {topic.last_message_preview}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-3 text-[11px] font-medium text-[var(--color-muted)]">
+                          <span className="flex items-center gap-1 bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
+                            <MessageCircle className="w-3 h-3" />
+                            {topic.message_count}件
+                          </span>
+                          <span>{timeAgo(topic.updated_at)}</span>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors mt-4">
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-[var(--color-muted)] group-hover:text-white transition-colors"
+                        >
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Create Form */}
-          {showCreateForm && (
-            <div className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-primary)]/20 slide-up">
-              <form onSubmit={handleCreateTopic} className="space-y-3">
-                <input
-                  type="text"
-                  value={newTopicTitle}
-                  onChange={(e) => setNewTopicTitle(e.target.value)}
-                  placeholder="例：おすすめの米粉パン教えて！"
-                  maxLength={100}
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all text-[14px] outline-none"
-                  autoFocus
-                />
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateForm(false)}
-                    className="px-4 py-2 text-[13px] font-medium text-[var(--color-subtle)]"
-                  >
-                    キャンセル
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!newTopicTitle.trim() || isCreating}
-                    className="px-5 py-2 rounded-xl bg-[var(--color-primary)] text-white text-[13px] font-bold disabled:opacity-50 transition-opacity"
-                  >
-                    {isCreating ? "作成中..." : "作成する"}
-                  </button>
-                </div>
-              </form>
+          {/* === セクション2: 話題をつくる === */}
+          <div id="create-topic-section">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm bg-[var(--color-surface-warm)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">✏️</span>
+              <h2 className="text-[15px] font-extrabold text-[var(--color-text)]">話題をつくる</h2>
             </div>
-          )}
 
-          {/* List */}
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="shimmer h-24 rounded-2xl" />
-              ))}
-            </div>
-          ) : topics.length === 0 ? (
-            <div className="py-8 flex flex-col items-center px-2">
-              <div className="w-full max-w-sm rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-accent)]/8 border border-[var(--color-primary)]/10 p-5 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-[24px] mx-auto mb-3">
-                  {roomInfo?.icon_emoji || "💬"}
-                </div>
-                <p className="text-[15px] font-bold text-[var(--color-text)] mb-1.5">
-                  最初の話題を始めましょう
-                </p>
-                <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed mb-4 max-w-[240px] mx-auto">
-                  上の「💡話題のきっかけ」をタップするか、自分で話題を作成できます
-                </p>
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-[13px] font-bold shadow-sm active:scale-95 transition-transform"
-                >
-                  <Plus className="w-4 h-4" />
-                  話題を作成する
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {topics.map((topic) => (
-                <Link
-                  key={topic.id}
-                  href={`/talk/${slug}/${topic.id}`}
-                  className="block p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <div className="w-5 h-5 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center overflow-hidden flex-shrink-0 border border-[var(--color-border-light)]">
-                           {topic.creator_avatar ? (
-                              <img src={topic.creator_avatar} alt="avatar" className="w-full h-full object-cover" />
-                           ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-indigo-500" />
-                           )}
-                        </div>
-                        <span className="text-[11px] font-bold text-[var(--color-subtle)] truncate">
-                          {topic.creator_name || "参加者"}
-                        </span>
-                      </div>
-                      <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-1.5 break-keep text-balance leading-snug">
-                        {topic.title}
-                      </h3>
-                      {topic.last_message_preview && (
-                        <p className="text-[12px] text-[var(--color-subtle)] truncate mb-2 leading-relaxed">
-                          {topic.last_message_preview}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-3 text-[11px] font-medium text-[var(--color-muted)]">
-                        <span className="flex items-center gap-1 bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
-                          <MessageCircle className="w-3 h-3" />
-                          {topic.message_count}件
-                        </span>
-                        <span>{timeAgo(topic.updated_at)}</span>
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors mt-4">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-[var(--color-muted)] group-hover:text-white transition-colors"
-                      >
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </div>
+            {!showCreateForm ? (
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--color-border)] text-[13px] font-bold text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                自分で話題を作成する
+              </button>
+            ) : (
+              <div className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-primary)]/20 slide-up">
+                <form onSubmit={handleCreateTopic} className="space-y-3">
+                  <input
+                    type="text"
+                    value={newTopicTitle}
+                    onChange={(e) => setNewTopicTitle(e.target.value)}
+                    placeholder="例：おすすめの米粉パン教えて！"
+                    maxLength={100}
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all text-[14px] outline-none"
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setShowCreateForm(false); setNewTopicTitle(""); }}
+                      className="px-4 py-2 text-[13px] font-medium text-[var(--color-subtle)]"
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!newTopicTitle.trim() || isCreating}
+                      className="px-5 py-2 rounded-xl bg-[var(--color-primary)] text-white text-[13px] font-bold disabled:opacity-50 transition-opacity"
+                    >
+                      {isCreating ? "作成中..." : "作成する"}
+                    </button>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
+                </form>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
     </div>
