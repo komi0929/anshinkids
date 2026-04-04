@@ -281,60 +281,100 @@ export default function WikiPage() {
           </div>
         ) : entries.length === 0 ? (
           <div className="mt-2 slide-up px-2">
-            <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-white to-[var(--color-surface-warm)] border border-[var(--color-border-light)] shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-7 text-center">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[var(--color-primary)]/10 rounded-full blur-2xl animate-pulse z-0"></div>
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-[24px] bg-white flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(24,144,136,0.15)] border border-[var(--color-primary)]/10">
-                  <div className="relative">
-                    <BookOpen className="w-8 h-8 text-[var(--color-primary)]" />
-                    <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-white border-2 border-[var(--color-primary)] rounded-full animate-ping opacity-75"></span>
-                    <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-[var(--color-primary)] rounded-full z-10"></span>
+            {searchQuery ? (
+              /* 検索結果なし */
+              <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-white to-[var(--color-surface-warm)] border border-[var(--color-border-light)] shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-7 text-center">
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-warm)] flex items-center justify-center mb-4 text-[28px]">🔍</div>
+                  <h3 className="text-[18px] font-black text-[var(--color-text)] tracking-tight mb-2">
+                    「{searchQuery}」の記事はまだありません
+                  </h3>
+                  <p className="text-[13px] font-medium text-[var(--color-text-secondary)] leading-[1.7] max-w-[280px] mb-5">
+                    別のキーワードで検索するか、トークルームでこのテーマについて話してみませんか？
+                  </p>
+                  <Link href="/talk" className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--color-primary)] text-white text-[13px] font-bold shadow-md hover:opacity-90 transition-all" id="go-to-talk-from-wiki">
+                    <Sparkles className="w-4 h-4" />
+                    トークルームで話題にする
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              /* 記事がまだない状態 — 仕組みの説明 */
+              <div className="space-y-4">
+                {/* ステップ説明カード */}
+                <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[var(--color-surface-warm)] border border-[var(--color-border-light)] shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-6">
+                  <div className="absolute -top-8 -right-8 w-24 h-24 bg-[var(--color-primary)]/8 rounded-full blur-2xl z-0"></div>
+                  <div className="relative z-10">
+                    <h3 className="text-[17px] font-black text-[var(--color-text)] tracking-tight mb-1.5">
+                      まとめ記事はこうやって生まれます
+                    </h3>
+                    <p className="text-[12px] text-[var(--color-text-secondary)] mb-5 leading-relaxed">
+                      みんなの体験談から、AIが自動で役立つ情報を整理します
+                    </p>
+
+                    {/* 3ステップフロー */}
+                    <div className="space-y-3">
+                      {[
+                        { step: "1", icon: "💬", title: "トークルームで体験を共有", desc: "「こんな商品が良かった」「この方法で解決した」など、日常の気づきを投稿" },
+                        { step: "2", icon: "🤖", title: "AIが情報を分析・整理", desc: "複数の投稿から共通の知見やパターンを自動で抽出" },
+                        { step: "3", icon: "📖", title: "まとめ記事として公開", desc: "実体験に基づく、信頼できる情報がここに蓄積されます" },
+                      ].map((item, i) => (
+                        <div key={item.step} className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[18px] relative">
+                            {item.icon}
+                            {i < 2 && (
+                              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[2px] h-3 bg-[var(--color-primary)]/20"></div>
+                            )}
+                          </div>
+                          <div className="flex-1 pt-0.5">
+                            <p className="text-[13px] font-bold text-[var(--color-text)] mb-0.5">{item.title}</p>
+                            <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Link
+                      href="/talk"
+                      className="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-[var(--color-primary)] text-white text-[14px] font-bold shadow-[0_4px_16px_rgba(24,144,136,0.25)] hover:shadow-[0_6px_20px_rgba(24,144,136,0.35)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                      id="go-to-talk-from-wiki"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      体験を共有してまとめを育てる
+                    </Link>
                   </div>
                 </div>
-                <h3 className="text-[19px] font-black text-[var(--color-text)] tracking-tight mb-2.5">
-                  {searchQuery ? `「${searchQuery}」の検索結果がありません` : "AIがヒントを抽出しています"}
-                </h3>
-                <p className="text-[13.5px] font-medium text-[var(--color-text-secondary)] leading-[1.8] max-w-[260px] mb-6">
-                  {searchQuery
-                    ? "別のキーワードで検索するか、カテゴリから探してみてください。"
-                    : "トークルームに投稿された様々な体験から、役立つ情報だけを整理してWiki記事を自動生成します。"
-                  }
-                </p>
-                <Link
-                  href="/talk"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[var(--color-subtle)] text-white text-[14px] font-bold shadow-md hover:bg-black transition-all transform hover:scale-105 active:scale-95"
-                  id="go-to-talk-from-wiki"
-                >
-                  <Sparkles className="w-4.5 h-4.5" />
-                  トークルームを見てみる
-                </Link>
-              </div>
 
-              {!searchQuery && (
-                <div className="mt-10 relative z-10">
-                  <div className="flex items-center gap-3 justify-center mb-5">
+                {/* テーマ一覧 */}
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 justify-center mb-3">
                     <div className="h-[1px] w-full bg-gradient-to-r from-transparent to-[var(--color-border)] opacity-50"></div>
-                    <p className="text-[10px] text-[var(--color-subtle)] font-black tracking-[0.2em] whitespace-nowrap opacity-60">NEXT COMING</p>
+                    <p className="text-[10px] text-[var(--color-subtle)] font-black tracking-[0.12em] whitespace-nowrap opacity-60">こんなテーマの記事が生まれます</p>
                     <div className="h-[1px] w-full bg-gradient-to-l from-transparent to-[var(--color-border)] opacity-50"></div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3.5">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {[
-                      { label: "卵不使用おやつ", icon: "🛒", bg: "from-orange-50 to-orange-100/50" },
-                      { label: "外食チェーン情報", icon: "🍽️", bg: "from-blue-50 to-blue-100/50" },
-                      { label: "保育園の管理表", icon: "🏫", bg: "from-green-50 to-green-100/50" },
-                      { label: "米粉の簡単レシピ", icon: "👩‍🍳", bg: "from-yellow-50 to-yellow-100/50" }
+                      { label: "毎日のごはん", desc: "レシピ・代替食材", icon: "🍚", bg: "from-orange-50 to-orange-100/50" },
+                      { label: "市販品レビュー", desc: "安心して使えた商品", icon: "🛒", bg: "from-blue-50 to-blue-100/50" },
+                      { label: "外食・おでかけ", desc: "店舗・施設の対応情報", icon: "🍽️", bg: "from-rose-50 to-rose-100/50" },
+                      { label: "園・学校との連携", desc: "書類・交渉のコツ", icon: "🏫", bg: "from-green-50 to-green-100/50" },
+                      { label: "負荷試験", desc: "体験談・準備物", icon: "🧪", bg: "from-teal-50 to-teal-100/50" },
+                      { label: "肌とからだ", desc: "ケア方法・使ってよかった品", icon: "🧴", bg: "from-lime-50 to-lime-100/50" },
+                      { label: "気持ち・家族", desc: "不安の乗り越え方", icon: "💛", bg: "from-fuchsia-50 to-fuchsia-100/50" },
+                      { label: "食べられた記録", desc: "ステップアップ体験", icon: "🌱", bg: "from-emerald-50 to-emerald-100/50" },
                     ].map((theme) => (
-                      <div key={theme.label} className={`relative overflow-hidden rounded-[20px] p-4 text-left stagger-item bg-gradient-to-br ${theme.bg} border border-white/50 shadow-sm backdrop-blur-sm opacity-60`}>
-                        <div className="w-9 h-9 rounded-full bg-white/80 flex items-center justify-center text-[16px] shadow-sm mb-2.5 backdrop-blur-md">
+                      <Link key={theme.label} href="/talk" className={`relative overflow-hidden rounded-2xl p-3 text-left bg-gradient-to-br ${theme.bg} border border-white/60 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all`}>
+                        <div className="w-8 h-8 rounded-xl bg-white/80 flex items-center justify-center text-[15px] shadow-sm mb-1.5">
                           {theme.icon}
                         </div>
-                        <span className="text-[12px] font-bold text-[var(--color-text)] leading-tight block">{theme.label}</span>
-                      </div>
+                        <span className="text-[11px] font-bold text-[var(--color-text)] leading-tight block">{theme.label}</span>
+                        <span className="text-[9px] text-[var(--color-muted)] leading-tight block mt-0.5">{theme.desc}</span>
+                      </Link>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         ) : (
           <>
