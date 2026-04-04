@@ -1,0 +1,404 @@
+{
+  "daily-food": {
+    "theme": "毎日のごはん",
+    "input_messages": 12,
+    "generated_sections": [
+      {
+        "heading": "おやつ",
+        "items": [
+          {
+            "title": "米粉とバナナのパンケーキ",
+            "content": "米粉とバナナだけで作るパンケーキは、卵アレルギーの子どもにも好評というケースが報告されています。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 2,
+            "heat_score": 0,
+            "tips": [
+              "豆乳ヨーグルトを加えると、しっとりして美味しくなる",
+              "ココナッツオイルで焼くとサクサクになる",
+              "冷凍保存可能"
+            ],
+            "is_recommended": true
+          },
+          {
+            "title": "タピオカ粉のポンデケージョ",
+            "content": "タピオカ粉で作るポンデケージョは、チーズアレルギーがなければ、もちもちして美味しいという声があります。小麦粉不使用。",
+            "allergen_free": [
+              "卵",
+              "小麦"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          }
+        ]
+      },
+      {
+        "heading": "弁当",
+        "items": [
+          {
+            "title": "かぼちゃの茶巾",
+            "content": "卵焼きの代わりにかぼちゃの茶巾を入れるという声があります。見た目も黄色で卵焼きっぽく、子供にも好評。ラップで包んで絞るだけで簡単に作れる。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          },
+          {
+            "title": "さつまいもスティック",
+            "content": "さつまいもスティックは、オーブンで焼くだけで甘くて子供が喜ぶという声があります。",
+            "allergen_free": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          },
+          {
+            "title": "ツナとコーンのおにぎり",
+            "content": "ツナとコーンのおにぎりは定番化しているという声があります。マヨネーズはキューピーのエッグケアを使用。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "朝食",
+        "items": [
+          {
+            "title": "オーバーナイトオーツ",
+            "content": "オートミールに豆乳をかけて一晩冷蔵庫に入れておくオーバーナイトオーツは、手軽でおすすめという声があります。",
+            "allergen_free": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          },
+          {
+            "title": "納豆ごはん",
+            "content": "納豆ごはんに海苔を巻くだけでも栄養が摂れるという声があります。味噌汁があれば完璧。",
+            "allergen_free": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": false
+          },
+          {
+            "title": "米粉と豆乳の蒸しパン",
+            "content": "米粉と豆乳で蒸した蒸しパンを冷凍ストックしておくと、レンチンですぐ食べられるので便利という声があります。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          }
+        ]
+      },
+      {
+        "heading": "夕食",
+        "items": [
+          {
+            "title": "れんこんハンバーグ",
+            "content": "ハンバーグのつなぎに卵の代わりとして、れんこんのすりおろしを入れるという声があります。もちもちして美味しいという感想も。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": false
+          }
+        ]
+      }
+    ]
+  },
+  "products": {
+    "theme": "使ってよかった市販品",
+    "input_messages": 10,
+    "generated_sections": [
+      {
+        "heading": "パン",
+        "items": [
+          {
+            "title": "みんなの食卓 米粉パン",
+            "brand": "日本ハム",
+            "content": "トーストするとサクサクになり、普通のパンのような食感を楽しめるという声があります。冷凍保存も可能。",
+            "allergen_free": [],
+            "where_to_buy": [
+              "イオン"
+            ],
+            "mention_count": 2,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": true
+          },
+          {
+            "title": "お米のパン",
+            "brand": "タイナイ",
+            "content": "もっちりとした食感が特徴の米粉パン。Amazonで購入可能。",
+            "allergen_free": [],
+            "where_to_buy": [
+              "Amazon"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          },
+          {
+            "title": "シャールの食パン",
+            "brand": "シャール",
+            "content": "卵・乳不使用の食パン。ドイツの会社が製造しており、品質が高いという声があります。カルディで見かけるという情報があります。",
+            "allergen_free": [
+              "卵",
+              "乳"
+            ],
+            "where_to_buy": [
+              "カルディ"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "おやつ",
+        "items": [
+          {
+            "title": "クッキー類",
+            "brand": "辻安全食品",
+            "content": "28品目不使用で、アレルギーを持つ子供でも安心して食べられるクッキー。味が美味しいという評価があります。",
+            "allergen_free": [],
+            "where_to_buy": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          },
+          {
+            "title": "ハイハイン",
+            "brand": "亀田",
+            "content": "国産米100%使用の赤ちゃん向けおせんべい。安心して与えられ、コスパが良いという声があります。",
+            "allergen_free": [],
+            "where_to_buy": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          },
+          {
+            "title": "アンパンマンのおせんべい",
+            "brand": null,
+            "content": "28品目不使用で、子供に人気のおせんべい。スーパーで手軽に購入できる。",
+            "allergen_free": [],
+            "where_to_buy": [
+              "スーパー"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          },
+          {
+            "title": "ノンアレクッキー",
+            "brand": "太田油脂",
+            "content": "素朴な味わいのクッキー。楽天で箱買いする人がいるという情報があります。",
+            "allergen_free": [],
+            "where_to_buy": [
+              "楽天"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "調味料",
+        "items": [
+          {
+            "title": "エッグケア",
+            "brand": "キューピー",
+            "content": "味は普通のマヨネーズとほぼ変わらず、サラダやお弁当など様々な用途に使える。",
+            "allergen_free": [],
+            "where_to_buy": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          },
+          {
+            "title": "有機みそ",
+            "brand": "創健社",
+            "content": "添加物を使用していない味噌。大豆アレルギーの場合は使用できない。",
+            "allergen_free": [],
+            "where_to_buy": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          }
+        ]
+      }
+    ]
+  },
+  "eating-out": {
+    "theme": "外食・おでかけ",
+    "input_messages": 10,
+    "generated_sections": [
+      {
+        "heading": "ファミレス",
+        "items": [
+          {
+            "title": "ココス",
+            "content": "アレルギー対応メニューが充実しており、低アレルゲンメニューとして卵・乳・小麦・えび・かに・そば・落花生不使用のキッズプレートが提供されているという報告があります。",
+            "allergy_menu": true,
+            "safe_items": [
+              "低アレルゲンキッズプレート"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": true
+          },
+          {
+            "title": "ガスト",
+            "content": "アレルギー情報をタブレットで確認でき、店員に伝えると厨房で別調理してくれるという報告があります。",
+            "allergy_menu": true,
+            "safe_items": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": true
+          },
+          {
+            "title": "サイゼリヤ",
+            "content": "アレルゲン表が充実しており、ドリアやグラタンを避ければ食べられるものが多いという報告があります。コスパが良い点も評価されています。",
+            "allergy_menu": true,
+            "safe_items": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "回転寿司",
+        "items": [
+          {
+            "title": "くら寿司",
+            "content": "皿ごとのアレルゲン情報がアプリで見られるため安心という声があります。ネタによっては卵不使用の握りも選択可能です。",
+            "allergy_menu": true,
+            "safe_items": [
+              "卵不使用の握り"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          },
+          {
+            "title": "スシロー",
+            "content": "アレルゲン表を入手可能。刺身のみを食べるという人もいますが、同じ場所で食事できることが嬉しいという声があります。",
+            "allergy_menu": true,
+            "safe_items": [
+              "刺身"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "テーマパーク",
+        "items": [
+          {
+            "title": "ディズニーランド",
+            "content": "アレルギー対応レストランが複数あり、事前にキャストに伝えれば個別対応してくれるという報告があります。低アレルゲンメニューも用意されています。",
+            "allergy_menu": true,
+            "safe_items": [
+              "低アレルゲンメニュー"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": true
+          },
+          {
+            "title": "USJ",
+            "content": "アレルギー対応が改善され、アレルギー対応セットがいくつか用意されており、Webで事前確認も可能という報告があります。",
+            "allergy_menu": true,
+            "safe_items": [
+              "アレルギー対応セット"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "ファストフード",
+        "items": [
+          {
+            "title": "モスバーガー",
+            "content": "低アレルゲンメニューがあり、専用の調理エリアで作ってくれるため安心感があるという声があります。",
+            "allergy_menu": true,
+            "safe_items": [
+              "低アレルゲンメニュー"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": true
+          },
+          {
+            "title": "マクドナルド",
+            "content": "アレルゲン表はあるものの、フライヤーが共有であるため、厳密な除去を行っている家庭は注意が必要です。ポテトのみであれば大丈夫かもしれないという意見があります。",
+            "allergy_menu": true,
+            "safe_items": [
+              "ポテト"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "旅行先",
+        "items": [
+          {
+            "title": "ルネッサンスリゾートオキナワ",
+            "content": "沖縄旅行において、アレルギー対応のホテルが増えており、ルネッサンスリゾートオキナワでは事前に相談すると個別対応してくれるという報告があります。",
+            "allergy_menu": true,
+            "safe_items": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "reviews": [],
+            "is_recommended": true
+          }
+        ]
+      }
+    ]
+  }
+}
