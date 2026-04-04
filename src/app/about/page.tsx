@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Leaf, Check, Shield, ChevronRight, Sparkles } from "@/components/icons";
+import { ArrowLeft, Check, Shield, ChevronRight, Sparkles } from "@/components/icons";
 
 const STEPS = [
   {
     num: "1",
     title: "トークルームで話す・見る",
     desc: "テーマごとに分かれた部屋で、体験談やおすすめ情報を読んだり、気軽に書き込んだりできます。",
+    wip: false,
     points: [
       "見るだけでもOK — ログインしなくても読めます",
       "書き込みは自動消去 — ヒントはAIが永久保存",
@@ -18,6 +19,7 @@ const STEPS = [
     num: "2",
     title: "まとめで調べる",
     desc: "みんなの投稿をAIが自動で整理して、8つの大きなテーマ記事にまとめています。",
+    wip: false,
     points: [
       "「毎日のごはん」「外食情報」など8テーマ別に探せます",
       "あなたの情報もかんたんに追加できます",
@@ -28,6 +30,7 @@ const STEPS = [
     num: "3",
     title: "AIに相談する",
     desc: "みんなの体験をもとに、AIがやさしくお答えします。",
+    wip: true,
     points: [
       "ログインなしでも使えます",
       "よくある質問のサンプルが用意されています",
@@ -57,14 +60,14 @@ export default function AboutPage() {
       {/* Header */}
       <div className="px-5 py-3.5 flex items-center gap-3 sticky top-0 z-40"
         style={{ background: "rgba(248, 246, 242, 0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--color-border)" }}>
-        <Link
-          href="/talk"
+        <button
+          onClick={() => window.history.back()}
           className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
           id="back-from-about"
           style={{ color: "var(--color-text)" }}
         >
           <ArrowLeft className="w-5 h-5" />
-        </Link>
+        </button>
         <h1 className="text-[16px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
           あんしんキッズとは
         </h1>
@@ -72,9 +75,8 @@ export default function AboutPage() {
 
       {/* Hero */}
       <div className="px-6 pt-10 pb-8 text-center">
-        <div className="w-20 h-20 mx-auto mb-5 rounded-[22px] flex items-center justify-center"
-          style={{ background: "var(--color-primary)" }}>
-          <Leaf className="w-10 h-10 text-white" />
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success-deep)] flex items-center justify-center shadow-lg">
+          <span className="text-[32px]">🍀</span>
         </div>
         <h2 className="text-[22px] font-black leading-tight tracking-tight break-keep text-balance" style={{ color: "var(--color-text)" }}>
           食物アレルギーのヒントを<br />みんなで、安心して
@@ -128,10 +130,13 @@ export default function AboutPage() {
       <div className="px-5 space-y-3 mb-8">
         {STEPS.map((step, i) => (
           <div key={step.num}>
-            <div className="card p-5">
+            <div className={`card p-5 relative ${step.wip ? 'opacity-60' : ''}`}>
+              {step.wip && (
+                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-[10px] font-bold text-amber-700">準備中</div>
+              )}
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-[15px]"
-                  style={{ background: "var(--color-primary)", color: "white" }}>
+                  style={{ background: step.wip ? 'var(--color-muted)' : 'var(--color-primary)', color: 'white' }}>
                   {step.num}
                 </div>
                 <h4 className="text-[16px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
@@ -144,7 +149,7 @@ export default function AboutPage() {
               <ul className="space-y-2">
                 {step.points.map((point, j) => (
                   <li key={j} className="flex items-start gap-2 text-[13px] font-semibold" style={{ color: "var(--color-text-secondary)" }}>
-                    <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary)" }} />
+                    <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: step.wip ? 'var(--color-muted)' : 'var(--color-primary)' }} />
                     {point}
                   </li>
                 ))}
@@ -209,7 +214,7 @@ export default function AboutPage() {
           </Link>
         </div>
         <p className="text-[12px] font-medium text-center mt-4" style={{ color: "var(--color-subtle)" }}>
-          ログインしなくてもまとめ記事の閲覧・AI相談はご利用いただけます
+          ログインしなくてもまとめ記事の閲覧はご利用いただけます
         </p>
       </div>
 

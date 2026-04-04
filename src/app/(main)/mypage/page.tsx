@@ -109,11 +109,13 @@ export default function MyPage() {
       if (d.contributions) setContributions(d.contributions as unknown as Contribution[]);
       if (d.impact) setImpact(d.impact as unknown as ImpactData);
     } else {
-      setHasError(true);
-      if (result.error && result.error.includes("ログイン")) {
-         // It's a genuine auth error, keep profile as null
+      const errText = result.error || "";
+      // Auth-related errors → show login prompt (profile stays null)
+      if (errText.includes("ログイン") || errText.includes("認証") || errText.includes("DB未接続")) {
+        setHasError(false); // Let the !profile fallback handle it
       } else {
-         setErrorMsg(result.error || "データの取得に失敗しました。再読み込みをお試しください。");
+        setHasError(true);
+        setErrorMsg("接続エラーが発生しました。ページを再読み込みしてください。");
       }
     }
     setIsLoading(false);
@@ -693,6 +695,21 @@ export default function MyPage() {
       <div className="px-4 mb-4">
         <h3 className="text-[13px] font-extrabold text-[var(--color-subtle)] mb-2 px-1 break-keep text-balance">運営・サポート</h3>
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
+          <Link
+            href="/about"
+            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+                <span className="text-sm">🍀</span>
+              </div>
+              <div>
+                <div className="text-[14px] font-bold text-[var(--color-text)] mb-0.5">あんしんキッズとは</div>
+                <div className="text-[11px] text-[var(--color-subtle)]">サービスの仕組み・安心ポイント</div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[var(--color-muted)]" />
+          </Link>
           <a
             href="mailto:support@anshin-kids.app?subject=アプリへのアイデア・バグ報告"
             className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"

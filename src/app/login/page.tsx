@@ -3,12 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Leaf,
-  MessageCircle,
-  BookOpen,
-  Sparkles,
   Shield,
-  ArrowRight,
   Check,
 } from "@/components/icons";
 
@@ -57,18 +52,15 @@ export default function LoginPage() {
       className="min-h-[100dvh] flex flex-col"
       style={{ background: "var(--color-bg)" }}
     >
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm">
-          {/* Logo & Brand */}
-          <div className="text-center mb-10 fade-in">
-            <div
-              className="w-20 h-20 mx-auto mb-5 rounded-[22px] flex items-center justify-center"
-              style={{ background: "var(--color-primary)" }}
-            >
-              <Leaf className="w-10 h-10 text-white" />
+          {/* Brand */}
+          <div className="text-center mb-8 fade-in">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success-deep)] flex items-center justify-center shadow-lg">
+              <span className="text-[32px]">🍀</span>
             </div>
             <h1
-              className="text-[28px] font-black tracking-tight break-keep text-balance"
+              className="text-[26px] font-black tracking-tight"
               style={{
                 color: "var(--color-text)",
                 fontFamily: "var(--font-display)",
@@ -77,104 +69,42 @@ export default function LoginPage() {
               あんしんキッズ
             </h1>
             <p
-              className="text-[15px] font-medium mt-2"
+              className="text-[14px] font-medium mt-1.5 leading-relaxed"
               style={{ color: "var(--color-text-secondary)" }}
             >
               食物アレルギーのヒントを、みんなでつくる
             </p>
           </div>
 
-          {/* Mission Statement */}
-          <div className="mb-8 fade-in-delayed">
-            <div className="card-elevated p-6">
-              <p
-                className="text-[15px] font-medium leading-[2] text-center"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                今日あなたが話した体験が、
-                <br />
-                明日どこかで悩んでいる親子の
-                <br />
-                <span
-                  className="font-extrabold text-[16px]"
-                  style={{ color: "var(--color-primary)" }}
-                >
-                  「希望の道しるべ」
-                </span>
-                <br />
-                になります
-              </p>
-            </div>
-          </div>
-
-          {/* How it Works - 3 Steps */}
-          <div className="mb-8 fade-in-delayed-2">
-            <div className="grid grid-cols-3 gap-2 relative">
-              {[
-                {
-                  icon: <MessageCircle className="w-5 h-5" />,
-                  title: "話すだけ",
-                  sub: "気軽に",
-                },
-                {
-                  icon: <Sparkles className="w-5 h-5" />,
-                  title: "AIが編集",
-                  sub: "自働で抽出",
-                },
-                {
-                  icon: <BookOpen className="w-5 h-5" />,
-                  title: "ヒントに",
-                  sub: "未来へ残す",
-                },
-              ].map((step, i) => (
-                <div key={step.title} className="relative">
-                  <div
-                    className="flex flex-col items-center justify-center gap-1.5 px-1 py-4 rounded-2xl h-full"
-                    style={{
-                      background: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                    }}
-                  >
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center mb-1"
-                      style={{
-                        background: "var(--color-primary-bg)",
-                        color: "var(--color-primary)",
-                      }}
-                    >
-                      {step.icon}
+          {/* How it Works — Compact */}
+          <div className="mb-7 fade-in" style={{ animationDelay: "100ms" }}>
+            <div className="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+              <div className="flex items-center gap-3">
+                {[
+                  { icon: "💬", label: "体験を話す" },
+                  { icon: "🤖", label: "AIが整理" },
+                  { icon: "📖", label: "まとめに" },
+                ].map((step, i) => (
+                  <div key={step.label} className="flex items-center gap-2 flex-1">
+                    <div className="flex flex-col items-center gap-1 flex-1">
+                      <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[16px]">
+                        {step.icon}
+                      </div>
+                      <span className="text-[10px] font-bold text-[var(--color-text-secondary)] whitespace-nowrap">
+                        {step.label}
+                      </span>
                     </div>
-                    <p
-                      className="text-[12px] font-bold whitespace-nowrap text-center"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      {step.title}
-                    </p>
-                    <p
-                      className="text-[10px] font-medium whitespace-nowrap text-center"
-                      style={{ color: "var(--color-subtle)" }}
-                    >
-                      {step.sub}
-                    </p>
+                    {i < 2 && (
+                      <span className="text-[var(--color-muted)] text-[10px] -mt-3 flex-shrink-0">→</span>
+                    )}
                   </div>
-                  {i < 2 && (
-                    <div
-                      className="absolute top-1/2 -right-2.5 transform -translate-y-1/2 z-10 w-5 h-5 flex items-center justify-center rounded-full"
-                      style={{ background: "var(--color-bg)" }}
-                    >
-                      <ArrowRight
-                        size={12}
-                        style={{ color: "var(--color-muted)" }}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
           {/* LINE Login Button */}
-          <div className="space-y-4 fade-in-delayed-2">
+          <div className="space-y-3 fade-in" style={{ animationDelay: "200ms" }}>
             <button
               onClick={handleLineLogin}
               disabled={isLoading}
@@ -188,8 +118,8 @@ export default function LoginPage() {
               <svg
                 role="img"
                 viewBox="0 0 24 24"
-                width="24"
-                height="24"
+                width="22"
+                height="22"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
@@ -202,7 +132,7 @@ export default function LoginPage() {
 
             {error && (
               <div
-                className="text-[14px] font-semibold p-4 rounded-xl text-center"
+                className="text-[13px] font-semibold p-3.5 rounded-xl text-center"
                 style={{
                   color: "var(--color-danger)",
                   background: "var(--color-danger-light)",
@@ -217,7 +147,7 @@ export default function LoginPage() {
             <Link
               href="/talk"
               id="browse-without-login"
-              className="block w-full text-center py-3 text-[14px] font-bold transition-colors"
+              className="block w-full text-center py-2.5 text-[14px] font-bold transition-colors"
               style={{ color: "var(--color-primary)" }}
             >
               ログインせずに見てみる →
@@ -226,14 +156,15 @@ export default function LoginPage() {
 
           {/* Safety Points */}
           <div
-            className="mt-6 p-5 rounded-2xl"
+            className="mt-6 p-4 rounded-2xl fade-in"
             style={{
               background: "var(--color-surface)",
               border: "1px solid var(--color-border)",
+              animationDelay: "300ms",
             }}
           >
             <h3
-              className="text-[14px] font-extrabold mb-4 flex items-center gap-2 break-keep text-balance"
+              className="text-[13px] font-extrabold mb-3 flex items-center gap-2"
               style={{ color: "var(--color-text)" }}
             >
               <Shield
@@ -242,25 +173,24 @@ export default function LoginPage() {
               />
               安心してご利用ください
             </h3>
-            <div className="grid grid-cols-1 gap-2.5">
+            <div className="space-y-2">
               {[
                 "匿名で参加できます",
                 "投稿は自動消去されるので安心",
                 "LINEの友だちには通知されません",
-                "いつでも１タップで登録解除可能",
+                "いつでも１タップで退会可能",
               ].map((text) => (
                 <div
                   key={text}
-                  className="flex items-center gap-2.5 p-3 rounded-xl whitespace-nowrap overflow-hidden"
-                  style={{ background: "var(--color-surface-soft)" }}
+                  className="flex items-center gap-2"
                 >
                   <Check
-                    size={14}
+                    size={13}
                     className="flex-shrink-0"
                     style={{ color: "var(--color-primary)" }}
                   />
                   <span
-                    className="text-[12px] font-bold truncate"
+                    className="text-[12px] font-medium"
                     style={{ color: "var(--color-text-secondary)" }}
                   >
                     {text}
@@ -270,9 +200,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Legal */}
+          {/* Legal & About */}
           <div
-            className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] font-bold"
+            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] font-bold"
             style={{ color: "var(--color-subtle)" }}
           >
             <Link
@@ -295,10 +225,10 @@ export default function LoginPage() {
             </Link>
           </div>
           <p
-            className="mt-2 text-center text-[11px] font-medium"
+            className="mt-2 text-center text-[11px] font-medium pb-4"
             style={{ color: "var(--color-muted)" }}
           >
-            ログインすることで、利用規約・プライバシーポリシーに同意したものとみなします
+            ログインすることで利用規約・プライバシーポリシーに同意したものとみなします
           </p>
         </div>
       </div>
