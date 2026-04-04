@@ -969,6 +969,18 @@ interface Item {
   safe_items?: string[];
   brand?: string | null;
   reviews?: { rating?: number; comment?: string }[];
+  // Load-test specific
+  allergen?: string | null;
+  child_age?: string | null;
+  result?: string | null;
+  // Skin-care specific
+  skin_type?: string | null;
+  // School specific
+  documents_needed?: string[];
+  negotiation_phrases?: string[];
+  // Emotions specific
+  coping_strategies?: string[];
+  encouraging_words?: string[];
   [key: string]: unknown;
 }
 
@@ -988,14 +1000,123 @@ const THEME_EMOJIS: Record<string, string> = {
   "food-wins": "🌱",
 };
 
+const THEME_COLORS: Record<string, { from: string; to: string; accent: string }> = {
+  "daily-food": { from: "from-orange-50", to: "to-amber-50", accent: "text-orange-600" },
+  products: { from: "from-blue-50", to: "to-indigo-50", accent: "text-blue-600" },
+  "eating-out": { from: "from-rose-50", to: "to-pink-50", accent: "text-rose-600" },
+  school: { from: "from-violet-50", to: "to-purple-50", accent: "text-violet-600" },
+  "load-test": { from: "from-teal-50", to: "to-cyan-50", accent: "text-teal-600" },
+  "skin-care": { from: "from-lime-50", to: "to-green-50", accent: "text-lime-600" },
+  emotions: { from: "from-fuchsia-50", to: "to-pink-50", accent: "text-fuchsia-600" },
+  "food-wins": { from: "from-emerald-50", to: "to-teal-50", accent: "text-emerald-600" },
+};
+
+/** Suppress duplicate title if it matches section heading */
+function shouldShowTitle(sectionHeading: string, itemTitle: string): boolean {
+  const normalize = (s: string) => s.replace(/[\s　]/g, '').toLowerCase();
+  return normalize(sectionHeading) !== normalize(itemTitle);
+}
+
+/** Render theme-specific rich metadata for each item */
+function ThemeSpecificMeta({ item, themeSlug }: { item: Item; themeSlug: string }) {
+  const parts: React.ReactNode[] = [];
+
+  // Load-test: show allergen, child_age, result
+  if (themeSlug === "load-test") {
+    const metas: { icon: string; label: string; value: string }[] = [];
+    if (item.allergen) metas.push({ icon: "🔬", label: "アレルゲン", value: String(item.allergen) });
+    if (item.child_age) metas.push({ icon: "👶", label: "年齢", value: String(item.child_age) });
+    if (item.result) metas.push({ icon: "📊", label: "結果", value: String(item.result) });
+    if (metas.length > 0) {
+      parts.push(
+        <div key="load-metas" className="mt-3 grid grid-cols-1 gap-1.5">
+          {metas.map((m, i) => (
+            <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 rounded-xl border border-teal-100">
+              <span className="text-sm">{m.icon}</span>
+              <span className="text-[10px] font-bold text-teal-700">{m.label}:</span>
+              <span className="text-[11px] font-semibold text-teal-900">{m.value}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+  }
+
+  // Skin-care: show skin_type
+  if (themeSlug === "skin-care" && item.skin_type) {
+    parts.push(
+      <div key="skin-type" className="mt-2">
+        <span className="px-2.5 py-1 bg-lime-50 text-lime-700 rounded-full text-[10px] font-bold border border-lime-200">
+          🧴 {item.skin_type}向け
+        </span>
+      </div>
+    );
+  }
+
+  // School: show documents_needed
+  if (themeSlug === "school" && item.documents_needed && item.documents_needed.length > 0) {
+    parts.push(
+      <div key="docs" className="mt-3 p-2.5 bg-violet-50 rounded-xl border border-violet-100">
+        <p className="text-[10px] font-bold text-violet-700 mb-1">📄 必要書類</p>
+        <div className="flex flex-wrap gap-1.5">
+          {item.documents_needed.map((d: string, i: number) => (
+            <span key={i} className="px-2 py-0.5 bg-white text-violet-700 rounded-full text-[10px] font-semibold border border-violet-200">
+              {d}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Emotions: show coping_strategies + encouraging_words
+  if (themeSlug === "emotions") {
+    if (item.coping_strategies && item.coping_strategies.length > 0) {
+      parts.push(
+        <div key="coping" className="mt-3 p-2.5 bg-fuchsia-50 rounded-xl border border-fuchsia-100">
+          <p className="text-[10px] font-bold text-fuchsia-700 mb-1.5">💪 対処法</p>
+          <div className="space-y-1">
+            {item.coping_strategies.map((s: string, i: number) => (
+              <div key={i} className="flex items-start gap-1.5">
+                <span className="text-fuchsia-400 text-[10px] mt-0.5">▸</span>
+                <span className="text-[11px] text-fuchsia-800 leading-relaxed">{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    if (item.encouraging_words && item.encouraging_words.length > 0) {
+      parts.push(
+        <div key="encourage" className="mt-2">
+          {item.encouraging_words.map((w: string, i: number) => (
+            <div key={i} className="px-3 py-2 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-200 italic">
+              <span className="text-[12px] text-pink-800 leading-relaxed">&ldquo;{w}&rdquo;</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+  }
+
+  return parts.length > 0 ? <>{parts}</> : null;
+}
+
 export default function SimulationPreview() {
   const [selectedTheme, setSelectedTheme] = useState<string>("daily-food");
   const [bookmarked, setBookmarked] = useState<Set<string>>(new Set());
+  const [expandedToc, setExpandedToc] = useState(false);
 
   const data = SIMULATION_DATA[selectedTheme];
   const sections = data.generated_sections;
-
   const totalItems = sections.reduce((sum, sec) => sum + sec.items.length, 0);
+  const colors = THEME_COLORS[selectedTheme] || THEME_COLORS["daily-food"];
+
+  const scrollToSection = (idx: number) => {
+    const el = document.getElementById(`section-${idx}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setExpandedToc(false);
+  };
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[var(--color-surface)]">
@@ -1009,190 +1130,209 @@ export default function SimulationPreview() {
             <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-400 to-pink-500 px-2.5 py-1 rounded-full">🧪 シミュレーション</span>
           </div>
           <h1 className="text-[15px] font-bold text-[var(--color-text)] truncate break-keep text-balance mt-1">
-            {THEME_EMOJIS[selectedTheme]} 【総合】{data.theme}
+            {THEME_EMOJIS[selectedTheme]} {data.theme}
           </h1>
-          <p className="text-[10px] text-[var(--color-subtle)]">{data.theme}</p>
         </div>
-      </div>
-
-      {/* Theme Selector */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {Object.entries(SIMULATION_DATA).map(([slug, d]) => (
-            <button
-              key={slug}
-              onClick={() => setSelectedTheme(slug)}
-              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-bold transition-all border ${
-                selectedTheme === slug
-                  ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-md"
-                  : "bg-white text-[var(--color-text)] border-[var(--color-border-light)] hover:border-[var(--color-primary)]/30"
-              }`}
-            >
-              <span className="text-lg">{THEME_EMOJIS[slug]}</span>
-              {d.theme}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Simulation Info Banner */}
-      <div className="px-4 pb-3">
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200/50">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm">🧪</span>
-            <span className="text-[13px] font-bold text-orange-900">シミュレーション結果</span>
+        {/* Compact Stats */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="text-center">
+            <p className="text-[14px] font-black text-[var(--color-primary)]">{totalItems}</p>
+            <p className="text-[8px] font-semibold text-[var(--color-muted)]">件</p>
           </div>
-          <div className="flex gap-4 text-center">
-            <div>
-              <p className="text-[20px] font-black text-orange-600">{data.input_messages}</p>
-              <p className="text-[10px] font-semibold text-orange-500">入力会話数</p>
-            </div>
-            <div className="w-px bg-orange-200" />
-            <div>
-              <p className="text-[20px] font-black text-orange-600">{sections.length}</p>
-              <p className="text-[10px] font-semibold text-orange-500">生成セクション</p>
-            </div>
-            <div className="w-px bg-orange-200" />
-            <div>
-              <p className="text-[20px] font-black text-orange-600">{totalItems}</p>
-              <p className="text-[10px] font-semibold text-orange-500">抽出アイテム</p>
-            </div>
-          </div>
-          <p className="text-[11px] text-orange-700 mt-3 leading-relaxed">
-            ↑ {data.input_messages}件のダミー会話から、本番と同じAIプロンプトで生成した結果です。実際のバッチ処理と同一の記事が生成されます。
-          </p>
         </div>
       </div>
 
-      {/* Trust & Source Badges */}
-      <div className="px-4 pb-4">
-        <div className="flex items-center flex-wrap gap-2 mb-4">
-          <span className="trust-badge trust-low">
+      {/* Theme Tab Selector with scroll fade */}
+      <div className="relative">
+        <div className="px-4 pt-3 pb-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-2 w-max">
+            {Object.entries(SIMULATION_DATA).map(([slug, d]) => (
+              <button
+                key={slug}
+                onClick={() => setSelectedTheme(slug)}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold transition-all border ${
+                  selectedTheme === slug
+                    ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-md scale-[1.02]"
+                    : "bg-white text-[var(--color-text)] border-[var(--color-border-light)] hover:border-[var(--color-primary)]/30"
+                }`}
+              >
+                <span className="text-base">{THEME_EMOJIS[slug]}</span>
+                <span className="whitespace-nowrap">{d.theme}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* Scroll fade indicators */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--color-surface)] to-transparent pointer-events-none z-10" />
+      </div>
+
+      {/* Compact Stats + Source Banner */}
+      <div className="px-4 py-2">
+        <div className={`flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r ${colors.from} ${colors.to} border border-[var(--color-border-light)]/50`}>
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-1.5">
+              <MessageCircle className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+              <span className="text-[11px] font-bold text-[var(--color-text)]">{data.input_messages}件の声</span>
+            </div>
+            <span className="text-[var(--color-border-light)]">│</span>
+            <span className="text-[11px] font-semibold text-[var(--color-muted)]">{sections.length}カテゴリ</span>
+            <span className="text-[var(--color-border-light)]">│</span>
+            <span className="text-[11px] font-semibold text-[var(--color-muted)]">{totalItems}アイテム</span>
+          </div>
+          <span className="trust-badge trust-low text-[9px]">
             <Shield className="w-3 h-3" />
             新しい声
           </span>
         </div>
+      </div>
 
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-bg-warm)] border border-[var(--color-border-light)] mb-5">
-          <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-7 h-7 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-            </div>
-            <span className="text-[12px] font-bold text-[var(--color-text)]">
-              {data.input_messages}件の体験にもとづく情報です
-            </span>
+      {/* Table of Contents (collapsible) */}
+      <div className="px-4 pb-2">
+        <button
+          onClick={() => setExpandedToc(!expandedToc)}
+          className="w-full flex items-center justify-between p-3 rounded-xl bg-white border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/30 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-[var(--color-primary)]" />
+            <span className="text-[12px] font-bold text-[var(--color-text)]">目次 — {sections.length}カテゴリ</span>
           </div>
-          <p className="text-[10px] text-[var(--color-muted)] ml-9 leading-relaxed">まだ体験が集まりはじめたばかりです</p>
-        </div>
+          <span className={`text-[var(--color-muted)] text-[12px] transition-transform ${expandedToc ? 'rotate-180' : ''}`}>▼</span>
+        </button>
+        {expandedToc && (
+          <div className="mt-1 p-3 rounded-xl bg-white border border-[var(--color-border-light)] space-y-1 animate-in slide-in-from-top-2">
+            {sections.map((sec, i) => (
+              <button
+                key={i}
+                onClick={() => scrollToSection(i)}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left hover:bg-[var(--color-surface-warm)] transition-colors"
+              >
+                <span className="w-1 h-3 rounded-full bg-[var(--color-primary)]" />
+                <span className="text-[12px] font-semibold text-[var(--color-text)]">{sec.heading}</span>
+                <span className="text-[10px] text-[var(--color-muted)] ml-auto">{sec.items.length}件</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
-        {/* Sections */}
-        <div className="space-y-6 mb-6">
+      {/* Sections */}
+      <div className="px-4 pb-4">
+        <div className="space-y-5 mb-6">
           {sections.map((sec, i) => (
-            <div key={i} className="card-elevated p-5">
-              <h2 className="text-[16px] font-black tracking-tight mb-4 flex items-center gap-2 break-keep text-balance" style={{ color: 'var(--color-primary)' }}>
+            <div key={i} id={`section-${i}`} className="card-elevated p-4 scroll-mt-20">
+              <h2 className="text-[15px] font-black tracking-tight mb-3 flex items-center gap-2 break-keep text-balance" style={{ color: 'var(--color-primary)' }}>
                 <span className="w-1.5 h-4 bg-[var(--color-primary)] rounded-full inline-block" />
                 {sec.heading}
+                <span className="text-[10px] font-semibold text-[var(--color-muted)] ml-auto bg-[var(--color-surface)] px-2 py-0.5 rounded-full">{sec.items.length}件</span>
               </h2>
-              <div className="space-y-4">
-                {sec.items.map((item, j) => (
-                  <div key={j} className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <h3 className="text-[14px] font-bold text-[var(--color-text)] leading-tight flex-1 pr-2 break-keep text-balance">{item.title}</h3>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {item.is_recommended && (
-                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-1 rounded-full shadow-sm mr-1">
-                            👑 定番
+              <div className="space-y-3">
+                {sec.items.map((item, j) => {
+                  const showTitle = shouldShowTitle(sec.heading, item.title);
+                  const itemKey = `${sec.heading}-${item.title}-${j}`;
+                  const isBookmarked = bookmarked.has(itemKey);
+                  
+                  return (
+                    <div key={j} className="p-3.5 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/20 transition-colors">
+                      {/* Title Row */}
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex-1 min-w-0">
+                          {showTitle && (
+                            <h3 className="text-[13px] font-bold text-[var(--color-text)] leading-snug break-keep">{item.title}</h3>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {item.is_recommended && (
+                            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-2 py-0.5 rounded-full shadow-sm">
+                              👑 定番
+                            </span>
+                          )}
+                          <button
+                            onClick={() => {
+                              setBookmarked(prev => {
+                                const next = new Set(prev);
+                                if (next.has(itemKey)) next.delete(itemKey);
+                                else next.add(itemKey);
+                                return next;
+                              });
+                            }}
+                            className={`p-1 rounded-full transition-all ${
+                              isBookmarked
+                                ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] scale-110"
+                                : "text-[var(--color-subtle)] hover:text-[var(--color-text)]"
+                            }`}
+                          >
+                            <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? "fill-current" : ""}`} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <p className="text-[12px] text-[var(--color-subtle)] leading-[1.7] whitespace-pre-wrap">{item.content}</p>
+
+                      {/* Brand */}
+                      {item.brand && (
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <span className="text-[10px]">🏭</span>
+                          <span className="text-[11px] font-semibold text-[var(--color-text)]">{item.brand}</span>
+                        </div>
+                      )}
+
+                      {/* Theme-specific metadata */}
+                      <ThemeSpecificMeta item={item} themeSlug={selectedTheme} />
+
+                      {/* Tips */}
+                      {item.tips && item.tips.length > 0 && (
+                        <div className="mt-2.5 space-y-1">
+                          {item.tips.map((tip, tidx) => (
+                            <div key={tidx} className="flex items-start gap-1.5 px-2.5 py-1.5 bg-amber-50 rounded-lg border border-amber-100">
+                              <span className="text-amber-500 text-[10px] mt-0.5">💡</span>
+                              <span className="text-[11px] text-amber-800 leading-relaxed">{tip}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Tags Row */}
+                      {((item.allergen_free && item.allergen_free.length > 0) ||
+                        (item.where_to_buy && item.where_to_buy.length > 0) ||
+                        (item.safe_items && item.safe_items.length > 0)) && (
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                          {item.allergen_free?.map((a, aidx) => (
+                            <span key={`af-${aidx}`} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-200">
+                              🏷️ {a}不使用
+                            </span>
+                          ))}
+                          {item.where_to_buy?.map((w, widx) => (
+                            <span key={`wb-${widx}`} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold border border-blue-200">
+                              🛒 {w}
+                            </span>
+                          ))}
+                          {item.safe_items?.map((s, sidx) => (
+                            <span key={`si-${sidx}`} className="px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-[10px] font-bold border border-green-200">
+                              ✅ {s}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Meta Stats */}
+                      <div className="flex items-center gap-3 mt-2.5 pt-2 border-t border-[var(--color-border-light)]/40">
+                        {item.mention_count && (
+                          <span className="text-[10px] font-semibold flex items-center gap-1 text-[var(--color-muted)]">
+                            👥 {item.mention_count}人の声
                           </span>
                         )}
-                        <button
-                          onClick={() => {
-                            setBookmarked(prev => {
-                              const next = new Set(prev);
-                              if (next.has(item.title)) next.delete(item.title);
-                              else next.add(item.title);
-                              return next;
-                            });
-                          }}
-                          className={`p-1.5 rounded-full transition-colors ${
-                            bookmarked.has(item.title)
-                              ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                              : "bg-white text-[var(--color-subtle)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border-light)]"
-                          }`}
-                        >
-                          <Bookmark className={`w-4 h-4 ${bookmarked.has(item.title) ? "fill-current" : ""}`} />
-                        </button>
                       </div>
                     </div>
-                    <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed whitespace-pre-wrap">{item.content}</p>
-
-                    {/* Brand */}
-                    {item.brand && (
-                      <p className="mt-2 text-[12px] text-[var(--color-text-secondary)]">
-                        <strong className="text-[var(--color-muted)]">メーカー:</strong> {item.brand}
-                      </p>
-                    )}
-
-                    {/* Tips */}
-                    {item.tips && item.tips.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {item.tips.map((tip, tidx) => (
-                          <span key={tidx} className="px-2.5 py-1.5 bg-white rounded-lg text-[11px] text-[var(--color-text-secondary)] border border-[var(--color-border-light)] flex items-center gap-1">
-                            <span className="text-amber-500">💡</span> {tip}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Allergen Free */}
-                    {item.allergen_free && item.allergen_free.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {item.allergen_free.map((a, aidx) => (
-                          <span key={aidx} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-200">
-                            🏷️ {a}不使用
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Where to Buy */}
-                    {item.where_to_buy && item.where_to_buy.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {item.where_to_buy.map((w, widx) => (
-                          <span key={widx} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold border border-blue-200">
-                            🛒 {w}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Safe Items */}
-                    {item.safe_items && item.safe_items.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {item.safe_items.map((s, sidx) => (
-                          <span key={sidx} className="px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-[10px] font-bold border border-green-200">
-                            ✅ {s}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Meta Stats */}
-                    <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--color-border-light)]/50">
-                      {item.mention_count && (
-                        <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: 'var(--color-muted)' }}>
-                          <span className="text-[12px]">👥</span> {item.mention_count}人の声
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
         </div>
 
         {/* Medical Disclaimer */}
-        <div className="p-3.5 rounded-2xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20 mb-6">
+        <div className="p-3 rounded-2xl bg-[var(--color-warning-light)] border border-[var(--color-warning)]/20 mb-6">
           <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
             ⚠️ この情報は保護者の体験に基づく参考情報です。<strong>医療的な判断は必ず主治医にご相談ください。</strong>
           </p>
