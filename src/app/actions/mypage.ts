@@ -9,17 +9,18 @@ export async function getFullMyPageData() {
   noStore();
   try {
 
-    const [profileRes, contribRes, impactRes, bookmarksRes, streakRes] = await Promise.all([
-      getMyProfile().catch(() => ({ success: false, data: null })),
+    const profileRes = await getMyProfile().catch(() => ({ success: false as const, data: null, error: "プロフィール取得エラー" }));
+    const [contribRes, impactRes, bookmarksRes, streakRes] = await Promise.all([
       getMyContributions().catch(() => ({ success: true, data: [] })),
       getImpactFeedback().catch(() => ({ success: false, data: null })),
       getMyBookmarks().catch(() => ({ success: false, data: [] })),
       getContributionStreak().catch(() => ({ success: false, data: null }))
     ]);
-    if (!profileRes.success && profileRes.error?.includes("ログイン")) {
+    const profileError = !profileRes.success ? ('error' in profileRes ? String(profileRes.error) : "不明なエラー") : null;
+    if (profileError?.includes("ログイン")) {
       return { success: false, error: "ログインが必要です", data: null };
-    } else if (!profileRes.success) {
-      return { success: false, error: profileRes.error || "プロフィールの取得に失敗しました", data: null };
+    } else if (profileError) {
+      return { success: false, error: profileError, data: null };
     }
 
     return {
