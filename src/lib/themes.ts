@@ -39,7 +39,8 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "tips": ["工夫やコツ"],
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -63,7 +64,8 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "reviews": [{"rating": 4, "comment": "コメント"}],
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -86,7 +88,8 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "reviews": [{"rating": 4, "comment": "体験"}],
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -108,7 +111,8 @@ export const THEMES: ThemeDefinition[] = [
     "documents_needed": ["必要書類"],
     "mention_count": 1,
     "heat_score": 0,
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -132,7 +136,8 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "tips": ["準備のコツ"],
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -155,7 +160,8 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "reviews": [{"rating": 4, "duration": "使用期間", "comment": "コメント"}],
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -177,7 +183,8 @@ export const THEMES: ThemeDefinition[] = [
     "encouraging_words": ["励ましの言葉"],
     "mention_count": 1,
     "heat_score": 0,
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -200,7 +207,8 @@ export const THEMES: ThemeDefinition[] = [
     "duration": "経過期間",
     "mention_count": 1,
     "heat_score": 0,
-    "is_recommended": false
+    "is_recommended": false,
+    "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
   },
@@ -221,5 +229,6 @@ export interface MegaWikiItem {
   mention_count: number;
   heat_score: number;
   is_recommended: boolean;
+  source_topics?: { id: string; title: string }[];
   [key: string]: unknown;
 }

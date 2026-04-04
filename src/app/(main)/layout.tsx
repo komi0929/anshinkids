@@ -22,10 +22,7 @@ export default function MainLayout({
 }) {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return !isOnboardingComplete();
-  });
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [helpfulVotes, setHelpfulVotes] = useState<number>(0);
   const [isOffline, setIsOffline] = useState(false);
 
@@ -41,6 +38,9 @@ export default function MainLayout({
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
+        if (!cancelled && !isOnboardingComplete()) {
+          setShowOnboarding(true);
+        }
         if (!cancelled) {
           setIsLoggedIn(!!user);
           if (user) {

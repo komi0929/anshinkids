@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen, Bookmark, ArrowRight } from "@/components/icons";
+import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen, Bookmark, ArrowRight, Filter } from "@/components/icons";
 const Users = User;
 import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets, getRelatedWikiEntries } from "@/app/actions/wiki";
 import { getKnowledgeRipple } from "@/app/actions/discover";
@@ -115,6 +115,34 @@ export default function WikiDetailPage() {
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
   const [relatedEntries, setRelatedEntries] = useState<Array<{id:string; title:string; slug:string; category:string; summary:string; source_count:number}>>([]);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Living Knowledge: アレルゲンフィルター
+  const [allergenFilter, setAllergenFilter] = useState<string[]>([]);
+  const [showAllergenFilter, setShowAllergenFilter] = useState(false);
+
+  const filteredSections = useMemo(() => {
+    if (!entry?.sections || allergenFilter.length === 0) return entry?.sections || [];
+    return entry.sections.map(sec => ({
+      ...sec,
+      items: sec.items.filter(item => {
+        const itemAllergens = (item.allergen_free as string[] | undefined) || [];
+        if (itemAllergens.length === 0) return true;
+        return allergenFilter.some(f => itemAllergens.includes(f));
+      })
+    })).filter(sec => sec.items.length > 0);
+  }, [entry?.sections, allergenFilter]);
+
+  const availableAllergens = useMemo(() => {
+    if (!entry?.sections) return [];
+    const tags = new Set<string>();
+    for (const sec of entry.sections) {
+      for (const item of sec.items) {
+        const af = (item.allergen_free as string[] | undefined) || [];
+        af.forEach(t => tags.add(t));
+      }
+    }
+    return Array.from(tags).sort();
+  }, [entry?.sections]);
 
   useEffect(() => {
     loadEntry();
@@ -388,12 +416,59 @@ export default function WikiDetailPage() {
           </p>
         )}
 
+        {/* Living Knowledge: アレルゲンフィルター */}
+        {availableAllergens.length > 0 && (
+          <div className="mb-5">
+            <button
+              onClick={() => setShowAllergenFilter(!showAllergenFilter)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all ${
+                allergenFilter.length > 0
+                  ? "bg-[var(--color-primary)] text-white shadow-sm"
+                  : "bg-white text-[var(--color-text-secondary)] border border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)]"
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              {allergenFilter.length > 0 ? `${allergenFilter.join("・")}不使用だけ表示` : "お子さまのアレルゲンで絞り込み"}
+            </button>
+            {showAllergenFilter && (
+              <div className="mt-3 p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm slide-up">
+                <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2">お子さまに合った情報だけを表示します</p>
+                <div className="flex flex-wrap gap-2">
+                  {availableAllergens.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => setAllergenFilter(prev =>
+                        prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+                      )}
+                      className={`px-3 py-1.5 rounded-full text-[12px] font-bold transition-all ${
+                        allergenFilter.includes(tag)
+                          ? "bg-[var(--color-primary)] text-white shadow-sm"
+                          : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] border border-[var(--color-border-light)]"
+                      }`}
+                    >
+                      {tag}不使用
+                    </button>
+                  ))}
+                </div>
+                {allergenFilter.length > 0 && (
+                  <button
+                    onClick={() => setAllergenFilter([])}
+                    className="mt-2 text-[11px] font-bold text-[var(--color-primary)] hover:opacity-70"
+                  >
+                    フィルターをクリア
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Section TOC */}
-        {entry.sections && entry.sections.length > 1 && (
+        {filteredSections.length > 1 && (
           <div className="mb-6 p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm">
             <p className="text-[11px] font-black text-[var(--color-subtle)] tracking-wider mb-2.5 uppercase">目次</p>
             <div className="flex flex-wrap gap-2">
-              {entry.sections.map((sec, i) => (
+              {filteredSections.map((sec, i) => (
                 <button
                   key={i}
                   onClick={() => scrollToSection(sec.heading)}
@@ -407,9 +482,9 @@ export default function WikiDetailPage() {
         )}
 
         {/* Content */}
-        {entry.sections && entry.sections.length > 0 ? (
+        {filteredSections.length > 0 ? (
           <div className="space-y-6 mb-6">
-            {entry.sections.map((sec, i) => (
+            {filteredSections.map((sec, i) => (
               <div key={i} ref={(el) => { sectionRefs.current[sec.heading] = el; }} className="card-elevated p-5 scroll-mt-16">
                 <h2 className="text-[16px] font-black tracking-tight mb-4 flex items-center gap-2 break-keep text-balance" style={{ color: 'var(--color-primary)' }}>
                   <span className="w-1.5 h-4 bg-[var(--color-primary)] rounded-full inline-block"></span>
@@ -418,33 +493,21 @@ export default function WikiDetailPage() {
                 <div className="space-y-4">
                   {sec.items.map((item, j) => (
                     <div key={j} className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-[14px] font-bold text-[var(--color-text)] leading-tight flex-1 pr-2 break-keep text-balance">{item.title}</h3>
-                        <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="mb-3">
+                        <h3 className="text-[15px] font-black text-[var(--color-text)] leading-[1.4] break-keep text-balance">
                           {item.is_recommended && (
-                            <span className="text-[10px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-1 rounded-full shadow-sm mr-1">
-                              👑 定番
+                            <span className="inline-flex items-center text-[10px] font-bold text-white bg-gradient-to-r from-amber-400 to-orange-400 px-1.5 py-0.5 rounded shadow-sm mr-2 mb-0.5 align-middle">
+                              👑定番
                             </span>
                           )}
-                          <motion.button
-                            whileTap={{ scale: 0.85 }}
-                            onClick={(e: React.MouseEvent) => handleToggleBookmark(item.title, item.content, e)}
-                            className={`p-1.5 rounded-full transition-colors ${
-                              bookmarkedSnippets.has(item.title)
-                                ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                                : "bg-white text-[var(--color-subtle)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border-light)]"
-                            }`}
-                            aria-label="ブックマーク"
-                          >
-                            <Bookmark className={`w-4 h-4 ${bookmarkedSnippets.has(item.title) ? "fill-current" : ""}`} />
-                          </motion.button>
-                        </div>
+                          <span className="align-middle">{item.title}</span>
+                        </h3>
                       </div>
-                      <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed whitespace-pre-wrap">{item.content}</p>
+                      <p className="text-[13px] font-medium text-[var(--color-text-secondary)] leading-[1.7] whitespace-pre-wrap">{item.content}</p>
                       
                       {/* Extra context — localized field labels */}
                       {Object.keys(item).map(k => {
-                        if (['title', 'content', 'mention_count', 'heat_score', 'is_recommended'].includes(k)) return null;
+                        if (['title', 'content', 'mention_count', 'heat_score', 'is_recommended', 'allergen_free', 'source_topics'].includes(k)) return null;
                         const fieldMeta = FIELD_LABELS[k];
                         const val = item[k];
                         if (!fieldMeta || fieldMeta.type === 'skip') return null;
@@ -452,13 +515,13 @@ export default function WikiDetailPage() {
                         if (fieldMeta.type === 'tags' && Array.isArray(val) && val.length > 0) {
                           return (
                             <div key={k} className="mt-3">
-                              <p className="text-[10px] font-bold text-[var(--color-muted)] mb-1.5 flex items-center gap-1">
-                                <span>{fieldMeta.icon}</span> {fieldMeta.label}
+                              <p className="text-[10px] font-bold text-[var(--color-muted)] mb-1 flex items-center gap-1">
+                                {fieldMeta.label}
                               </p>
-                              <div className="flex flex-wrap gap-1.5">
+                              <div className="flex flex-wrap">
                                 {val.map((v: unknown, tagIdx: number) => (
-                                  <span key={tagIdx} className="px-2.5 py-1 bg-white rounded-lg text-[11px] font-medium text-[var(--color-text-secondary)] border border-[var(--color-border-light)] shadow-sm">
-                                    {String(v)}
+                                  <span key={tagIdx} className="text-[12px] font-bold text-[var(--color-text)] mr-3 mb-1">
+                                    <span className="text-[var(--color-primary)]/50 mr-0.5">#</span>{String(v)}
                                   </span>
                                 ))}
                               </div>
@@ -477,6 +540,17 @@ export default function WikiDetailPage() {
                         return null;
                       })}
 
+                      {/* アレルゲンタグ表示 */}
+                      {Array.isArray(item.allergen_free) && (item.allergen_free as string[]).length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {(item.allergen_free as string[]).map((tag: string) => (
+                            <span key={tag} className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100">
+                              {tag}不使用
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       {/* Meta stats + item-level like */}
                       <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--color-border-light)]/50">
                         {item.mention_count ? (
@@ -489,28 +563,66 @@ export default function WikiDetailPage() {
                             <span className="text-[12px]">❤️</span> {(item.heat_score || 0) + (likedItems.has(item.title) ? 1 : 0)}
                           </span>
                         ) : null}
-                        <div className="ml-auto">
+                        <div className="ml-auto flex items-center gap-1">
+                          <motion.button
+                            whileTap={{ scale: 0.85 }}
+                            onClick={(e: React.MouseEvent) => handleToggleBookmark(item.title, item.content, e)}
+                            className={`p-2 rounded-full transition-colors flex items-center justify-center ${
+                              bookmarkedSnippets.has(item.title)
+                                ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                                : "text-[var(--color-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5"
+                            }`}
+                            aria-label="ブックマーク"
+                          >
+                            <Bookmark className={`w-4 h-4 ${bookmarkedSnippets.has(item.title) ? "fill-current" : ""}`} />
+                          </motion.button>
+                          
                           <motion.button
                             whileTap={{ scale: 0.85 }}
                             onClick={() => handleItemLike(item.title)}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition-all ${
+                            className={`px-3 py-1.5 rounded-full text-[12px] font-bold flex items-center gap-1.5 transition-all ${
                               likedItems.has(item.title)
-                                ? "bg-rose-50 text-rose-500 border border-rose-200"
-                                : "bg-white text-[var(--color-subtle)] border border-[var(--color-border-light)] hover:border-rose-300 hover:text-rose-400"
+                                ? "text-rose-500 bg-rose-50"
+                                : "text-[var(--color-subtle)] hover:text-rose-400 hover:bg-rose-50/50"
                             }`}
                           >
-                            {likedItems.has(item.title) ? "❤️ 役立った！" : "🤍 役に立った"}
+                            <span className="text-[14px] leading-none mb-0.5">{likedItems.has(item.title) ? "❤️" : "🤍"}</span>
+                            <span>{likedItems.has(item.title) ? "役立った" : "役に立った"}</span>
                           </motion.button>
                         </div>
                       </div>
                       
-                      {/* Topic Summoning Button */}
-                      <Link 
-                        href={`/talk/${talkSlug}?summon=${encodeURIComponent("【まとめ記事から】" + sec.heading + "の「" + item.title + "」について、最新の体験や工夫を教えてください！")}`}
-                        className="mt-4 block w-full py-2.5 rounded-xl bg-white text-[12px] font-bold text-center text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors shadow-sm"
-                      >
-                        💬 この項目について最新の体験を聞く
-                      </Link>
+                      {/* Living Knowledge: 元の話題へ回帰するソース直リンク */}
+                      <div className="mt-4 pt-3 border-t border-[var(--color-border-light)]/50">
+                        <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2 flex items-center gap-1">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          この記事の元の話題
+                        </p>
+                        {Array.isArray(item.source_topics) && item.source_topics.length > 0 ? (
+                          <div className="mt-1 space-y-1">
+                            {item.source_topics.map((topic: any, idx: number) => (
+                              <Link 
+                                key={idx}
+                                href={`/talk/${talkSlug}/${topic.id}`}
+                                className="flex items-start gap-2 py-1 px-1 group transition-all"
+                              >
+                                <span className="text-[var(--color-border)] group-hover:text-[var(--color-primary)] transition-colors mt-[1px]">↳</span>
+                                <span className="text-[12px] font-bold text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] border-b border-transparent group-hover:border-[var(--color-primary)] transition-colors leading-relaxed line-clamp-1">
+                                  {topic.title}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        ) : (
+                          <Link 
+                            href={`/talk/${talkSlug}`}
+                            className="inline-flex items-center gap-1.5 ml-1 mt-1 text-[12px] font-bold text-[var(--color-primary)] hover:opacity-70 transition-opacity"
+                          >
+                            <span>「{entry.category || 'このテーマ'}」のルームを見る</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -11,6 +11,71 @@ export async function getTalkTopics(roomId: string) {
   try {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
+
+    // ==========================================
+    // Living Knowledge: UI Demo Mock injection
+    // To demonstrate the Talk Room Source Topic Correlation visually
+    const { data: roomCheck } = await supabase.from("talk_rooms").select("slug").eq("id", roomId).maybeSingle();
+    if (roomCheck && roomCheck.slug === "daily-food") {
+      return {
+        success: true,
+        data: [
+          {
+            id: "mock-topic-1",
+            room_id: roomId,
+            title: "お弁当におすすめのおかずないですか？",
+            creator_id: "system",
+            last_message_preview: "イシイのミートボール最高です",
+            message_count: 14,
+            is_active: true,
+            created_at: new Date(Date.now() - 86400000).toISOString(),
+            updated_at: new Date(Date.now() - 3600000).toISOString(),
+            creator_name: "匿名ママ",
+            creator_avatar: null,
+          },
+          {
+            id: "mock-topic-2",
+            room_id: roomId,
+            title: "幼稚園のお弁当、卵不使用の市販品",
+            creator_id: "system",
+            last_message_preview: "みんなの食卓シリーズ一択です！",
+            message_count: 5,
+            is_active: true,
+            created_at: new Date(Date.now() - 172800000).toISOString(),
+            updated_at: new Date(Date.now() - 172800000).toISOString(),
+            creator_name: "新米パパ",
+            creator_avatar: null,
+          },
+          {
+            id: "mock-topic-3",
+            room_id: roomId,
+            title: "みんなのおやつ事情",
+            creator_id: "system",
+            last_message_preview: "シャトレーゼが神",
+            message_count: 22,
+            is_active: true,
+            created_at: new Date(Date.now() - 259200000).toISOString(),
+            updated_at: new Date(Date.now() - 159200000).toISOString(),
+            creator_name: "アレルギー戦士",
+            creator_avatar: null,
+          },
+          {
+            id: "mock-topic-4",
+            room_id: roomId,
+            title: "スーパーで買える卵不使用の冷凍食品",
+            creator_id: "system",
+            last_message_preview: "ポテトには気をつけて",
+            message_count: 8,
+            is_active: true,
+            created_at: new Date(Date.now() - 345600000).toISOString(),
+            updated_at: new Date(Date.now() - 245600000).toISOString(),
+            creator_name: "匿名さん",
+            creator_avatar: null,
+          }
+        ]
+      };
+    }
+    // ==========================================
     const { data, error } = await supabase
       .from("talk_topics")
       .select(`
@@ -46,6 +111,28 @@ export async function getTalkTopicById(topicId: string) {
   try {
     const supabase = await createClient();
     if (!supabase) return { success: false, data: null };
+
+    // Living Knowledge: Mock injection for detail page
+    if (topicId.startsWith("mock-topic-")) {
+      const mockTitles: Record<string, string> = {
+        "mock-topic-1": "お弁当におすすめのおかずないですか？",
+        "mock-topic-2": "幼稚園のお弁当、卵不使用の市販品",
+        "mock-topic-3": "みんなのおやつ事情",
+        "mock-topic-4": "スーパーで買える卵不使用の冷凍食品"
+      };
+      return {
+        success: true,
+        data: {
+          id: topicId,
+          room_id: "dummy-room-id",
+          title: mockTitles[topicId] || "元の話題",
+          creator_id: "system",
+          is_active: true,
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          updated_at: new Date(Date.now() - 3600000).toISOString()
+        }
+      };
+    }
     const { data, error } = await supabase
       .from("talk_topics")
       .select("*")
@@ -507,6 +594,7 @@ export async function getTalkRooms() {
 
 export async function getTalkRoomBySlug(slug: string) {
   try {
+
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続", data: null };
     const { data, error } = await supabase

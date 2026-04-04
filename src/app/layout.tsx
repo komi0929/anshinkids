@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -110,7 +111,9 @@ export default function RootLayout({
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Information" />
         
         {/* Speculation Rules API: Zero-latency navigation prerendering */}
-        <script
+        <Script
+          id="speculation-rules"
+          strategy="beforeInteractive"
           type="speculationrules"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -135,7 +138,9 @@ export default function RootLayout({
         <SensoryEffectsProvider>
           {children}
         </SensoryEffectsProvider>
-        <script
+        <Script
+          id="register-sw"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {

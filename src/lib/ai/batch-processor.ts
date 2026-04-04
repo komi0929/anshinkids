@@ -153,8 +153,8 @@ export async function runBatchExtraction() {
         const existingHeadings = currentSections.slice(0, 150).map(s => `- ${s.heading} (${s.items.length}件のアイテム)`).join("\n");
         // RAG Limit: strictly limit message bounds (Gemini flash supports 1M, but keep it tight for RAG coherence)
         let messagesText = chunk.map(m => {
-          const topicLabel = m.topic_id && topicTitles[m.topic_id] ? `[トピック:${topicTitles[m.topic_id]}]` : '';
-          return `[ID:${m.id}] ${topicLabel} ${m.content}`;
+          const topicLabel = m.topic_id && topicTitles[m.topic_id] ? `[話題ID:${m.topic_id}][話題:${topicTitles[m.topic_id]}]` : '';
+          return `[発言ID:${m.id}] ${topicLabel} ${m.content}`;
         }).join("\n");
         if (messagesText.length > 50000) messagesText = messagesText.slice(0, 50000) + "\n...[TRUNCATED]";
 
@@ -214,6 +214,26 @@ export async function runBatchExtraction() {
               .from("messages")
               .update({ ai_extracted: true })
               .in("id", chunk.map(m => m.id));
+
+            // リビングナレッジ: トピック↔記事アイテムの双方向リンクを記録
+            const uniqueTopicIds = [...new Set(chunk.map(m => m.topic_id).filter(Boolean))] as string[];
+            for (const topicId of uniqueTopicIds) {
+              const { data: topic } = await supabase
+                .from("talk_topics")
+                .select("id, linked_wiki_entry_id")
+                .eq("id", topicId)
+                .maybeSingle();
+              if (topic && !topic.linked_wiki_entry_id) {
+                const firstItemTitle = incomingSections[0]?.items?.[0]?.title || null;
+                await supabase
+                  .from("talk_topics")
+                  .update({
+                    linked_wiki_entry_id: entryId,
+                    linked_wiki_item_title: firstItemTitle,
+                  })
+                  .eq("id", topicId);
+              }
+            }
           } else {
              console.warn(`[Batch] Extraction failed for chunk in ${roomSlug}. Will retry next batch.`);
           }

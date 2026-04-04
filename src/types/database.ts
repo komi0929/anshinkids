@@ -56,6 +56,8 @@ export interface Database {
           last_message_preview: string | null
           message_count: number
           is_active: boolean
+          linked_wiki_entry_id: string | null
+          linked_wiki_item_title: string | null
           created_at: string
           updated_at: string
         }
