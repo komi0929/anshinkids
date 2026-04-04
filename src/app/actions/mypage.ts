@@ -46,13 +46,38 @@ export async function getMyProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
-    const { data: profile, error } = await supabase
+    const fullColumns = "id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months, children_profiles, interests";
+    const minimalColumns = "id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months";
+
+    let profile = null;
+    let queryError = null;
+
+    // Try full columns first, fallback to minimal
+    const { data: fullProfile, error: fullError } = await supabase
       .from("profiles")
-      .select("id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months, children_profiles, interests")
+      .select(fullColumns)
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!profile && !error) {
+    if (fullError) {
+      // Try minimal columns
+      const { data: minProfile, error: minError } = await supabase
+        .from("profiles")
+        .select(minimalColumns)
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      if (minError) {
+        queryError = minError;
+      } else {
+        profile = minProfile ? { ...minProfile, children_profiles: [], interests: [] } : null;
+      }
+    } else {
+      profile = fullProfile;
+      queryError = null;
+    }
+
+    if (!profile && !queryError) {
       // Profile not found — create one
       const displayName = user.user_metadata?.full_name
         || user.user_metadata?.name
@@ -66,14 +91,14 @@ export async function getMyProfile() {
           display_name: displayName,
           avatar_url: avatarUrl,
         }, { onConflict: "id" })
-        .select("id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months, children_profiles, interests")
+        .select(minimalColumns)
         .maybeSingle();
 
       if (insertError) throw insertError;
-      return { success: true, data: newProfile };
+      return { success: true, data: newProfile ? { ...newProfile, children_profiles: [], interests: [] } : null };
     }
 
-    if (error) throw error;
+    if (queryError) throw queryError;
     
     // Legacy Data Migration on Read (Polyfill for users who haven't updated yet)
     if (profile && profile.allergen_tags && Array.isArray(profile.allergen_tags)) {

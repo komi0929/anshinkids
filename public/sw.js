@@ -1,16 +1,15 @@
-const CACHE_NAME = 'anshin-kids-v1';
+const CACHE_NAME = 'anshin-kids-v2';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/talk',
-  '/wiki',
-  '/manifest.json',
-  '/apple-icon.png'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Use individual add() calls with error handling to prevent one 404 from breaking everything
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map((url) => cache.add(url).catch(() => console.warn('[SW] Failed to cache:', url)))
+      );
     })
   );
   self.skipWaiting();
@@ -32,32 +31,26 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // GETリクエストのみキャッシュ
+  // Only cache GET requests
   if (event.request.method !== 'GET') return;
-  // Supabaseや外部APIなどはキャッシュしない
-  if (event.request.url.includes('supabase.co') || event.request.url.includes('/api/')) return;
+  // Don't cache API/Supabase/auth requests
+  const url = event.request.url;
+  if (url.includes('supabase.co') || url.includes('/api/') || url.includes('/auth/')) return;
+  // Don't cache server actions
+  if (event.request.headers.get('next-action')) return;
   
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // ネットワーク優先 (Stale-While-Revalidateパターン)
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200) {
-          return networkResponse;
-        }
-        // レスポンスをキャッシュに保存して更新
+    fetch(event.request).then((networkResponse) => {
+      if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
-        return networkResponse;
-      }).catch(() => {
-        // ネットワークが死んでいる場合はここでハンドリング
-        // キャッシュがあればそれが返り、なければエラーになる
-      });
-      
-      // キャッシュがあれば即座に返し、裏でfetchPromiseを走らせる
-      // キャッシュがなければfetchPromiseの結果を待つ
-      return cachedResponse || fetchPromise;
+      }
+      return networkResponse;
+    }).catch(() => {
+      // Network failed, try cache
+      return caches.match(event.request);
     })
   );
 });

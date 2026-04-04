@@ -4,13 +4,13 @@
   "description": "食物アレルギーの知恵を、みんなでつくるコミュニティ",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAFAFA",
-  "theme_color": "#FAFAFA",
+  "background_color": "#F8F6F2",
+  "theme_color": "#3D8B37",
   "icons": [
     {
-      "src": "/apple-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
+      "src": "/apple-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
