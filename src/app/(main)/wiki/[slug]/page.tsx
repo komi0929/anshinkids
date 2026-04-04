@@ -1,17 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Shield, Clock, User, MessageCircle, BookOpen, Bookmark, ArrowRight } from "@/components/icons";
-// Users icon (not in shared yet, alias User)
 const Users = User;
-import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets } from "@/app/actions/wiki";
+import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets, getRelatedWikiEntries } from "@/app/actions/wiki";
 import { getKnowledgeRipple } from "@/app/actions/discover";
 import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
 import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
 import { motion, useScroll, useSpring } from "framer-motion";
+
+/** Extra context field labels — Japanese localization */
+const FIELD_LABELS: Record<string, { label: string; icon: string; type: "tags" | "text" | "skip" }> = {
+  allergen_free: { label: "除去アレルゲン", icon: "🏷️", type: "tags" },
+  where_to_buy: { label: "購入先", icon: "🛒", type: "tags" },
+  safe_items: { label: "安全メニュー", icon: "✅", type: "tags" },
+  tips: { label: "工夫・コツ", icon: "💡", type: "tags" },
+  brand: { label: "メーカー", icon: "🏭", type: "text" },
+  reviews: { label: "レビュー", icon: "⭐", type: "skip" },
+  child_age: { label: "子どもの年齢", icon: "👶", type: "text" },
+  result: { label: "結果", icon: "📋", type: "text" },
+  skin_type: { label: "肌質", icon: "🧴", type: "text" },
+  usage: { label: "使い方", icon: "📝", type: "text" },
+  duration: { label: "期間", icon: "📅", type: "text" },
+  allergen: { label: "対象アレルゲン", icon: "⚠️", type: "text" },
+  allergy_menu: { label: "アレルギーメニュー", icon: "📋", type: "text" },
+  negotiation_phrases: { label: "使えるフレーズ", icon: "💬", type: "tags" },
+  documents_needed: { label: "必要書類", icon: "📄", type: "tags" },
+  coping_strategies: { label: "対処法", icon: "🛡️", type: "tags" },
+  encouraging_words: { label: "励ましの言葉", icon: "💕", type: "tags" },
+  timeline: { label: "経過", icon: "📊", type: "skip" },
+};
 
 export interface MegaWikiItem {
   title: string;
@@ -91,6 +112,9 @@ export default function WikiDetailPage() {
   const [hasVotedHelpful, setHasVotedHelpful] = useState(false);
   const [helpfulCount, setHelpfulCount] = useState(0);
   const [bookmarkedSnippets, setBookmarkedSnippets] = useState<Set<string>>(new Set());
+  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
+  const [relatedEntries, setRelatedEntries] = useState<Array<{id:string; title:string; slug:string; category:string; summary:string; source_count:number}>>([]);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     loadEntry();
@@ -99,6 +123,26 @@ export default function WikiDetailPage() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
+
+  // Load related articles after entry loads
+  useEffect(() => {
+    if (entry?.allergen_tags) {
+      getRelatedWikiEntries(slug, entry.allergen_tags, 3).then(r => {
+        if (r.success && r.data) setRelatedEntries(r.data as typeof relatedEntries);
+      });
+    }
+  }, [entry, slug]);
+
+  const scrollToSection = useCallback((heading: string) => {
+    const el = sectionRefs.current[heading];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const handleItemLike = useCallback((itemTitle: string) => {
+    if (likedItems.has(itemTitle)) return;
+    Haptics.light();
+    setLikedItems(prev => new Set(prev).add(itemTitle));
+  }, [likedItems]);
 
   const talkSlug = slug.replace("mega-", "");
 
@@ -339,16 +383,34 @@ export default function WikiDetailPage() {
 
         {/* Summary */}
         {entry.summary && (
-          <p className="text-[14px] leading-[1.9] text-[var(--color-text-secondary)] mb-6">
+          <p className="text-[14px] leading-[1.9] text-[var(--color-text-secondary)] mb-5">
             {entry.summary}
           </p>
+        )}
+
+        {/* Section TOC */}
+        {entry.sections && entry.sections.length > 1 && (
+          <div className="mb-6 p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm">
+            <p className="text-[11px] font-black text-[var(--color-subtle)] tracking-wider mb-2.5 uppercase">目次</p>
+            <div className="flex flex-wrap gap-2">
+              {entry.sections.map((sec, i) => (
+                <button
+                  key={i}
+                  onClick={() => scrollToSection(sec.heading)}
+                  className="px-3.5 py-2 rounded-xl bg-[var(--color-surface-warm)] text-[12px] font-bold text-[var(--color-text)] hover:bg-[var(--color-primary)] hover:text-white transition-all border border-[var(--color-border-light)] hover:border-transparent"
+                >
+                  {sec.heading}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Content */}
         {entry.sections && entry.sections.length > 0 ? (
           <div className="space-y-6 mb-6">
             {entry.sections.map((sec, i) => (
-              <div key={i} className="card-elevated p-5">
+              <div key={i} ref={(el) => { sectionRefs.current[sec.heading] = el; }} className="card-elevated p-5 scroll-mt-16">
                 <h2 className="text-[16px] font-black tracking-tight mb-4 flex items-center gap-2 break-keep text-balance" style={{ color: 'var(--color-primary)' }}>
                   <span className="w-1.5 h-4 bg-[var(--color-primary)] rounded-full inline-block"></span>
                   {sec.heading}
@@ -380,44 +442,67 @@ export default function WikiDetailPage() {
                       </div>
                       <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed whitespace-pre-wrap">{item.content}</p>
                       
-                      {/* Meta stats */}
+                      {/* Extra context — localized field labels */}
+                      {Object.keys(item).map(k => {
+                        if (['title', 'content', 'mention_count', 'heat_score', 'is_recommended'].includes(k)) return null;
+                        const fieldMeta = FIELD_LABELS[k];
+                        const val = item[k];
+                        if (!fieldMeta || fieldMeta.type === 'skip') return null;
+                        
+                        if (fieldMeta.type === 'tags' && Array.isArray(val) && val.length > 0) {
+                          return (
+                            <div key={k} className="mt-3">
+                              <p className="text-[10px] font-bold text-[var(--color-muted)] mb-1.5 flex items-center gap-1">
+                                <span>{fieldMeta.icon}</span> {fieldMeta.label}
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {val.map((v: unknown, tagIdx: number) => (
+                                  <span key={tagIdx} className="px-2.5 py-1 bg-white rounded-lg text-[11px] font-medium text-[var(--color-text-secondary)] border border-[var(--color-border-light)] shadow-sm">
+                                    {String(v)}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        if (fieldMeta.type === 'text' && (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean')) {
+                          const displayVal = typeof val === 'boolean' ? (val ? 'あり' : 'なし') : String(val);
+                          return (
+                            <p key={k} className="mt-2 text-[12px] text-[var(--color-text-secondary)] flex items-center gap-1.5">
+                              <span className="text-[11px]">{fieldMeta.icon}</span>
+                              <strong className="text-[var(--color-muted)] font-bold">{fieldMeta.label}:</strong> {displayVal}
+                            </p>
+                          );
+                        }
+                        return null;
+                      })}
+
+                      {/* Meta stats + item-level like */}
                       <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--color-border-light)]/50">
                         {item.mention_count ? (
                           <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: 'var(--color-muted)' }}>
                             <span className="text-[12px]">👥</span> {item.mention_count}人の声
                           </span>
                         ) : null}
-                        {item.heat_score ? (
+                        {(item.heat_score || likedItems.has(item.title)) ? (
                           <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: 'var(--color-success)' }}>
-                            <span className="text-[12px]">❤️</span> {item.heat_score}
+                            <span className="text-[12px]">❤️</span> {(item.heat_score || 0) + (likedItems.has(item.title) ? 1 : 0)}
                           </span>
                         ) : null}
+                        <div className="ml-auto">
+                          <motion.button
+                            whileTap={{ scale: 0.85 }}
+                            onClick={() => handleItemLike(item.title)}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition-all ${
+                              likedItems.has(item.title)
+                                ? "bg-rose-50 text-rose-500 border border-rose-200"
+                                : "bg-white text-[var(--color-subtle)] border border-[var(--color-border-light)] hover:border-rose-300 hover:text-rose-400"
+                            }`}
+                          >
+                            {likedItems.has(item.title) ? "❤️ 役立った！" : "🤍 役に立った"}
+                          </motion.button>
+                        </div>
                       </div>
-
-                      {/* Extra context (Tips, reviews) */}
-                      {Object.keys(item).map(k => {
-                        if (['title', 'content', 'mention_count', 'heat_score', 'is_recommended'].includes(k)) return null;
-                        const val = item[k];
-                        if (Array.isArray(val) && val.length > 0) {
-                           return (
-                             <div key={k} className="mt-3 flex flex-wrap gap-2">
-                               {val.map((v, tagIdx) => (
-                                  <span key={tagIdx} className="px-2 py-1 bg-white rounded-md text-[11px] text-[var(--color-text-secondary)] border border-[var(--color-border-light)]">
-                                    {String(v)}
-                                  </span>
-                               ))}
-                             </div>
-                           )
-                        }
-                        if (typeof val === 'string' || typeof val === 'number') {
-                          return (
-                            <p key={k} className="mt-2 text-[12px] text-[var(--color-text-secondary)]">
-                              <strong className="text-[var(--color-muted)] capitalize">{k.replace(/_/g, ' ')}:</strong> {String(val)}
-                            </p>
-                          )
-                        }
-                        return null;
-                      })}
                       
                       {/* Topic Summoning Button */}
                       <Link 
@@ -489,7 +574,30 @@ export default function WikiDetailPage() {
           </div>
         )}
 
-        {/* Topic Summoning: Redirect explicitly to talk room */}
+        {/* === Related Articles === */}
+        {relatedEntries.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[var(--color-primary)]" />
+              関連するまとめ
+            </h3>
+            <div className="space-y-2.5">
+              {relatedEntries.map((re) => (
+                <Link
+                  key={re.id}
+                  href={`/wiki/${re.slug}`}
+                  className="block p-3.5 rounded-2xl bg-white border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                >
+                  <p className="text-[10px] text-[var(--color-subtle)] mb-1">{re.category}</p>
+                  <h4 className="text-[13px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">{re.title}</h4>
+                  <p className="text-[11px] text-[var(--color-muted)] mt-1">{re.source_count}件の体験</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Topic Summoning */}
         <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-[var(--color-surface-warm)] to-[var(--color-primary)]/5 border border-[var(--color-primary)]/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">

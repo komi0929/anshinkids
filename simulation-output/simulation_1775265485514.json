@@ -1,0 +1,154 @@
+{
+  "daily-food": {
+    "theme": "毎日のごはん",
+    "input_messages": 12,
+    "generated_sections": [
+      {
+        "heading": "おやつ",
+        "items": [
+          {
+            "title": "米粉とバナナのパンケーキ",
+            "content": "米粉とバナナだけで作るパンケーキは、卵アレルギーの子どもにも好評というケースが報告されています。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 2,
+            "heat_score": 0,
+            "tips": [
+              "豆乳ヨーグルトを加えると、しっとりして美味しくなる",
+              "ココナッツオイルで焼くとサクサクになる",
+              "冷凍保存可能"
+            ],
+            "is_recommended": true
+          },
+          {
+            "title": "タピオカ粉のポンデケージョ",
+            "content": "タピオカ粉で作るポンデケージョは、チーズアレルギーがなければ、もちもちして美味しいという声があります。小麦粉不使用。",
+            "allergen_free": [
+              "卵",
+              "小麦"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          }
+        ]
+      },
+      {
+        "heading": "弁当",
+        "items": [
+          {
+            "title": "かぼちゃの茶巾",
+            "content": "卵焼きの代わりにかぼちゃの茶巾を入れるという声があります。見た目も黄色で卵焼きっぽく、子供にも好評。ラップで包んで絞るだけで簡単に作れる。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          },
+          {
+            "title": "さつまいもスティック",
+            "content": "さつまいもスティックは、オーブンで焼くだけで甘くて子供が喜ぶという声があります。",
+            "allergen_free": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          },
+          {
+            "title": "ツナとコーンのおにぎり",
+            "content": "ツナとコーンのおにぎりは定番化しているという声があります。マヨネーズはキューピーのエッグケアを使用。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": false
+          }
+        ]
+      },
+      {
+        "heading": "朝食",
+        "items": [
+          {
+            "title": "オーバーナイトオーツ",
+            "content": "オートミールに豆乳をかけて一晩冷蔵庫に入れておくオーバーナイトオーツは、手軽でおすすめという声があります。",
+            "allergen_free": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          },
+          {
+            "title": "納豆ごはん",
+            "content": "納豆ごはんに海苔を巻くだけでも栄養が摂れるという声があります。味噌汁があれば完璧。",
+            "allergen_free": [],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": false
+          },
+          {
+            "title": "米粉と豆乳の蒸しパン",
+            "content": "米粉と豆乳で蒸した蒸しパンを冷凍ストックしておくと、レンチンですぐ食べられるので便利という声があります。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": true
+          }
+        ]
+      },
+      {
+        "heading": "夕食",
+        "items": [
+          {
+            "title": "れんこんハンバーグ",
+            "content": "ハンバーグのつなぎに卵の代わりとして、れんこんのすりおろしを入れるという声があります。もちもちして美味しいという感想も。",
+            "allergen_free": [
+              "卵"
+            ],
+            "mention_count": 1,
+            "heat_score": 0,
+            "tips": [],
+            "is_recommended": false
+          }
+        ]
+      }
+    ]
+  },
+  "products": {
+    "theme": "使ってよかった市販品",
+    "error": "[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [403 Forbidden] Your API key was reported as leaked. Please use another API key."
+  },
+  "eating-out": {
+    "theme": "外食・おでかけ",
+    "error": "[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [403 Forbidden] Your API key was reported as leaked. Please use another API key."
+  },
+  "school": {
+    "theme": "園・学校との連携",
+    "error": "[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [403 Forbidden] Your API key was reported as leaked. Please use another API key."
+  },
+  "load-test": {
+    "theme": "負荷試験の体験談",
+    "error": "[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [403 Forbidden] Your API key was reported as leaked. Please use another API key."
+  },
+  "skin-care": {
+    "theme": "肌とからだのケア",
+    "error": "[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [403 Forbidden] Your API key was reported as leaked. Please use another API key."
+  },
+  "emotions": {
+    "theme": "気持ち・家族・まわり",
+    "error": "[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [403 Forbidden] Your API key was reported as leaked. Please use another API key."
+  },
+  "food-wins": {
+    "theme": "食べられた！の記録",
+    "error": "[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [403 Forbidden] Your API key was reported as leaked. Please use another API key."
+  }
+}

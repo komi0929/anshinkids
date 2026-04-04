@@ -5,15 +5,28 @@ import { z } from "zod";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath } from "next/cache";
 
-export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[] }) {
+export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[]; sortBy?: string }) {
   try {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
 
     let queryBuilder = supabase
       .from("wiki_entries")
-      .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at")
-      .order("avg_trust_score", { ascending: false });
+      .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, helpful_count, updated_at");
+
+    // Sort
+    switch (filters?.sortBy) {
+      case "latest":
+        queryBuilder = queryBuilder.order("updated_at", { ascending: false });
+        break;
+      case "voices":
+        queryBuilder = queryBuilder.order("source_count", { ascending: false });
+        break;
+      case "popular":
+      default:
+        queryBuilder = queryBuilder.order("avg_trust_score", { ascending: false });
+        break;
+    }
 
     if (query) {
       queryBuilder = queryBuilder.or(`title.ilike.%${query}%,summary.ilike.%${query}%`);
@@ -51,6 +64,7 @@ export async function getWikiEntry(slug: string): Promise<ActionResponse<any>> {
         *,
         wiki_sources (
           id,
+          original_message_snippet,
           contributor_trust_score,
           extracted_at
         )
