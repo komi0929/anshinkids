@@ -24,6 +24,8 @@ export async function GET() {
       slug: "mega-daily-food",
       category: "Hub",
       title: "【総合整理】毎日のごはん",
+      theme_slug: "daily-food",
+      is_mega_wiki: true,
       is_public: true,
       sections: [],
       source_count: 0
