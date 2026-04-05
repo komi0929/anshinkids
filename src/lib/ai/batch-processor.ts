@@ -21,8 +21,8 @@ export async function runBatchExtraction() {
   const model = getGeminiFlash(SYSTEM_PROMPTS.batchExtractor);
 
   // Mutex: Check if another batch is already running (prevent concurrency dupes)
-  // To prevent deadlocks from crashed batches, we only consider it "running" if started within the last 15 mins.
-  const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+  // To prevent deadlocks from crashed batches, we only consider it "running" if started within the last 2 mins.
+  const fifteenMinsAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
   const { count } = await supabase
     .from("batch_logs")
     .select("id", { count: "exact" })
@@ -240,6 +240,13 @@ export async function runBatchExtraction() {
           }
         } catch (err) {
           console.error(`[Batch] Parse failed for ${roomSlug}`, err);
+          if (batchLog?.id) {
+            await supabase.from("batch_logs").update({
+              status: "error",
+              error_log: String(err),
+              completed_at: new Date().toISOString(),
+            }).eq("id", batchLog.id);
+          }
           return { processed: allMessages.length, updated: totalUpdated, error: String(err) };
         }
       }
