@@ -19,6 +19,9 @@ async function run() {
     room = res.data;
   }
 
+  if (!room) throw new Error("Room still not found after seed.");
+
+
   // 2. Wipe old data
   console.log("Cleaning up old dummy data...");
   await supabase.from("messages").delete().eq("room_id", room.id);
@@ -40,7 +43,6 @@ async function run() {
   console.log(`Created topic: ${topic.title} (ID: ${topic.id})`);
 
   // 4. Insert dummy messages
-  const dummyAuthUserId = "11111111-1111-1111-1111-111111111111"; 
   const oldDate = new Date(Date.now() - 3600000).toISOString(); // 1 hour ago
   const expireDate = new Date(Date.now() + 86400000 * 3).toISOString(); // 3 days later
   
