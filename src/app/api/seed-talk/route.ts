@@ -16,7 +16,18 @@ export async function GET() {
     console.log("Cleaning up old dummy data...");
     await supabase.from("messages").delete().eq("room_id", room.id);
     await supabase.from("talk_topics").delete().eq("room_id", room.id);
-    await supabase.from("wiki_entries").update({ sections: [], source_count: 0 }).eq("slug", "mega-daily-food");
+    
+    // Ensure the mega-wiki entry exists before extraction, or reset it if it does
+    await supabase.from("wiki_entries").upsert({
+      slug: "mega-daily-food",
+      category: "Hub",
+      title: "【総合整理】毎日のごはん",
+      theme_slug: "daily-food",
+      is_mega_wiki: true,
+      is_public: true,
+      sections: [],
+      source_count: 0
+    }, { onConflict: "slug" });
 
     // 2. Insert dummy topic 1
     const { data: topic, error: topicErr } = await supabase.from("talk_topics").insert({
