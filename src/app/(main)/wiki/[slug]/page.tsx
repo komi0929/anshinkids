@@ -55,7 +55,7 @@ export default function WikiDetailPage() {
   const [helpfulCount, setHelpfulCount] = useState(0);
   const [bookmarkedSnippets, setBookmarkedSnippets] = useState<Set<string>>(new Set());
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const [showSourcesFor, setShowSourcesFor] = useState<string | null>(null);
 
   const { scrollYProgress } = useScroll();
