@@ -323,6 +323,11 @@ ${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
     return {
       processed: allMessages.length,
       updated: totalUpdated,
+      debug_final: {
+        roomKeys: Object.keys(messagesByRoom),
+        roomIds: roomIds,
+        slugsMap: roomIdToSlug
+      }
     };
   } catch (err) {
     console.error("[Batch] Error:", err);
