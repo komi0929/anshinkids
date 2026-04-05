@@ -235,19 +235,14 @@ export async function runBatchExtraction() {
               }
             }
           } else {
-             console.warn(`[Batch] Extraction failed for chunk in ${roomSlug}. Will retry next batch.`);
-             return { processed: allMessages.length, updated: totalUpdated, debug: "empty or parse miss", raw: responseText };
-          }
+              console.warn(`[Batch] Extraction failed for chunk in ${roomSlug}. Will retry next batch.`);
+              // Don't abort the whole batch — continue with the next room
+              break; // break the chunk loop for this room, try next room
+           }
         } catch (err) {
           console.error(`[Batch] Parse failed for ${roomSlug}`, err);
-          if (batchLog?.id) {
-            await supabase.from("batch_logs").update({
-              status: "error",
-              error_log: String(err),
-              completed_at: new Date().toISOString(),
-            }).eq("id", batchLog.id);
-          }
-          return { processed: allMessages.length, updated: totalUpdated, error: String(err) };
+          // Don't abort the batch — continue with next room
+          break; // break the chunk loop for this room
         }
       }
 
