@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, Clock, BookOpen, Sparkles, ArrowRight, Bookmark } from "@/components/icons";
+import { Search, Filter, Clock, BookOpen, MessageCircle, Bookmark, ArrowRight, Sparkles } from "@/components/icons";
 import Link from "next/link";
 import { searchWiki } from "@/app/actions/wiki";
 import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20 } from "@/components/onboarding-wizard";
@@ -31,11 +31,9 @@ const CATEGORY_EMOJI: Record<string, string> = {
 };
 
 const SORT_OPTIONS = [
-  { key: "popular", label: "人気順", icon: "🔥" },
-  { key: "latest", label: "新しい順", icon: "🆕" },
-  { key: "voices", label: "声が多い順", icon: "👥" },
+  { key: "popular", label: "人気順" },
+  { key: "latest", label: "新しい順" },
 ] as const;
-
 type SortKey = typeof SORT_OPTIONS[number]["key"];
 
 const ALLERGEN_GROUPS = [
@@ -56,22 +54,6 @@ interface WikiEntry {
   updated_at: string;
 }
 
-function getTrustLevel(sourceCount: number) {
-  const count = sourceCount || 0;
-  if (count >= 10) return { label: "たくさんの声", className: "trust-high" };
-  if (count >= 5) return { label: "つながる声", className: "trust-medium" };
-  return { label: "はじめの声", className: "trust-low" };
-}
-
-function getFreshness(updatedAt: string) {
-  const days = Math.floor(
-    (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)
-  );
-  if (days <= 30) return { label: "最新", className: "fresh" };
-  if (days <= 90) return { label: "1-3ヶ月前", className: "aging" };
-  return { label: "要更新", className: "stale" };
-}
-
 export default function WikiPage() {
   const [entries, setEntries] = useState<WikiEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,7 +62,6 @@ export default function WikiPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>("popular");
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const loadEntries = useCallback(async () => {
     setIsLoading(true);
@@ -103,110 +84,86 @@ export default function WikiPage() {
   }, [loadEntries, searchQuery]);
 
   return (
-    <div className="fade-in pb-28">
-      {/* プレミアムヒーローヘッダー */}
-      <div className="relative pt-6 pb-8 mb-6 overflow-hidden rounded-b-[40px] shadow-sm">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary-bg)] via-[var(--color-surface)] to-[var(--color-accent)]/10 z-0"></div>
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-[var(--color-primary)]/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
-        <div className="absolute top-10 -left-10 w-32 h-32 bg-[var(--color-accent)]/10 rounded-full blur-2xl z-0 pointer-events-none"></div>
-
-        <div className="relative z-10 px-5 text-center mt-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white shadow-md border border-white/50 mb-3 bg-opacity-80 backdrop-blur-md">
-            <BookOpen className="w-7 h-7 text-[var(--color-primary)]" />
-          </div>
-          <h1 className="text-[26px] font-black text-[var(--color-text)] tracking-tight leading-tight mb-2" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.02)" }}>
+    <div className="fade-in pb-28 min-h-[100dvh] bg-[var(--color-bg-warm)]">
+      <div className="px-5 pt-8 pb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-[24px] font-black text-[var(--color-text)] tracking-tight">
             みんなのまとめ
           </h1>
-          <p className="text-[13px] font-medium text-[var(--color-text-secondary)] leading-relaxed max-w-[280px] mx-auto opacity-90">
-            同じ悩みを持つ親御さんたちの実体験から生まれた、知識のライブラリ
-          </p>
-        </div>
-
-        {/* Action buttons */}
-        <div className="relative z-10 flex items-center justify-center gap-3 mt-4 px-5">
-          <button
-            onClick={() => setSearchOpen(!searchOpen)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[12px] font-bold transition-all ${
-              searchOpen
-                ? "bg-[var(--color-primary)] text-white shadow-md"
-                : "bg-white/80 backdrop-blur-md text-[var(--color-text-secondary)] border border-white/50 shadow-sm hover:shadow-md"
-            }`}
-          >
-            <Search className="w-3.5 h-3.5" />
-            検索
-          </button>
           <Link
             href="/mypage#bookmarks"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 backdrop-blur-md text-[var(--color-text-secondary)] border border-white/50 shadow-sm hover:shadow-md text-[12px] font-bold transition-all"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-[var(--color-border-light)] text-[var(--color-text-secondary)]"
           >
-            <Bookmark className="w-3.5 h-3.5" />
-            保存した情報
+            <Bookmark className="w-5 h-5" />
           </Link>
         </div>
-      </div>
 
-      {/* 検索バー */}
-      {searchOpen && (
-        <div className="px-5 mb-4 slide-up">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-muted)]" />
-            <input
-              type="text"
-              placeholder="レシピ、商品名、お店の名前で検索..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white border border-[var(--color-border-light)] text-[14px] font-medium text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 shadow-sm transition-all"
-              autoFocus
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center text-[var(--color-muted)] hover:bg-[var(--color-border)] transition-colors"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+        {/* Search Bar */}
+        <div className="relative mb-5">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-muted)]" />
+          <input
+            type="text"
+            placeholder="レシピ、商品名、お店の名前を検索..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white border-none shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-[14px] font-medium text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
+          />
         </div>
-      )}
 
-      {/* ソートオプション */}
-      <div className="px-5 mb-4">
-        <div className="flex items-center gap-2">
+        {/* Sort */}
+        <div className="flex items-center gap-2 mb-4">
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.key}
               onClick={() => setSortBy(opt.key)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all ${
-                sortBy === opt.key
-                  ? "bg-[var(--color-text)] text-white shadow-sm"
-                  : "bg-white text-[var(--color-text-secondary)] border border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)]"
-              }`}
-              id={`sort-${opt.key}`}
+              className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all ${sortBy === opt.key ? "bg-[var(--color-text)] text-white shadow-sm" : "bg-white text-[var(--color-text-secondary)] shadow-sm"}`}
             >
-              <span className="text-[11px]">{opt.icon}</span>
               {opt.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Allergen Filter Toggle & Category Slider */}
+      {/* Category Slider */}
+      <div className="px-0 mb-6 sticky top-0 z-30 bg-gradient-to-b from-[var(--color-bg-warm)] via-[var(--color-bg-warm)] to-transparent pt-2 pb-4">
+        <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide px-5">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all ${showFilters || selectedAllergens.length > 0 ? "bg-[var(--color-primary)] text-white shadow-md" : "bg-white text-[var(--color-text-secondary)] shadow-sm"}`}
+          >
+            <Filter className="w-5 h-5" />
+            {selectedAllergens.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--color-heart)] rounded-full border-2 border-white text-[8px] font-bold text-white flex items-center justify-center">
+                {selectedAllergens.length}
+              </span>
+            )}
+          </button>
+          <div className="w-[1px] h-6 bg-[var(--color-border)] mx-1 flex-shrink-0"></div>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-[14px] font-bold transition-all ${selectedCategory === cat ? "bg-[var(--color-primary)] text-white shadow-md transform -translate-y-0.5" : "bg-white text-[var(--color-text-secondary)] shadow-sm"}`}
+            >
+              {CATEGORY_EMOJI[cat]} <span className="ml-1">{cat}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Allergen Filters Overlay */}
       {showFilters && (
-        <div className="px-5 mb-5 slide-up z-20 relative">
-          <div className="p-5 rounded-3xl bg-white/70 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="px-5 mb-6 slide-up relative z-20">
+          <div className="p-5 rounded-[24px] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[14px] font-black text-[var(--color-text)] tracking-tight">アレルゲンで絞り込み</p>
-              {selectedAllergens.length > 0 && (
-                <button onClick={() => setSelectedAllergens([])} className="text-[12px] font-bold text-[var(--color-primary)] hover:opacity-70 transition-opacity bg-[var(--color-primary)]/10 px-3 py-1 rounded-full">
-                  すべてクリア
-                </button>
-              )}
+              <p className="text-[14px] font-black text-[var(--color-text)]">アレルゲンフィルター</p>
+              <button onClick={() => setSelectedAllergens([])} className="text-[12px] font-bold text-[var(--color-primary)]">
+                クリア
+              </button>
             </div>
             {ALLERGEN_GROUPS.map((group, groupIdx) => (
               <div key={group.label} className={groupIdx > 0 ? "mt-5" : ""}>
-                <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <span className={`w-1.5 h-3 rounded-full block ${groupIdx === 0 ? "bg-[var(--color-primary)]" : "bg-[var(--color-accent)]"}`}></span>
+                <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2 uppercase tracking-wider">
                   {group.label}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -218,11 +175,7 @@ export default function WikiPage() {
                           prev.includes(allergen.label) ? prev.filter((a) => a !== allergen.label) : [...prev, allergen.label]
                         )
                       }
-                      className={`px-3.5 py-2 rounded-2xl text-[12px] font-bold transition-all ${
-                        selectedAllergens.includes(allergen.label)
-                          ? "bg-[var(--color-primary)] text-white shadow-md transform scale-[1.02]"
-                          : "bg-white text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-surface-warm)]"
-                      }`}
+                      className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all ${selectedAllergens.includes(allergen.label) ? "bg-[var(--color-primary)] text-white shadow-md scale-[1.02]" : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)]"}`}
                     >
                       {allergen.label}
                     </button>
@@ -234,201 +187,75 @@ export default function WikiPage() {
         </div>
       )}
 
-      {/* Category Slider */}
-      <div className="px-0 mb-6">
-        <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-3 pt-1 px-5">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 relative ${
-              showFilters || selectedAllergens.length > 0
-                ? "bg-[var(--color-primary)] text-white shadow-[0_4px_12px_rgba(24,144,136,0.3)] transform scale-105"
-                : "bg-white text-[var(--color-text-secondary)] shadow-sm border border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] hover:shadow-md"
-            }`}
-            aria-label="アレルゲンで絞り込む"
-          >
-            <Filter className="w-4.5 h-4.5" />
-            {selectedAllergens.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--color-heart)] rounded-full border-2 border-white text-[8px] font-bold text-white flex items-center justify-center">
-                {selectedAllergens.length}
-              </span>
-            )}
-          </button>
-          <div className="w-[1.5px] h-7 bg-[var(--color-border-light)] mx-1 flex-shrink-0 rounded-full"></div>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-[20px] text-[13.5px] font-bold whitespace-nowrap transition-all duration-300 ${
-                selectedCategory === cat
-                  ? "bg-[var(--color-text)] text-white shadow-[0_8px_16px_rgba(0,0,0,0.12)] transform -translate-y-0.5"
-                  : "bg-white text-[var(--color-text-secondary)] shadow-sm border border-[var(--color-border-light)] hover:border-[var(--color-border)] hover:bg-[#FAFAFA] hover:-translate-y-0.5 hover:shadow-md"
-              }`}
-              id={`category-${cat}`}
-            >
-              {CATEGORY_EMOJI[cat] || ""} <span className="ml-1.5">{cat}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Results */}
-      <div className="px-4 space-y-3 pb-4">
+      {/* Results List */}
+      <div className="px-5 space-y-4">
         {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="shimmer h-36 rounded-2xl" />
-            ))}
-          </div>
+          [1, 2, 3].map((i) => <div key={i} className="shimmer h-40 rounded-[28px]" />)
         ) : entries.length === 0 ? (
-          <div className="mt-2 slide-up px-2">
-            {searchQuery ? (
-              /* 検索結果なし */
-              <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-white to-[var(--color-surface-warm)] border border-[var(--color-border-light)] shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-7 text-center">
-                <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-warm)] flex items-center justify-center mb-4 text-[28px]">🔍</div>
-                  <h3 className="text-[18px] font-black text-[var(--color-text)] tracking-tight mb-2">
-                    「{searchQuery}」の記事はまだありません
-                  </h3>
-                  <p className="text-[13px] font-medium text-[var(--color-text-secondary)] leading-[1.7] max-w-[280px] mb-5">
-                    別のキーワードで検索するか、トークルームでこのテーマについて話してみませんか？
-                  </p>
-                  <Link href="/talk" className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--color-primary)] text-white text-[13px] font-bold shadow-md hover:opacity-90 transition-all" id="go-to-talk-from-wiki">
-                    <Sparkles className="w-4 h-4" />
-                    トークルームで話題にする
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              /* 記事がまだない状態 — 仕組みの説明 */
-              <div className="space-y-4">
-                {/* ステップ説明カード */}
-                <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[var(--color-surface-warm)] border border-[var(--color-border-light)] shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-6">
-                  <div className="absolute -top-8 -right-8 w-24 h-24 bg-[var(--color-primary)]/8 rounded-full blur-2xl z-0"></div>
-                  <div className="relative z-10">
-                    <h3 className="text-[17px] font-black text-[var(--color-text)] tracking-tight mb-1.5">
-                      まとめ記事はこうやって生まれます
-                    </h3>
-                    <p className="text-[12px] text-[var(--color-text-secondary)] mb-5 leading-relaxed">
-                      みんなの体験談から、AIが自動で役立つ情報を整理します
-                    </p>
-
-                    {/* 3ステップフロー */}
-                    <div className="space-y-3">
-                      {[
-                        { step: "1", icon: "💬", title: "トークルームで体験を共有", desc: "「こんな商品が良かった」「この方法で解決した」など、日常の気づきを投稿" },
-                        { step: "2", icon: "🤖", title: "AIが情報を分析・整理", desc: "複数の投稿から共通の知見やパターンを自動で抽出" },
-                        { step: "3", icon: "📖", title: "まとめ記事として公開", desc: "実体験に基づく、信頼できる情報がここに蓄積されます" },
-                      ].map((item, i) => (
-                        <div key={item.step} className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[18px] relative">
-                            {item.icon}
-                            {i < 2 && (
-                              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[2px] h-3 bg-[var(--color-primary)]/20"></div>
-                            )}
-                          </div>
-                          <div className="flex-1 pt-0.5">
-                            <p className="text-[13px] font-bold text-[var(--color-text)] mb-0.5">{item.title}</p>
-                            <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">{item.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Link
-                      href="/talk"
-                      className="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-[var(--color-primary)] text-white text-[14px] font-bold shadow-[0_4px_16px_rgba(24,144,136,0.25)] hover:shadow-[0_6px_20px_rgba(24,144,136,0.35)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                      id="go-to-talk-from-wiki"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      体験を共有してまとめを育てる
-                    </Link>
-                  </div>
-                </div>
-
-                {/* テーマ一覧 */}
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 justify-center mb-3">
-                    <div className="h-[1px] w-full bg-gradient-to-r from-transparent to-[var(--color-border)] opacity-50"></div>
-                    <p className="text-[10px] text-[var(--color-subtle)] font-black tracking-[0.12em] whitespace-nowrap opacity-60">こんなテーマの記事が生まれます</p>
-                    <div className="h-[1px] w-full bg-gradient-to-l from-transparent to-[var(--color-border)] opacity-50"></div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {[
-                      { label: "毎日のごはん", desc: "レシピ・代替食材", icon: "🍚", bg: "from-orange-50 to-orange-100/50" },
-                      { label: "市販品レビュー", desc: "安心して使えた商品", icon: "🛒", bg: "from-blue-50 to-blue-100/50" },
-                      { label: "外食・おでかけ", desc: "店舗・施設の対応情報", icon: "🍽️", bg: "from-rose-50 to-rose-100/50" },
-                      { label: "園・学校との連携", desc: "書類・交渉のコツ", icon: "🏫", bg: "from-green-50 to-green-100/50" },
-                      { label: "負荷試験", desc: "体験談・準備物", icon: "🧪", bg: "from-teal-50 to-teal-100/50" },
-                      { label: "肌とからだ", desc: "ケア方法・使ってよかった品", icon: "🧴", bg: "from-lime-50 to-lime-100/50" },
-                      { label: "気持ち・家族", desc: "不安の乗り越え方", icon: "💛", bg: "from-fuchsia-50 to-fuchsia-100/50" },
-                      { label: "食べられた記録", desc: "ステップアップ体験", icon: "🌱", bg: "from-emerald-50 to-emerald-100/50" },
-                    ].map((theme) => (
-                      <Link key={theme.label} href="/talk" className={`relative overflow-hidden rounded-2xl p-3 text-left bg-gradient-to-br ${theme.bg} border border-white/60 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all`}>
-                        <div className="w-8 h-8 rounded-xl bg-white/80 flex items-center justify-center text-[15px] shadow-sm mb-1.5">
-                          {theme.icon}
-                        </div>
-                        <span className="text-[11px] font-bold text-[var(--color-text)] leading-tight block">{theme.label}</span>
-                        <span className="text-[9px] text-[var(--color-muted)] leading-tight block mt-0.5">{theme.desc}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+          <div className="pt-4 text-center slide-up">
+            <div className="w-16 h-16 mx-auto bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4">
+              <BookOpen className="w-7 h-7 text-[var(--color-muted)]" />
+            </div>
+            <h3 className="text-[18px] font-black text-[var(--color-text)] mb-2">
+              記事がありません
+            </h3>
+            <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed mb-6 max-w-[260px] mx-auto">
+              このカテゴリにはまだまとめ記事が存在しません。トークルームで実体験を持ち寄りましょう。
+            </p>
+            <Link href="/talk" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[var(--color-border-light)] shadow-sm text-[13px] font-bold text-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all">
+               <MessageCircle className="w-4 h-4" />
+               トークルームで体験を共有する
+            </Link>
           </div>
         ) : (
           <>
-            {/* Results count */}
-            <div className="flex items-center justify-between px-1 mb-2">
-              <span className="text-[12px] font-bold text-[var(--color-subtle)]">
-                {entries.length}件のまとめ記事
-              </span>
-            </div>
-            {entries.map((entry) => {
-              const trust = getTrustLevel(entry.source_count);
-              const freshness = getFreshness(entry.updated_at);
-              return (
-                <div key={entry.id} className="relative group stagger-item slide-up">
-                  <Link href={`/wiki/${entry.slug}`} className="block rounded-3xl bg-white border border-[var(--color-border-light)] p-5 shadow-sm transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-[var(--color-border)]" id={`wiki-entry-${entry.slug}`}>
-                    <div className="mb-4">
-                      <h3 className="font-extrabold text-[16.5px] text-[var(--color-text)] mb-2.5 break-keep text-balance leading-tight group-hover:text-[var(--color-primary)] transition-colors">
-                        {entry.title}
-                      </h3>
-                      <p className="text-[13.5px] font-medium text-[var(--color-text-secondary)] leading-[1.7] line-clamp-2 opacity-90">
-                        {entry.summary}
-                      </p>
-                    </div>
-                    <div className="flex items-center flex-wrap gap-2 mb-4">
-                      <span className={`trust-badge ${trust.className} scale-100 origin-left`}>
-                        <span className="text-[10px] font-black opacity-80 mr-1.5">💬</span>
-                        {trust.label}
+            <p className="text-[12px] font-bold text-[var(--color-subtle)] pl-1 mb-1">
+              {entries.length}件の記事
+            </p>
+            {entries.map((entry) => (
+              <Link
+                key={entry.id}
+                href={`/wiki/${entry.slug}`}
+                className="block relative bg-white rounded-[28px] p-6 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-transparent hover:border-[var(--color-primary)]/20 hover:shadow-[0_8px_32px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex gap-2 text-[10px] font-bold">
+                    <span className="text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2.5 py-1 rounded-lg">
+                      {entry.category}
+                    </span>
+                    {entry.source_count >= 5 && (
+                      <span className="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100 flex items-center">
+                        ⭐ 注目
                       </span>
-                      <span className={`freshness-badge ${freshness.className}`}>
-                        <Clock className="w-3 h-3" />
-                        {freshness.label}
-                      </span>
-                      {(entry.helpful_count || 0) > 0 && (
-                        <span className="px-2.5 py-0.5 bg-rose-50 text-rose-500 rounded-full text-[10px] font-bold border border-rose-100">
-                          👍 {entry.helpful_count}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between border-t border-[var(--color-border-light)]/60 pt-3.5 mt-2">
-                      <div className="flex flex-wrap gap-1.5">
-                        {entry.allergen_tags?.map((tag) => (
-                          <span key={tag} className="px-3 py-1 bg-[var(--color-surface-warm)] rounded-md text-[11px] font-bold text-[var(--color-text-secondary)]">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex-shrink-0 text-[11px] font-semibold text-[var(--color-subtle)] flex items-center gap-1">
-                        {entry.source_count}件の体験 <ArrowRight className="w-3.5 h-3.5 text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity transform -translate-x-2 group-hover:translate-x-0" />
-                      </div>
-                    </div>
-                  </Link>
+                    )}
+                  </div>
                 </div>
-              );
-            })}
+                <h3 className="font-extrabold text-[18px] text-[var(--color-text)] mb-2.5 leading-tight tracking-tight text-balance">
+                  {entry.title}
+                </h3>
+                <p className="text-[13px] text-[var(--color-text-secondary)] leading-[1.7] line-clamp-2 opacity-90">
+                  {entry.summary}
+                </p>
+                <div className="flex items-center justify-between border-t border-[var(--color-border-light)] pt-4 mt-4">
+                  <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[var(--color-subtle)]">
+                    <MessageCircle className="w-4 h-4" />
+                    {entry.source_count}件の実体験
+                  </div>
+                  <div className="flex text-[18px] -space-x-1.5">
+                    {Array.from({ length: Math.min(entry.source_count, 3) }).map((_, i) => (
+                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-[var(--color-surface-warm)] flex items-center justify-center">
+                        <span className="text-[10px]">👶</span>
+                      </div>
+                    ))}
+                    {entry.source_count > 3 && (
+                      <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
+                        <span className="text-[8px] font-bold text-gray-500">+{entry.source_count - 3}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
           </>
         )}
       </div>

@@ -3,9 +3,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 
 export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[]; sortBy?: string }) {
+  noStore();
   try {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
