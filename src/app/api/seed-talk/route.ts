@@ -138,6 +138,9 @@ export async function GET() {
 
     console.log("Inserted dummy messages. Running AI Batch Extraction now...");
     
+    // Force clear any stuck locks
+    await supabase.from("batch_logs").update({ status: "error", error_log: "force-cleared from api" }).eq("status", "running");
+
     // 4. Force run batch
     const result = await runBatchExtraction();
 
