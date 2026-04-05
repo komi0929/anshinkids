@@ -236,9 +236,11 @@ export async function runBatchExtraction() {
             }
           } else {
              console.warn(`[Batch] Extraction failed for chunk in ${roomSlug}. Will retry next batch.`);
+             return { processed: allMessages.length, updated: totalUpdated, debug: "empty or parse miss", raw: responseText };
           }
         } catch (err) {
           console.error(`[Batch] Parse failed for ${roomSlug}`, err);
+          return { processed: allMessages.length, updated: totalUpdated, error: String(err) };
         }
       }
 
