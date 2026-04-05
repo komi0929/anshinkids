@@ -135,92 +135,104 @@ const THEME_CONVERSATIONS: Record<string, { topicTitle: string; topicPreview: st
   ]
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = createAdminClient();
-    const results: Record<string, { topics: number; messages: number }> = {};
+    const { searchParams } = new URL(request.url);
+    const themeSlug = searchParams.get("theme");
 
-    for (const theme of THEMES) {
-      console.log(`[SeedAll] Processing theme: ${theme.name} (${theme.slug})`);
+    // If no theme specified, return list of available themes
+    if (!themeSlug) {
+      return NextResponse.json({
+        usage: "GET /api/seed-all-themes?theme=SLUG",
+        themes: THEMES.map(t => t.slug),
+        hint: "Call each theme one by one to avoid timeout",
+      });
+    }
 
-      // Find the room
-      const { data: room } = await supabase.from("talk_rooms").select("id").eq("slug", theme.slug).single();
-      if (!room) {
-        console.warn(`[SeedAll] Room not found for ${theme.slug}, skipping.`);
+    const theme = THEMES.find(t => t.slug === themeSlug);
+    if (!theme) {
+      return NextResponse.json({ success: false, error: `Unknown theme: ${themeSlug}` });
+    }
+
+    console.log(`[Seed] Processing theme: ${theme.name} (${theme.slug})`);
+
+    // Find the room
+    const { data: room } = await supabase.from("talk_rooms").select("id").eq("slug", theme.slug).single();
+    if (!room) {
+      return NextResponse.json({ success: false, error: `Room not found for ${theme.slug}` });
+    }
+
+    // Clean up old dummy data
+    await supabase.from("messages").delete().eq("room_id", room.id);
+    await supabase.from("talk_topics").delete().eq("room_id", room.id);
+
+    // Ensure mega-wiki entry exists
+    const { error: upsertErr } = await supabase.from("wiki_entries").upsert({
+      slug: `mega-${theme.slug}`,
+      category: theme.name,
+      title: `【みんなの知恵袋】${theme.name}`,
+      theme_slug: theme.slug,
+      is_mega_wiki: true,
+      is_public: true,
+      sections: [],
+      source_count: 0,
+      summary: theme.description,
+    }, { onConflict: "slug" });
+    if (upsertErr) return NextResponse.json({ success: false, error: "Wiki upsert: " + JSON.stringify(upsertErr) });
+
+    // Insert conversations
+    const conversations = THEME_CONVERSATIONS[theme.slug] || [];
+    let totalMsgs = 0;
+
+    const oldDate = new Date(Date.now() - 3600000).toISOString();
+    const expireDate = new Date(Date.now() + 86400000 * 3).toISOString();
+
+    for (const conv of conversations) {
+      const { data: topic, error: topicErr } = await supabase.from("talk_topics").insert({
+        room_id: room.id,
+        title: conv.topicTitle,
+        last_message_preview: conv.topicPreview,
+        message_count: conv.messages.length,
+        is_active: true
+      }).select().single();
+
+      if (topicErr || !topic) {
+        console.error(`[Seed] Topic insert failed:`, topicErr);
         continue;
       }
 
-      // Clean up old dummy data
-      await supabase.from("messages").delete().eq("room_id", room.id);
-      await supabase.from("talk_topics").delete().eq("room_id", room.id);
+      const msgRows = conv.messages.map((content) => ({
+        room_id: room.id,
+        topic_id: topic.id,
+        content,
+        ai_extracted: false,
+        thanks_count: Math.floor(Math.random() * 12),
+        created_at: oldDate,
+        expires_at: expireDate,
+      }));
 
-      // Ensure mega-wiki entry exists
-      await supabase.from("wiki_entries").upsert({
-        slug: `mega-${theme.slug}`,
-        category: theme.name,
-        title: `【みんなの知恵袋】${theme.name}`,
-        theme_slug: theme.slug,
-        is_mega_wiki: true,
-        is_public: true,
-        sections: [],
-        source_count: 0,
-        summary: theme.description,
-      }, { onConflict: "slug" });
-
-      // Insert conversations
-      const conversations = THEME_CONVERSATIONS[theme.slug] || [];
-      let totalMsgs = 0;
-
-      const oldDate = new Date(Date.now() - 3600000).toISOString();
-      const expireDate = new Date(Date.now() + 86400000 * 3).toISOString();
-
-      for (const conv of conversations) {
-        const { data: topic, error: topicErr } = await supabase.from("talk_topics").insert({
-          room_id: room.id,
-          title: conv.topicTitle,
-          last_message_preview: conv.topicPreview,
-          message_count: conv.messages.length,
-          is_active: true
-        }).select().single();
-
-        if (topicErr || !topic) {
-          console.error(`[SeedAll] Topic insert failed for ${theme.slug}:`, topicErr);
-          continue;
-        }
-
-        const msgRows = conv.messages.map((content) => ({
-          room_id: room.id,
-          topic_id: topic.id,
-          content,
-          ai_extracted: false,
-          thanks_count: Math.floor(Math.random() * 12),
-          created_at: oldDate,
-          expires_at: expireDate,
-        }));
-
-        const { error: msgErr } = await supabase.from("messages").insert(msgRows);
-        if (msgErr) console.error(`[SeedAll] Message insert failed for ${theme.slug}:`, msgErr);
-        totalMsgs += msgRows.length;
-      }
-
-      results[theme.slug] = { topics: conversations.length, messages: totalMsgs };
+      const { error: msgErr } = await supabase.from("messages").insert(msgRows);
+      if (msgErr) console.error(`[Seed] Message insert failed:`, msgErr);
+      totalMsgs += msgRows.length;
     }
 
-    console.log("[SeedAll] All dummy data inserted. Clearing locks and running batch extraction...");
+    console.log(`[Seed] Inserted ${totalMsgs} messages for ${theme.slug}. Running extraction...`);
 
-    // Force clear any stuck locks
-    await supabase.from("batch_logs").update({ status: "error", error_log: "force-cleared from seed-all" }).eq("status", "running");
+    // Force clear locks
+    await supabase.from("batch_logs").update({ status: "error", error_log: "force-cleared" }).eq("status", "running");
 
-    // Run batch extraction (processes all rooms that have unextracted messages)
+    // Run batch extraction
     const extractionResult = await runBatchExtraction();
 
     return NextResponse.json({
       success: true,
-      seeded: results,
+      theme: theme.slug,
+      seeded: { topics: conversations.length, messages: totalMsgs },
       extraction: extractionResult,
     });
   } catch (err: unknown) {
-    console.error("[SeedAll] Error:", err);
+    console.error("[Seed] Error:", err);
     return NextResponse.json({
       success: false,
       error: err instanceof Error ? err.message : JSON.stringify(err),
