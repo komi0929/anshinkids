@@ -7,7 +7,7 @@ export async function GET() {
     const supabase = createAdminClient();
     console.log("Seeding dummy data for: 毎日のごはん (daily-food)...");
 
-    let { data: room, error: roomErr } = await supabase.from("talk_rooms").select("id").eq("slug", "daily-food").single();
+    const { data: room } = await supabase.from("talk_rooms").select("id").eq("slug", "daily-food").single();
     if (!room) {
       // Just fail if room doesn't exist, as we shouldn't dynamically invoke action from route here unless imported
       throw new Error("Room daily-food not found");
@@ -146,8 +146,8 @@ export async function GET() {
     const result = await runBatchExtraction();
 
     return NextResponse.json({ success: true, result });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
-    return NextResponse.json({ success: false, error: err.message });
+    return NextResponse.json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }
 }
