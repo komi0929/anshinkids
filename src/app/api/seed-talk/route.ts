@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runBatchExtraction } from "@/lib/ai/batch-processor";
@@ -18,7 +20,7 @@ export async function GET() {
     await supabase.from("talk_topics").delete().eq("room_id", room.id);
     
     // Ensure the mega-wiki entry exists before extraction, or reset it if it does
-    await supabase.from("wiki_entries").upsert({
+    const { error: upsertErr } = await supabase.from("wiki_entries").upsert({
       slug: "mega-daily-food",
       category: "Hub",
       title: "【総合整理】毎日のごはん",
@@ -28,6 +30,7 @@ export async function GET() {
       sections: [],
       source_count: 0
     }, { onConflict: "slug" });
+    if (upsertErr) throw new Error("Wiki Upsert Error: " + JSON.stringify(upsertErr));
 
     // 2. Insert dummy topic 1
     const { data: topic, error: topicErr } = await supabase.from("talk_topics").insert({
