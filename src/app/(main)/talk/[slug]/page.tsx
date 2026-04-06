@@ -60,9 +60,17 @@ export default function TalkThemeHubPage() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
 
   useEffect(() => {
-    async function loadTopics(roomId: string) {
+    async function init() {
+      const result = await getTalkRoomBySlug(slug);
+      if (!result.success || !result.data || result.data.id === "temp-id") {
+        window.location.href = "/talk";
+        return;
+      }
+      setRoomInfo(result.data as RoomInfo);
+
+      // Load topics immediately after room info
       setIsLoading(true);
-      const res = await getTalkTopics(roomId);
+      const res = await getTalkTopics(result.data.id);
       if (res.success && res.data) {
         const allTopics = res.data as Topic[];
         setTopics(allTopics);
@@ -73,16 +81,6 @@ export default function TalkThemeHubPage() {
         setSuggestedPrompts(shuffled.slice(0, 3));
       }
       setIsLoading(false);
-    }
-
-    async function init() {
-      const result = await getTalkRoomBySlug(slug);
-      if (result.success && result.data && result.data.id !== "temp-id") {
-        setRoomInfo(result.data as RoomInfo);
-        loadTopics(result.data.id);
-      } else {
-        window.location.href = "/talk";
-      }
     }
     init();
   }, [slug]);
