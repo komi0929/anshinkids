@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import { THEMES, THEME_BY_SLUG } from "@/lib/themes";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_cache } from "next/cache";
 
@@ -242,11 +241,21 @@ export async function postTopicMessage(
       .eq("id", topicId);
 
     // Trigger AI extraction threshold check (Talk→Wiki pipeline)
-    import("@/lib/ai/threshold-extractor")
-      .then(({ checkExtractionThresholds }) => checkExtractionThresholds())
-      .catch((err) =>
-        console.error("[Background Error] checkExtractionThresholds", err)
-      );
+    // Use `after` to ensure Vercel edge/serverless does not kill the process prematurely
+    import("next/server").then(({ after }) => {
+       after(() => {
+         import("@/lib/ai/threshold-extractor")
+           .then(({ checkExtractionThresholds }) => checkExtractionThresholds())
+           .catch((err) =>
+             console.error("[Background Error] checkExtractionThresholds", err)
+           );
+       });
+    }).catch(() => {
+       // Fallback if not available
+       import("@/lib/ai/threshold-extractor")
+         .then(({ checkExtractionThresholds }) => checkExtractionThresholds())
+         .catch((err) => console.error("[Background Error]", err));
+    });
 
     // Replenish AI conversation prompts
     const { data: room } = await supabase

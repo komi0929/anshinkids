@@ -255,6 +255,20 @@ export async function runBatchExtraction() {
         })
         .eq("id", entryId);
 
+      // Invalidate Next.js cache so the Wiki updates instantly in the UI
+      if (roomUpdated) {
+        try {
+          import("next/cache").then(({ revalidateTag, revalidatePath }) => {
+            revalidateTag("wiki_entries_top");
+            revalidatePath("/wiki");
+            revalidatePath(`/wiki/${megaWikiSlug}`);
+            console.log(`[Batch] Cache busted for ${megaWikiSlug}`);
+          }).catch(e => console.error("[Batch] Import next/cache failed:", e));
+        } catch (cacheErr) {
+          console.error("[Batch] Cache invalidation failed", cacheErr);
+        }
+      }
+
       // 4.5. AI自律的ファシリテーション (Proactive Topic Summoning)
       // 抽出があったら、部屋に感謝と「次のお題」を投下する (空転防止: 3件以上の実質的な抽出があった時のみ)
       if (roomUpdated && actualSourcesAdded >= 3) {
