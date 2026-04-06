@@ -291,7 +291,7 @@ export default function MyPage() {
 
       {/* Profile Card */}
       <div className="px-4 mb-4">
-        <div className="card-elevated p-6">
+        <div className="bg-white/90 backdrop-blur-md border border-[var(--color-border-light)] rounded-[32px] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
           {isEditing ? (
             <OnboardingWizard
               initialPrefs={getMigratedInitialPrefs()}
@@ -301,36 +301,34 @@ export default function MyPage() {
           ) : (
             <>
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-16 h-16 shadow-md relative group shrink-0">
+                <div className="w-14 h-14 relative group shrink-0">
                   {renderAvatar(profile.avatar_url, profile.display_name)}
-                  <button onClick={() => setShowProfileEdit(true)} className="absolute bottom-[-6px] right-[-6px] w-7 h-7 bg-white rounded-full flex items-center justify-center border border-[var(--color-border)] shadow-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-all">
+                  <button onClick={() => setShowProfileEdit(true)} className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all z-10 border border-[var(--color-border-light)] hover:scale-105 active:scale-95">
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-[18px] font-extrabold text-[var(--color-text)] truncate break-keep text-balance">{profile.display_name}</h2>
-                  </div>
-
+                  <h2 className="text-[18px] font-black text-[var(--color-text)] truncate">{profile.display_name}</h2>
+                  <p className="text-[12px] font-bold text-[var(--color-subtle)] mt-0.5">登録ユーザー</p>
                 </div>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-bg-warm)] rounded-2xl p-3.5 text-center">
-                  <BookOpen className="w-4 h-4 text-[var(--color-primary)] mx-auto mb-1.5" />
-                  <div className="text-[20px] font-extrabold text-[var(--color-text)]">{profile.total_contributions}</div>
-                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">発言回数</div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-[var(--color-surface-warm)] rounded-[20px] p-4 text-center border border-[var(--color-border-light)] transform transition-transform hover:scale-105">
+                  <BookOpen className="w-5 h-5 text-[var(--color-text)] mx-auto mb-2 opacity-50" />
+                  <div className="text-[20px] font-black text-[var(--color-text)] leading-none">{profile.total_contributions}</div>
+                  <div className="text-[10px] font-bold text-[var(--color-subtle)] mt-1.5 break-keep text-balance line-clamp-2 leading-tight">発言回数</div>
                 </div>
-                <div className="bg-gradient-to-br from-[var(--color-heart-light)] to-pink-50/50 rounded-2xl p-3.5 text-center">
-                  <Heart className="w-4 h-4 text-[var(--color-heart)] mx-auto mb-1.5" />
-                  <div className="text-[20px] font-extrabold text-[var(--color-text)]">{profile.total_thanks_received}</div>
-                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">いいね</div>
+                <div className="bg-rose-50/70 rounded-[20px] p-4 text-center border border-rose-100 transform transition-transform hover:scale-105">
+                  <Heart className="w-5 h-5 text-rose-400 mx-auto mb-2" />
+                  <div className="text-[20px] font-black text-rose-600 leading-none">{profile.total_thanks_received}</div>
+                  <div className="text-[10px] font-bold text-rose-400 mt-1.5 break-keep text-balance line-clamp-2 leading-tight">いいね</div>
                 </div>
-                <div className="bg-gradient-to-br from-[var(--color-success-light)] to-green-50/50 rounded-2xl p-3.5 text-center">
-                  <TrendingUp className="w-4 h-4 text-[var(--color-success)] mx-auto mb-1.5" />
-                  <div className="text-[20px] font-extrabold text-[var(--color-text)]">{contributions.length}</div>
-                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">まとめ記事への採用</div>
+                <div className="bg-emerald-50/70 rounded-[20px] p-4 text-center border border-emerald-100 transform transition-transform hover:scale-105">
+                  <TrendingUp className="w-5 h-5 text-emerald-500 mx-auto mb-2" />
+                  <div className="text-[20px] font-black text-emerald-600 leading-none">{contributions.length}</div>
+                  <div className="text-[10px] font-bold text-emerald-500 mt-1.5 break-keep text-balance line-clamp-2 leading-tight">まとめ記事へ採用</div>
                 </div>
               </div>
 
@@ -358,35 +356,39 @@ export default function MyPage() {
               )}
 
               {/* Multi-Child Allergen Tags */}
-              <div className="mt-5 pt-5 border-t border-[var(--color-border-light)] space-y-3">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs font-semibold text-[var(--color-subtle)]">登録されているお子さま情報</p>
-                  <button onClick={() => setIsEditing(true)} className="flex items-center gap-1 text-[11px] font-bold text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-colors bg-[var(--color-surface-warm)] px-2.5 py-1.5 rounded-lg">
+              <div className="mt-5 pt-4 border-t border-[var(--color-border-light)]">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[13px] font-black text-[var(--color-text-secondary)]">登録されているお子さま情報</p>
+                  <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-text-secondary)] bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] transition-colors px-3 py-1.5 rounded-full">
                     <Settings className="w-3.5 h-3.5" /> 変更
                   </button>
                 </div>
-                {getMigratedInitialPrefs().children.length === 0 && (
-                  <p className="text-[12px] text-[var(--color-muted)]">アレルギー食材が未設定です。右上のボタンから設定してください。</p>
-                )}
-                {getMigratedInitialPrefs().children.map((child, idx) => (
-                  <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-xl p-3 border border-[var(--color-border-light)]">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-bold text-[13px] text-[var(--color-text)]">{child.name}</span>
-                      {child.ageGroup && <span className="text-[10px] bg-white border border-[var(--color-border-light)] px-2 py-0.5 rounded-full text-[var(--color-subtle)]">{child.ageGroup}</span>}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {child.allergens.map(tag => (
-                        <span key={tag} className="px-2.5 py-1 bg-white border border-[var(--color-border-light)] rounded-md text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
-                      ))}
-                      {child.customAllergens.map(tag => (
-                        <span key={tag} className="px-2.5 py-1 bg-white border border-dashed border-[var(--color-border)] rounded-md text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
-                      ))}
-                      {child.allergens.length === 0 && child.customAllergens.length === 0 && (
-                        <span className="text-[11px] text-[var(--color-muted)]">アレルギー食材の設定なし</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                <div className="space-y-2">
+                  {getMigratedInitialPrefs().children.length === 0 ? (
+                    <p className="text-[12px] font-bold text-[var(--color-muted)] bg-[var(--color-surface-warm)] p-3 rounded-2xl">未設定</p>
+                  ) : (
+                    getMigratedInitialPrefs().children.map((child, idx) => (
+                      <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-2xl p-3 flex flex-col gap-2 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-white/40 blur-xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <div className="flex items-center justify-between z-10">
+                          <span className="font-extrabold text-[13px] text-[var(--color-text)]">{child.name}</span>
+                          {child.ageGroup && <span className="text-[10px] font-black bg-white/80 px-2.5 py-1 rounded-full text-[var(--color-subtle)]">{child.ageGroup}才</span>}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 z-10">
+                          {child.allergens.map(tag => (
+                            <span key={tag} className="px-2.5 py-1 bg-white shadow-sm rounded-full text-[11px] font-bold text-[var(--color-text)]">{tag}</span>
+                          ))}
+                          {child.customAllergens.map(tag => (
+                            <span key={tag} className="px-2.5 py-1 bg-white border border-dashed border-[var(--color-border)] rounded-full text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
+                          ))}
+                          {child.allergens.length === 0 && child.customAllergens.length === 0 && (
+                            <span className="text-[11px] font-bold text-[var(--color-muted)]">アレルギー登録なし</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -547,18 +549,18 @@ export default function MyPage() {
 
       {contributions.length === 0 && (
          <div className="px-4 pb-6">
-          <div className="card-elevated p-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center mx-auto mb-3 shadow-sm">
-              <Sparkles className="w-7 h-7 text-[var(--color-success)]" />
+          <div className="bg-white rounded-[32px] p-6 text-center border border-[var(--color-border-light)]">
+            <div className="w-14 h-14 rounded-[20px] bg-[var(--color-surface-warm)] flex items-center justify-center mx-auto mb-4 border border-[var(--color-border-light)]">
+              <Sparkles className="w-6 h-6 text-[var(--color-text-secondary)]" />
             </div>
-            <p className="text-[14px] text-[var(--color-text)] mb-1 font-bold">
+            <p className="text-[15px] text-[var(--color-text)] mb-1.5 font-black tracking-tight leading-tight break-keep text-balance">
               まだまとめ記事に採用された発言はありません
             </p>
-            <p className="text-[12px] text-[var(--color-subtle)] leading-relaxed mb-4">
-              「トークルーム」で発言すると、<br/>AIが自動でまとめ記事に追加してくれます
+            <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed font-bold mb-6 break-keep text-balance">
+              トークルームで発言すると、AIが共通のヒントを見つけて、自動でまとめ記事に追加します。
             </p>
-            <Link href="/talk" className="btn-primary inline-flex items-center gap-2" id="go-talk-from-mypage">
-              💬 トークルームで話してみる
+            <Link href="/talk" className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform">
+              <span className="text-lg">💬</span> トークルームへ行く
             </Link>
           </div>
          </div>
