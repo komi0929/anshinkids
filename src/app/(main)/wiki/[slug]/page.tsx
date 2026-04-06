@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Bookmark, MessageCircle } from "@/components/icons";
-import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets, getRelatedWikiEntries } from "@/app/actions/wiki";
-import { getKnowledgeRipple } from "@/app/actions/discover";
+import { ArrowLeft, Bookmark, MessageCircle } from "@/components/icons";
+import { getWikiEntry, voteWikiHelpful, toggleSnippetBookmark, checkBookmarkedSnippets } from "@/app/actions/wiki";
 import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
 import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
@@ -52,7 +51,6 @@ export default function WikiDetailPage() {
   const [entry, setEntry] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasVotedHelpful, setHasVotedHelpful] = useState(false);
-  const [helpfulCount, setHelpfulCount] = useState(0);
   const [bookmarkedSnippets, setBookmarkedSnippets] = useState<Set<string>>(new Set());
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -65,7 +63,6 @@ export default function WikiDetailPage() {
     getWikiEntry(slug).then(result => {
       if (result.success && result.data) {
         setEntry(result.data);
-        setHelpfulCount(result.data.helpful_count || 0);
         checkBookmarkedSnippets(result.data.id).then(b => {
           if (b.success && b.data) setBookmarkedSnippets(new Set(b.data));
         });
@@ -95,7 +92,11 @@ export default function WikiDetailPage() {
     
     setBookmarkedSnippets(prev => {
       const next = new Set(prev);
-      isBookmarked ? next.delete(title) : next.add(title);
+      if (isBookmarked) {
+        next.delete(title);
+      } else {
+        next.add(title);
+      }
       return next;
     });
     await toggleSnippetBookmark(entry.id, title, content);
@@ -133,17 +134,18 @@ export default function WikiDetailPage() {
           </span>
         </a>
 
-        {/* Table of Contents */}
+        {/* Sticky Section Navigation */}
         {entry.sections && entry.sections.length > 1 && (
-          <div className="mb-12">
-            <p className="text-[12px] font-bold text-gray-400 mb-3">目次</p>
-            <div className="flex flex-col gap-2">
-              {entry.sections.map((sec: any, i: number) => (
-                <button onClick={() => scrollToSection(sec.heading)} key={i} className="text-left text-[15px] font-bold text-gray-700 hover:text-[var(--color-primary)] transition-colors py-1">
-                  {i + 1}. {sec.heading}
-                </button>
-              ))}
-            </div>
+          <div className="sticky top-[73px] z-30 -mx-5 px-5 py-3 mb-8 bg-white/95 backdrop-blur-md border-b border-gray-100 overflow-x-auto whitespace-nowrap hide-scrollbar flex gap-2">
+            {entry.sections.map((sec: any, i: number) => (
+              <button 
+                onClick={() => scrollToSection(sec.heading)} 
+                key={i} 
+                className="px-4 py-2 rounded-full bg-gray-50 hover:bg-[var(--color-primary)]/10 text-[13px] font-bold text-gray-600 hover:text-[var(--color-primary)] transition-colors border border-gray-200"
+              >
+                {sec.heading}
+              </button>
+            ))}
           </div>
         )}
 
@@ -156,95 +158,205 @@ export default function WikiDetailPage() {
               </h2>
               
               <div className="space-y-10">
-                {sec.items.map((item: any, j: number) => (
-                  <article key={j} className="group relative pl-4 border-l-2 border-gray-100 hover:border-[var(--color-primary)]/40 transition-colors">
-                    <div className="mb-2 flex items-center gap-2">
-                      <h3 className="text-[17px] font-bold text-gray-900 leading-snug break-keep text-balance">
-                        {item.title}
-                      </h3>
-                      {item.is_recommended && (
-                         <span className="px-2 py-0.5 text-[9px] font-black text-rose-600 bg-rose-50 rounded uppercase tracking-wider mb-0.5">定番</span>
+                {sec.items.map((item: any, j: number) => {
+                  const cleanTitle = typeof item.title === 'string' ? item.title.replace(/\[NEW\]|🆕/ig, '').trim() : item.title;
+                  const cleanContent = typeof item.content === 'string' ? item.content.replace(/\[NEW\]|🆕/ig, '').trim() : item.content;
+                  
+                  const isValidData = (v: any) => v && v !== "null" && v !== "なし" && v !== "不明" && v !== "N/A";
+                  
+                  const tipsArray = Array.isArray(item.tips) ? item.tips.filter(isValidData) : [];
+                  const timelineArray = Array.isArray(item.timeline) ? item.timeline : [];
+                  const reviewsArray = Array.isArray(item.reviews) ? item.reviews : [];
+                  const phrasesArray = Array.isArray(item.negotiation_phrases) ? item.negotiation_phrases.filter(isValidData) : (Array.isArray(item.encouraging_words) ? item.encouraging_words.filter(isValidData) : []);
+                  const documentsArray = Array.isArray(item.documents_needed) ? item.documents_needed.filter(isValidData) : [];
+                  
+                  const hasSummaryBadge = isValidData(item.result) || isValidData(item.duration) || isValidData(item.child_age) || isValidData(item.allergen);
+
+                  // Keep track of keys we've rendered specially so they don't appear in the generic tags
+                  const handledKeys = ['title', 'content', 'mention_count', 'heat_score', 'is_recommended', 'allergen_free', 'source_topics', 'tips', 'timeline', 'reviews', 'negotiation_phrases', 'encouraging_words', 'documents_needed', 'result', 'duration', 'child_age', 'allergen'];
+
+                  return (
+                    <article key={j} className="group relative bg-white rounded-[24px] p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 hover:border-[var(--color-primary)]/30 transition-all flex flex-col gap-5">
+                      
+                      {/* Milestone & Challenge Top Summary */}
+                      {hasSummaryBadge && (
+                        <div className="flex flex-wrap gap-2 text-[12px] font-black items-center mb-1">
+                          {isValidData(item.allergen) && <span className="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full flex gap-1 items-center">🎉 {item.allergen}</span>}
+                          {isValidData(item.child_age) && <span className="bg-sky-50 text-sky-700 px-3 py-1.5 rounded-full">👦 年齢: {item.child_age}</span>}
+                          {isValidData(item.duration) && <span className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full">⏱️ 期間: {item.duration}</span>}
+                          {isValidData(item.result) && <span className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full">📝 結果: {item.result}</span>}
+                        </div>
                       )}
-                    </div>
-                    
-                    <p className="text-[15px] font-medium text-gray-700 leading-[1.8] whitespace-pre-wrap">
-                      {item.content}
-                    </p>
 
-                    {/* Minimal Metadata Tags */}
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {Object.keys(item).map(k => {
-                        if (['title', 'content', 'mention_count', 'heat_score', 'is_recommended', 'allergen_free', 'source_topics'].includes(k)) return null;
-                        const fieldMeta = FIELD_LABELS[k];
-                        const val = item[k];
-                        if (!fieldMeta || fieldMeta.type === 'skip' || !val) return null;
-                        if (fieldMeta.type === 'tags' && Array.isArray(val) && val.length > 0) {
-                          return val.map((v: unknown, tagIdx: number) => (
-                            <span key={`${k}-${tagIdx}`} className="px-2 py-1 bg-gray-100 rounded text-[11px] font-bold text-gray-500">
-                              {fieldMeta.label}: {String(v)}
+                      {/* Allergen Free Badges */}
+                      {Array.isArray(item.allergen_free) && item.allergen_free.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {item.allergen_free.filter(isValidData).map((tag: string) => (
+                            <span key={`allergen-${tag}`} className="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[11px] font-bold border border-emerald-100">
+                              ✅ {tag}不使用
                             </span>
-                          ));
-                        }
-                        if (fieldMeta.type === 'text') {
-                          const displayVal = typeof val === 'boolean' ? (val ? 'あり' : 'なし') : String(val);
-                          return (
-                            <span key={k} className="px-2 py-1 bg-gray-100 rounded text-[11px] font-bold text-gray-500">
-                              {fieldMeta.label}: {displayVal}
-                            </span>
-                          );
-                        }
-                        return null;
-                      })}
-                      {Array.isArray(item.allergen_free) && (item.allergen_free as string[]).length > 0 && (
-                        (item.allergen_free as string[]).map((tag: string) => (
-                          <span key={`allergen-${tag}`} className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded text-[11px] font-bold">
-                            {tag}不使用
-                          </span>
-                        ))
+                          ))}
+                        </div>
                       )}
-                    </div>
 
-                    {/* Minimal Actions */}
-                    <div className="mt-4 flex items-center justify-between">
-                       <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                         {Array.isArray(item.source_topics) && item.source_topics.length > 0 && (
-                           <button 
-                             onClick={() => setShowSourcesFor(showSourcesFor === item.title ? null : item.title)}
-                             className="flex items-center gap-1 text-[11px] font-bold text-gray-400 hover:text-gray-600 bg-gray-50 px-2 py-1 rounded"
-                           >
-                             <MessageCircle className="w-3 h-3" /> 元の話題
-                           </button>
-                         )}
-                       </div>
-                       <div className="flex items-center gap-2">
-                         <button
-                            onClick={() => handleItemLike(item.title)}
-                            className={`text-[12px] font-bold flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors ${likedItems.has(item.title) ? 'text-rose-500 bg-rose-50' : 'text-gray-400 hover:bg-gray-50'}`}
-                         >
-                            {likedItems.has(item.title) ? "❤️ 共感した" : "🤍 共感"}
-                         </button>
-                         <button
-                            onClick={(e) => handleToggleBookmark(item.title, item.content, e)}
-                            className={`p-1.5 rounded-full transition-colors ${bookmarkedSnippets.has(item.title) ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10' : 'text-gray-400 hover:bg-gray-50'}`}
-                         >
-                            <Bookmark className={`w-4 h-4 ${bookmarkedSnippets.has(item.title) ? 'fill-current' : ''}`} />
-                         </button>
-                       </div>
-                    </div>
-
-                    {/* Sources Expanded State */}
-                    {showSourcesFor === item.title && Array.isArray(item.source_topics) && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-xl">
-                         <p className="text-[10px] font-bold text-gray-400 mb-2">この体験が話されたトークルーム</p>
-                         {item.source_topics.map((topic: any, idx: number) => (
-                           <Link key={idx} href={`/talk/${slug.replace('mega-', '')}/${topic.id}`} className="block text-[12px] font-bold text-[var(--color-primary)] hover:underline truncate">
-                             ↳ {topic.title}
-                           </Link>
-                         ))}
+                      <div className="flex items-start gap-2">
+                        <h3 className="text-[18px] font-black text-gray-900 leading-[1.4] break-keep text-balance">
+                          {cleanTitle}
+                        </h3>
+                        {item.is_recommended && (
+                           <span className="px-2 py-1 text-[10px] font-black text-rose-600 bg-rose-50 rounded-lg uppercase tracking-wider mt-0.5 shrink-0 border border-rose-100">⭐ 定番</span>
+                        )}
                       </div>
-                    )}
-                  </article>
-                ))}
+                      
+                      {cleanContent && (
+                        <p className="text-[15px] font-medium text-gray-700 leading-[1.8] whitespace-pre-wrap">
+                          {cleanContent}
+                        </p>
+                      )}
+
+                      {/* Timeline UI for Challenges */}
+                      {timelineArray.length > 0 && (
+                        <div className="bg-gray-50/80 rounded-2xl p-5 mt-2">
+                          <p className="text-[12px] font-black text-gray-400 mb-4 tracking-wider uppercase">経過タイムライン</p>
+                          <div className="flex flex-col gap-4 relative">
+                            <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
+                            {timelineArray.map((step: any, idx: number) => (
+                              <div key={idx} className="relative pl-8 flex flex-col">
+                                <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white border-4 border-emerald-400 z-10 shadow-sm"></div>
+                                <span className="text-[13px] font-black text-gray-800 mb-0.5">{step.phase}</span>
+                                <span className="text-[13px] font-medium text-gray-600 leading-relaxed">{step.description}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Reviews UI for Products / Eating Out */}
+                      {reviewsArray.length > 0 && (
+                        <div className="flex flex-col gap-3 mt-2">
+                          {reviewsArray.map((rev: any, idx: number) => (
+                            <div key={idx} className="bg-white border border-gray-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] rounded-2xl p-4 flex flex-col gap-2">
+                              <div className="flex items-center gap-1 text-[13px]">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <span key={i} className={i < (rev.rating || 4) ? "text-amber-400" : "text-gray-200"}>★</span>
+                                ))}
+                                {isValidData(rev.duration) && <span className="ml-2 text-[11px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded">使用: {rev.duration}</span>}
+                              </div>
+                              {isValidData(rev.comment) && <p className="text-[13px] font-bold text-gray-700 leading-relaxed">{rev.comment}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Speech Bubbles for Phrases / Encouraging Words */}
+                      {phrasesArray.length > 0 && (
+                        <div className="flex flex-col gap-3 mt-2 pl-2">
+                          {phrasesArray.map((phrase: string, idx: number) => (
+                            <div key={idx} className="relative bg-sky-50 text-sky-800 p-4 rounded-b-2xl rounded-tr-2xl text-[14px] font-bold leading-relaxed shadow-sm max-w-[90%] self-start">
+                               <div className="absolute top-0 -left-2 w-3 h-3 bg-sky-50" style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }}></div>
+                               💬 「{phrase}」
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Checklist for Documents */}
+                      {documentsArray.length > 0 && (
+                        <div className="bg-white border border-violet-100 shadow-sm rounded-2xl p-4 mt-2">
+                           <p className="text-[12px] font-black text-violet-400 mb-3 flex items-center gap-1">📋 必要な書類</p>
+                           <ul className="flex flex-col gap-2">
+                             {documentsArray.map((doc: string, idx: number) => (
+                               <li key={idx} className="flex items-start gap-2 text-[14px] font-bold text-gray-700">
+                                 <span className="text-violet-500 mt-0.5">☑</span> {doc}
+                               </li>
+                             ))}
+                           </ul>
+                        </div>
+                      )}
+
+                      {/* Tips Dedicated Block */}
+                      {tipsArray.length > 0 && (
+                        <div className="bg-amber-50 text-amber-800 p-4 rounded-2xl flex flex-col gap-1.5 mt-2">
+                           <span className="text-[11px] font-black flex items-center gap-1 opacity-80"><MessageCircle className="w-3 h-3" /> 工夫・コツ</span>
+                           <ul className="list-disc list-inside text-[13px] font-bold leading-relaxed">
+                             {tipsArray.map((tip: string, idx: number) => <li key={idx}>{tip}</li>)}
+                           </ul>
+                        </div>
+                      )}
+
+                      {/* Generic Custom Metadata Tags (Fallbacks) */}
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {Object.keys(item).map(k => {
+                          if (handledKeys.includes(k)) return null;
+                          const fieldMeta = FIELD_LABELS[k];
+                          const val = item[k];
+                          if (!fieldMeta || fieldMeta.type === 'skip' || !val) return null;
+                          
+                          if (fieldMeta.type === 'tags' && Array.isArray(val)) {
+                            return val.filter(isValidData).map((v: unknown, tagIdx: number) => (
+                              <span key={`${k}-${tagIdx}`} className="px-3 py-1.5 bg-gray-50 rounded-xl text-[12px] font-bold text-gray-600 border border-gray-200 flex items-center gap-1">
+                                {fieldMeta.label}: {String(v)}
+                              </span>
+                            ));
+                          }
+                          if (fieldMeta.type === 'text' && isValidData(val)) {
+                            const displayVal = typeof val === 'boolean' ? (val ? 'あり' : 'なし') : String(val);
+                            return (
+                              <span key={k} className="px-3 py-1.5 bg-gray-50 rounded-xl text-[12px] font-bold text-gray-600 border border-gray-200 flex items-center gap-1">
+                                {fieldMeta.label}: <span className="text-gray-900">{displayVal}</span>
+                              </span>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+
+                      {/* Actions Footer */}
+                      <div className="mt-2 pt-4 border-t border-gray-50 flex items-center justify-between">
+                         <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                           {Array.isArray(item.source_topics) && item.source_topics.length > 0 && (
+                             <button 
+                               onClick={() => setShowSourcesFor(showSourcesFor === item.title ? null : item.title)}
+                               className="flex items-center gap-1 text-[11px] font-bold text-gray-500 hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-full shadow-sm transition-all"
+                             >
+                               <MessageCircle className="w-3 h-3" /> 元の話題を見る
+                             </button>
+                           )}
+                         </div>
+                         <div className="flex items-center gap-1">
+                           <button
+                              onClick={() => handleItemLike(item.title)}
+                              className={`text-[12px] font-bold flex items-center gap-1 px-3 py-2 rounded-full transition-colors ${likedItems.has(item.title) ? 'text-rose-500 bg-rose-50 shadow-sm' : 'text-gray-400 hover:bg-gray-50'}`}
+                           >
+                              {likedItems.has(item.title) ? "❤️ 共感した" : "🤍 共感"}
+                           </button>
+                           <button
+                              onClick={(e) => handleToggleBookmark(item.title, item.content, e)}
+                              className={`p-2 rounded-full transition-colors ${bookmarkedSnippets.has(item.title) ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-sm' : 'text-gray-400 hover:bg-gray-50'}`}
+                           >
+                              <Bookmark className={`w-4 h-4 ${bookmarkedSnippets.has(item.title) ? 'fill-current' : ''}`} />
+                           </button>
+                         </div>
+                      </div>
+
+                      {/* Sources Expanded State */}
+                      {showSourcesFor === item.title && Array.isArray(item.source_topics) && (
+                        <div className="p-4 bg-[var(--color-surface-warm)] rounded-2xl border border-[var(--color-border-light)] slide-up">
+                           <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-1">
+                             <MessageCircle className="w-3 h-3" /> トークルームの実体験をみる
+                           </p>
+                           <div className="flex flex-col gap-2">
+                             {item.source_topics.map((topic: any, idx: number) => (
+                               <Link key={idx} href={`/talk/${slug.replace('mega-', '')}/${topic.id}`} className="block text-[13px] font-bold text-[var(--color-primary)] hover:underline truncate py-1.5 px-3 bg-white rounded-xl shadow-sm border border-gray-50 hover:shadow-md transition-all">
+                                 ↗ {topic.title}
+                               </Link>
+                             ))}
+                           </div>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ))}
@@ -255,10 +367,10 @@ export default function WikiDetailPage() {
           <p className="text-[12px] font-bold text-gray-400 mb-4">この記事が役に立ちましたか？</p>
           <button
             disabled={hasVotedHelpful}
-            onClick={(e) => { setHasVotedHelpful(true); voteWikiHelpful(entry.id); Haptics.success(); }}
-            className={`inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all ${hasVotedHelpful ? 'bg-rose-50 text-rose-500' : 'bg-gray-900 text-white hover:bg-gray-800 hover:scale-105 active:scale-95'}`}
+            onClick={() => { setHasVotedHelpful(true); voteWikiHelpful(entry.id); Haptics.success(); }}
+            className={`inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all duration-300 ${hasVotedHelpful ? 'bg-rose-500 text-white shadow-[0_8px_30px_rgba(244,63,94,0.3)] scale-105' : 'bg-gray-900 text-white hover:bg-gray-800 hover:scale-105 active:scale-95'}`}
           >
-            👍 {hasVotedHelpful ? "投票しました！" : "役に立った！"}
+            {hasVotedHelpful ? "🎉 投票しました！" : "👍 役に立った！"}
           </button>
           <p className="text-[11px] text-gray-400 mt-6 leading-relaxed max-w-sm mx-auto">
             ※このWikiは保護者の実体験をもとにAIが抽出した情報です。医療的な判断は必ず主治医にご相談ください。

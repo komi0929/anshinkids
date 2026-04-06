@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, Clock, BookOpen, MessageCircle, Bookmark, ArrowRight, Sparkles } from "@/components/icons";
+import { Search, Filter, Clock, BookOpen, MessageCircle, Bookmark } from "@/components/icons";
 import Link from "next/link";
 import { searchWiki } from "@/app/actions/wiki";
 import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20 } from "@/components/onboarding-wizard";
@@ -190,7 +190,18 @@ export default function WikiPage() {
       {/* Results List */}
       <div className="px-5 space-y-4">
         {isLoading ? (
-          [1, 2, 3].map((i) => <div key={i} className="shimmer h-40 rounded-[28px]" />)
+          [1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-[28px] p-6 shadow-sm border border-[var(--color-border-light)] slide-up">
+              <div className="flex gap-2 mb-3">
+                <div className="shimmer w-16 h-6 rounded-lg"></div>
+                <div className="shimmer w-12 h-6 rounded-lg"></div>
+              </div>
+              <div className="shimmer w-3/4 h-6 rounded-md mb-3"></div>
+              <div className="shimmer w-full h-4 rounded-md mb-2"></div>
+              <div className="shimmer w-5/6 h-4 rounded-md mb-4"></div>
+              <div className="shimmer w-1/3 h-4 rounded-md mt-4 border-t border-gray-100 pt-4"></div>
+            </div>
+          ))
         ) : entries.length === 0 ? (
           <div className="pt-4 text-center slide-up">
             <div className="w-16 h-16 mx-auto bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4">
@@ -228,6 +239,10 @@ export default function WikiPage() {
                         ⭐ 注目
                       </span>
                     )}
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                    <Clock className="w-3 h-3" />
+                    {new Date(entry.updated_at).toLocaleDateString("ja-JP", { month: "short", day: "numeric" })}更新
                   </div>
                 </div>
                 <h3 className="font-extrabold text-[18px] text-[var(--color-text)] mb-2.5 leading-tight tracking-tight text-balance">

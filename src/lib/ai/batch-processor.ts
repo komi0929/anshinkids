@@ -175,20 +175,18 @@ export async function runBatchExtraction() {
           let incomingSections: MegaWikiSection[] = [];
           
           try {
-             const cleanJson = responseText.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
-             incomingSections = JSON.parse(cleanJson) as MegaWikiSection[];
-          } catch {
-             try {
-               const cleanJson = responseText.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
-               incomingSections = JSON.parse(cleanJson + ']') as MegaWikiSection[];
-             } catch {
-               try {
-                 const cleanJson = responseText.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
-                 incomingSections = JSON.parse(cleanJson + '}]') as MegaWikiSection[];
-               } catch (e3) {
-                 console.warn("[Batch] JSON parse error, even with fallback.", e3);
-               }
-             }
+            // 最強のJSON抽出: LLMが余計な文字を吐いても確実に対象配列だけをくり抜く
+            const startIndex = responseText.indexOf('[');
+            const endIndex = responseText.lastIndexOf(']');
+            if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+               const cleanJson = responseText.substring(startIndex, endIndex + 1);
+               incomingSections = JSON.parse(cleanJson) as MegaWikiSection[];
+            } else {
+               throw new Error("No JSON array bracket found in response");
+            }
+          } catch (e) {
+             console.error("[Batch] JSON parser error (ignoring and considering failure for this chunk):", e);
+             // エラー時は抽出失敗とするが、ログは残す
           }
           
           if (incomingSections && Array.isArray(incomingSections) && incomingSections.length > 0) {
@@ -260,8 +258,10 @@ export async function runBatchExtraction() {
       // 4.5. AI自律的ファシリテーション (Proactive Topic Summoning)
       // 抽出があったら、部屋に感謝と「次のお題」を投下する (空転防止: 3件以上の実質的な抽出があった時のみ)
       if (roomUpdated && actualSourcesAdded >= 3) {
-        try {
-           const facPrompt = `あなたは活発な保護者コミュニティのファシリテーターです。先ほど参加者の会話から新しいヒントを抽出しました。
+         // ファシリテーションは非同期（Fire and Forget）で実行し、同期的なタイムアウトを防止する
+         Promise.resolve().then(async () => {
+           try {
+              const facPrompt = `あなたは活発な保護者コミュニティのファシリテーターです。先ほど参加者の会話から新しいヒントを抽出しました。
 以下の「現在の記事の見出し」を見て、参加者への短い感謝と、『次に聞きたい関連の話題（まだ不足していそうなもの）」を1〜2文で投げかけてください。
 
 ルール:
@@ -272,39 +272,40 @@ export async function runBatchExtraction() {
 直近の記事の見出し:
 ${currentSections.slice(0, 10).map(s => `・${s.heading}`).join("\n")}`;
 
-           const facResult = await model.generateContent({
-             contents: [{ role: "user", parts: [{ text: facPrompt }] }],
-             generationConfig: { temperature: 0.7 }
-           });
-           const facMessage = facResult.response.text();
-
-           const roomId = Object.keys(roomIdToSlug).find(id => roomIdToSlug[id] === roomSlug);
-           if (roomId) {
-              // 最も活発なトピックにファシリテーションメッセージを投下
-              const topicCounts: Record<string, number> = {};
-              for (const m of roomMessages) {
-                if (m.topic_id) topicCounts[m.topic_id] = (topicCounts[m.topic_id] || 0) + 1;
-              }
-              const bestTopicId = Object.entries(topicCounts)
-                .sort(([,a], [,b]) => b - a)[0]?.[0] || null;
-
-              await supabase.from("messages").insert({
-                room_id: roomId,
-                topic_id: bestTopicId,
-                content: `📖 まとめ記事を更新しました！\n${facMessage}`,
-                is_system_bot: true,
+              const facResult = await model.generateContent({
+                contents: [{ role: "user", parts: [{ text: facPrompt }] }],
+                generationConfig: { temperature: 0.7 }
               });
+              const facMessage = facResult.response.text();
 
-              const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
-              if (bestTopicId) {
-                await supabase.from("messages").update({ expires_at: newExpiry }).eq("topic_id", bestTopicId);
-              } else {
-                await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", roomId);
-              }
-            }
-        } catch (facErr) {
-           console.error(`[Batch] Facilitator error for ${roomSlug}`, facErr);
-        }
+              const roomId = Object.keys(roomIdToSlug).find(id => roomIdToSlug[id] === roomSlug);
+              if (roomId) {
+                 // 最も活発なトピックにファシリテーションメッセージを投下
+                 const topicCounts: Record<string, number> = {};
+                 for (const m of roomMessages) {
+                   if (m.topic_id) topicCounts[m.topic_id] = (topicCounts[m.topic_id] || 0) + 1;
+                 }
+                 const bestTopicId = Object.entries(topicCounts)
+                   .sort(([,a], [,b]) => b - a)[0]?.[0] || null;
+
+                 await supabase.from("messages").insert({
+                   room_id: roomId,
+                   topic_id: bestTopicId,
+                   content: `📖 まとめ記事を更新しました！\n${facMessage}`,
+                   is_system_bot: true,
+                 });
+
+                 const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+                 if (bestTopicId) {
+                   await supabase.from("messages").update({ expires_at: newExpiry }).eq("topic_id", bestTopicId);
+                 } else {
+                   await supabase.from("messages").update({ expires_at: newExpiry }).eq("room_id", roomId);
+                 }
+               }
+           } catch (facErr) {
+              console.error(`[Batch] Facilitator error for ${roomSlug}`, facErr);
+           }
+         }).catch(console.error);
       }
     }
 

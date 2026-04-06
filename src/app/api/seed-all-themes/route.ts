@@ -223,8 +223,12 @@ export async function GET(request: Request) {
     // Force clear locks
     await supabase.from("batch_logs").update({ status: "error", error_log: "force-cleared" }).eq("status", "running");
 
-    // Run batch extraction
-    const extractionResult = await runBatchExtraction();
+    // バッチ抽出を実行し、Vercelの10秒限界(Hobby)を回避するため8秒でブラウザには成功を返す（残りはバックグラウンド）
+    const extractionPromise = runBatchExtraction();
+    const extractionResult = await Promise.race([
+      extractionPromise,
+      new Promise((resolve) => setTimeout(() => resolve({ processed: totalMsgs, updated: 0, reason: "async_backgrounded_to_prevent_timeout" }), 8000))
+    ]);
 
     return NextResponse.json({
       success: true,

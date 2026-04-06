@@ -25,7 +25,7 @@ export async function searchWiki(query: string, filters?: { category?: string; a
         break;
       case "popular":
       default:
-        queryBuilder = queryBuilder.order("avg_trust_score", { ascending: false });
+        queryBuilder = queryBuilder.order("helpful_count", { ascending: false }).order("source_count", { ascending: false });
         break;
     }
 
