@@ -10,7 +10,6 @@ import {
   Send,
   MessageCircle,
   Trash2,
-  Share,
 } from "@/components/icons";
 import {
   getTopicMessages,
@@ -241,24 +240,6 @@ export default function TopicChatPage() {
     }
   }, [thankedIds]);
 
-  const handleShareMessage = useCallback(async (msgId: string) => {
-    Haptics.success();
-    const url = `${window.location.origin}/share/talk/${msgId}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "教えて！あんしんキッズ",
-          text: "食物アレルギーの先輩パパ・ママ、ヒントを貸してください🙏",
-          url: url,
-        });
-      } catch (e) {
-        console.error("Share failed", e);
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      alert("リンクをコピーしました！SNSでシェアして助けを呼びましょう。");
-    }
-  }, []);
 
   // Anonymous label generator — gives each unique user_id a stable, distinct label
   const anonymousLabels = useMemo(() => {
@@ -347,14 +328,8 @@ export default function TopicChatPage() {
     }
 
       if (messages.length === 0) {
-      const quickExamples = [
-        "うちはこうしてます！",
-        "同じ悩みがあります",
-        "こんな方法を試しました",
-      ];
       return (
         <div className="flex flex-col items-center px-4 pt-8 pb-4">
-          {/* コンパクトなウェルカム */}
           <div className="w-full max-w-sm">
             <div className="relative rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/10 p-5">
               <div className="flex items-start gap-3 mb-4">
@@ -371,24 +346,7 @@ export default function TopicChatPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-[var(--color-subtle)] tracking-wide uppercase ml-0.5">こんなふうに書けます</p>
-                {quickExamples.map((ex) => (
-                  <button
-                    key={ex}
-                    type="button"
-                    onClick={() => {
-                      setNewMessage(ex);
-                      textareaRef.current?.focus();
-                    }}
-                    className="w-full text-left px-3.5 py-2.5 rounded-xl bg-white border border-[var(--color-border-light)] text-[13px] font-medium text-[var(--color-text-secondary)] hover:border-[var(--color-primary)]/40 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all active:scale-[0.98]"
-                  >
-                    「{ex}」
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-[10px] text-[var(--color-muted)] text-center mt-4 leading-relaxed">
+              <p className="text-[10px] text-[var(--color-muted)] text-center mt-2 leading-relaxed">
                 投稿は72時間後に自動削除されます。<br />有益な情報はAIが「みんなのまとめ」に保存します。
               </p>
             </div>
@@ -432,14 +390,7 @@ export default function TopicChatPage() {
                   </span>
                   {!msg.is_optimistic && (
                     <>
-                      <button
-                        onClick={() => handleShareMessage(msg.id)}
-                        className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-primary)] flex items-center transition-colors ml-1"
-                        aria-label="先輩パパ・ママに助けを呼ぶ"
-                        title="SNS等でシェアして助けを呼ぶ"
-                      >
-                        <Share className="w-3.5 h-3.5" />
-                      </button>
+
                       <button
                         onClick={() => handleDelete(msg.id)}
                         className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-danger)] flex items-center transition-colors"
@@ -495,13 +446,7 @@ export default function TopicChatPage() {
                       <span className="font-bold">{msg.thanks_count}</span>
                     )}
                   </motion.button>
-                  <button
-                    onClick={() => handleShareMessage(msg.id)}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-surface)] border border-[var(--color-border-light)] text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-all"
-                    title="SNS等でシェアして助けを呼ぶ"
-                  >
-                    <Share className="w-3 h-3" />
-                  </button>
+
                 </div>
               </div>
             </div>
@@ -509,7 +454,7 @@ export default function TopicChatPage() {
         );
       }
     });
-  }, [messages, thankedIds, currentUserId, isLoading, topicInfo, handleThanks, handleShareMessage]);
+  }, [messages, thankedIds, currentUserId, isLoading, topicInfo, handleThanks]);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[var(--color-bg)]">
@@ -566,7 +511,7 @@ export default function TopicChatPage() {
               ref={textareaRef}
               value={newMessage}
               onChange={handleTextareaChange}
-              placeholder="あなたの体験や、今悩んでいることを共有してみませんか？"
+              placeholder="メッセージを入力"
               className="w-full bg-transparent border-none outline-none resize-none text-[15px] p-0 text-[var(--color-text)] placeholder-[var(--color-muted)] placeholder:font-medium leading-[1.5] max-h-[120px]"
               rows={1}
               onKeyDown={(e) => {
