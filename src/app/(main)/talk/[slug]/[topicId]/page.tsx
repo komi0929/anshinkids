@@ -346,9 +346,6 @@ export default function TopicChatPage() {
                 </div>
               </div>
 
-              <p className="text-[10px] text-[var(--color-muted)] text-center mt-2 leading-relaxed">
-                投稿は72時間後に自動削除されます。<br />有益な情報はAIが「みんなのまとめ」に保存します。
-              </p>
             </div>
           </div>
         </div>
