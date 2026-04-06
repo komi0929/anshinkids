@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { MessageCircle, ArrowRight } from "@/components/icons";
 import { getTalkRooms } from "@/app/actions/messages";
-import { getTrendingTopics, getPersonalizedWikiEntries, getContributionStreak, getWeeklyDigest } from "@/app/actions/discover";
+import { getTrendingTopics, getContributionStreak, getWeeklyDigest } from "@/app/actions/discover";
 import { getMyProfile } from "@/app/actions/mypage";
 
 interface Room {
@@ -22,14 +22,6 @@ interface TrendingTopic {
   thanksTotal: number;
 }
 
-interface PersonalizedEntry {
-  id: string;
-  title: string;
-  slug: string;
-  category: string;
-  summary: string;
-  source_count: number;
-}
 
 interface StreakData {
   currentStreak: number;
@@ -58,11 +50,11 @@ function TalkSkeleton() {
 
 async function TalkContent() {
   // Parallel fetch everything required
-  const [roomsRes, profileRes, trendRes, wikiRes, streakRes, digestRes] = await Promise.all([
+  const [roomsRes, profileRes, trendRes, streakRes, digestRes] = await Promise.all([
     getTalkRooms().catch(() => ({ success: false, data: null })),
     getMyProfile().catch(() => ({ success: false, data: null })),
     getTrendingTopics().catch(() => ({ success: false, data: null })),
-    getPersonalizedWikiEntries().catch(() => ({ success: false, data: null, isPersonalized: false, personalizationLabel: "" })),
+
     getContributionStreak().catch(() => ({ success: false, data: null })),
     getWeeklyDigest().catch(() => ({ success: false, data: null })),
   ]);
@@ -78,9 +70,7 @@ async function TalkContent() {
   }
 
   const trending = trendRes.success && trendRes.data ? trendRes.data as TrendingTopic[] : [];
-  const personalizedWiki = wikiRes.success && wikiRes.data ? wikiRes.data as PersonalizedEntry[] : [];
-  const isPersonalized = wikiRes.isPersonalized || false;
-  const personalizationLabel = wikiRes.personalizationLabel || "";
+
   const streak = streakRes.success && streakRes.data ? streakRes.data as StreakData : null;
   const digest = digestRes.success && digestRes.data ? digestRes.data as DigestData : null;
 
@@ -244,37 +234,6 @@ async function TalkContent() {
         })}
       </div>
 
-      {/* === Personalized Wiki Recommendations === */}
-      {personalizedWiki.length > 0 && (
-        <div className="px-4 pb-4">
-          <div className="flex items-center gap-2 mb-2.5 px-1">
-            <h2 className="text-[14px] font-bold break-keep text-balance" style={{ color: 'var(--color-text)' }}>
-              {personalizationLabel || (isPersonalized ? "✨ あなたへのおすすめまとめ" : "📖 人気のみんなのまとめ")}
-            </h2>
-          </div>
-          <div className="space-y-2">
-            {personalizedWiki.slice(0, 3).map((entry) => (
-              <Link
-                key={entry.id}
-                href={`/wiki/${entry.slug}`}
-                className="card card-active block p-3.5 group"
-                id={`personalized-wiki-${entry.slug}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center text-sm flex-shrink-0">
-                    📖
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-[14px] font-bold group-hover:text-[var(--color-primary)] transition-colors truncate break-keep text-balance" style={{ color: 'var(--color-text)' }}>{entry.title}</h4>
-                    <p className="text-[12px] font-medium truncate mt-0.5" style={{ color: 'var(--color-subtle)' }}>{entry.summary}</p>
-                  </div>
-                  <span className="text-[11px] font-semibold flex-shrink-0" style={{ color: 'var(--color-muted)' }}>{entry.source_count}件</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
     </div>
   );

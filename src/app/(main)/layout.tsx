@@ -24,6 +24,7 @@ export default function MainLayout({
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [helpfulVotes, setHelpfulVotes] = useState<number>(0);
+  const [hasUnreadImpact, setHasUnreadImpact] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
@@ -49,7 +50,12 @@ export default function MainLayout({
                 if (cancelled) return;
                 if (res.success && res.data) {
                   const dataObj = res.data as Record<string, unknown>;
-                  setHelpfulVotes((dataObj.total_helpful_votes as number) || 0);
+                  const currentVotes = (dataObj.total_helpful_votes as number) || 0;
+                  setHelpfulVotes(currentVotes);
+                  const lastSeen = Number(localStorage.getItem("anshin_last_seen_impact") || 0);
+                  if (currentVotes > lastSeen) {
+                    setHasUnreadImpact(true);
+                  }
                   // If we have profile data with tags/children, they have onboarded!
                   if ((res.data.children_profiles && (res.data.children_profiles as unknown[]).length > 0) || 
                       (res.data.allergen_tags && res.data.allergen_tags.length > 0)) {
@@ -72,6 +78,13 @@ export default function MainLayout({
       window.removeEventListener("online", handleOnline);
     };
   }, []);
+
+  useEffect(() => {
+    if (pathname === "/mypage" && helpfulVotes > 0) {
+      localStorage.setItem("anshin_last_seen_impact", helpfulVotes.toString());
+      setHasUnreadImpact(false);
+    }
+  }, [pathname, helpfulVotes]);
 
   function handleOnboardingComplete() {
     setShowOnboarding(false);
@@ -123,7 +136,12 @@ export default function MainLayout({
                   aria-label={item.label}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <item.Icon size={22} />
+                  <div className="relative">
+                    <item.Icon size={22} />
+                    {item.href === "/mypage" && hasUnreadImpact && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[var(--color-heart)] rounded-full border-2 border-white animate-pulse" />
+                    )}
+                  </div>
                   <span>{item.label}</span>
                 </Link>
               );
