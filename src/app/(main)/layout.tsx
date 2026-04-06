@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import OnboardingWizard, { isOnboardingComplete } from "@/components/onboarding-wizard";
-import { MessageCircle, Book, Sparkles, User, LogIn } from "@/components/icons";
+import { MessageCircle, Book, User, LogIn, Settings } from "@/components/icons";
 import { ImpactToast } from "@/components/ui/ImpactToast";
 
 const navItems = [
   { href: "/wiki", label: "まとめ", Icon: Book },
   { href: "/talk", label: "トークルーム", Icon: MessageCircle },
-  { href: "/concierge", label: "AI相談", Icon: Sparkles },
+  { href: "/support", label: "サポート", Icon: Settings },
   { href: "/mypage", label: "マイページ", Icon: User },
 ];
 
@@ -110,24 +110,7 @@ export default function MainLayout({
                 return null;
               }
 
-              const isComingSoon = item.href === "/concierge";
-              
-              if (isComingSoon) {
-                return (
-                  <div
-                    key={item.href}
-                    className="nav-item opacity-50 cursor-not-allowed select-none relative"
-                    id={`nav-${item.href.slice(1)}`}
-                    aria-label={`${item.label}（準備中）`}
-                  >
-                    <item.Icon size={22} className="text-gray-400" />
-                    <span className="text-gray-400">{item.label}</span>
-                    <div className="absolute -top-1 -right-2 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[8px] font-black px-1.5 py-0.5 rounded-sm shadow-sm transform -rotate-6 border border-white whitespace-nowrap">
-                      準備中
-                    </div>
-                  </div>
-                );
-              }
+
 
               const isActive =
                 pathname === item.href || pathname.startsWith(item.href + "/");

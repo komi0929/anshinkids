@@ -218,7 +218,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
 
   if (showAnimation) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg)]">
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[var(--color-bg)]">
         <div className="text-center fade-in">
           <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-lg scale-in">
             <Sparkles className="w-10 h-10 text-white" />
@@ -231,7 +231,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[var(--color-bg)] safe-bottom" role="dialog" aria-label="はじめの設定">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--color-bg)] safe-bottom" role="dialog" aria-label="はじめの設定">
       <div className="px-6 pt-6 pb-2">
         <div className="flex items-center justify-between mb-2">
           <button onClick={handleSkip} className="text-[12px] text-[var(--color-subtle)] hover:text-[var(--color-text-secondary)] transition-colors py-2 px-1">スキップ</button>
@@ -255,7 +255,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
               </div>
               <div>
                 <h1 className="text-[18px] font-extrabold text-[var(--color-text)] break-keep text-balance">
-                  {step === 0 ? "お子さまのアレルゲン設定" : "お子さまの年齢設定"}
+                  {step === 0 ? "お子さまのアレルギー食材" : "お子さまの年齢設定"}
                 </h1>
                 <p className="text-[12px] text-[var(--color-subtle)]">あとから変更できます（複数こども対応）</p>
               </div>
@@ -280,7 +280,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
                 onClick={handleAddChild}
                 className="px-4 py-2 rounded-xl text-[13px] font-bold whitespace-nowrap text-[var(--color-primary)] bg-[var(--color-primary)]/10 flex items-center gap-1 border border-[var(--color-primary)]/20"
               >
-                <Plus className="w-3.5 h-3.5" /> 2人目を追加
+                <Plus className="w-3.5 h-3.5" /> 追加
               </button>
             </div>
           </div>

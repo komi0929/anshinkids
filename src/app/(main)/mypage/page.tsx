@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, BookOpen, TrendingUp, Award, LogOut, Pencil, Check, Loader2, Sparkles, Settings, Bell, X, ArrowRight, ShieldCheck, Share } from "@/components/icons";
+import { Heart, BookOpen, TrendingUp, LogOut, Pencil, Check, Loader2, Sparkles, Settings, X, Share } from "@/components/icons";
 import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
 
 import { logoutAction } from "@/app/actions/auth";
@@ -286,12 +286,7 @@ export default function MyPage() {
             あなたの体験が、新しいヒントに変わっています
           </p>
         </div>
-        <Link href="/notifications" className="w-10 h-10 rounded-full bg-[var(--color-surface-warm)] border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-border-light)] transition-colors relative" aria-label="通知を見る">
-          <Bell className="w-5 h-5 text-[var(--color-text)]" />
-          {(impact && (impact.thanks > 0)) && (
-            <span className="absolute top-0 right-0 w-3 h-3 bg-[var(--color-heart)] rounded-full border-2 border-[var(--color-surface)] animate-pulse"></span>
-          )}
-        </Link>
+
       </div>
 
       {/* Profile Card */}
@@ -316,11 +311,7 @@ export default function MyPage() {
                   <div className="flex items-center gap-2">
                     <h2 className="text-[18px] font-extrabold text-[var(--color-text)] truncate break-keep text-balance">{profile.display_name}</h2>
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-[12px] text-[var(--color-subtle)] font-medium bg-[var(--color-surface-warm)] px-2.5 py-0.5 rounded-md">
-                      あんしんキッズ メンバー
-                    </span>
-                  </div>
+
                 </div>
               </div>
 
@@ -329,17 +320,17 @@ export default function MyPage() {
                 <div className="bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-bg-warm)] rounded-2xl p-3.5 text-center">
                   <BookOpen className="w-4 h-4 text-[var(--color-primary)] mx-auto mb-1.5" />
                   <div className="text-[20px] font-extrabold text-[var(--color-text)]">{profile.total_contributions}</div>
-                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">共有数</div>
+                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">発言回数</div>
                 </div>
                 <div className="bg-gradient-to-br from-[var(--color-heart-light)] to-pink-50/50 rounded-2xl p-3.5 text-center">
                   <Heart className="w-4 h-4 text-[var(--color-heart)] mx-auto mb-1.5" />
                   <div className="text-[20px] font-extrabold text-[var(--color-text)]">{profile.total_thanks_received}</div>
-                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">ありがとう</div>
+                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">いいね</div>
                 </div>
                 <div className="bg-gradient-to-br from-[var(--color-success-light)] to-green-50/50 rounded-2xl p-3.5 text-center">
                   <TrendingUp className="w-4 h-4 text-[var(--color-success)] mx-auto mb-1.5" />
                   <div className="text-[20px] font-extrabold text-[var(--color-text)]">{contributions.length}</div>
-                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">ヒントに反映</div>
+                  <div className="text-[10px] font-medium text-[var(--color-subtle)]">まとめ記事への採用</div>
                 </div>
               </div>
 
@@ -375,7 +366,7 @@ export default function MyPage() {
                   </button>
                 </div>
                 {getMigratedInitialPrefs().children.length === 0 && (
-                  <p className="text-[12px] text-[var(--color-muted)]">アレルゲン情報が未設定です。右上のボタンから設定してください。</p>
+                  <p className="text-[12px] text-[var(--color-muted)]">アレルギー食材が未設定です。右上のボタンから設定してください。</p>
                 )}
                 {getMigratedInitialPrefs().children.map((child, idx) => (
                   <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-xl p-3 border border-[var(--color-border-light)]">
@@ -391,7 +382,7 @@ export default function MyPage() {
                         <span key={tag} className="px-2.5 py-1 bg-white border border-dashed border-[var(--color-border)] rounded-md text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
                       ))}
                       {child.allergens.length === 0 && child.customAllergens.length === 0 && (
-                        <span className="text-[11px] text-[var(--color-muted)]">アレルゲン設定なし</span>
+                        <span className="text-[11px] text-[var(--color-muted)]">アレルギー食材の設定なし</span>
                       )}
                     </div>
                   </div>
@@ -400,28 +391,7 @@ export default function MyPage() {
             </>
           )}
 
-          {/* F9 Amulet Card Share CTA */}
-          {!isEditing && getMigratedInitialPrefs().children.length > 0 && (
-            <div className="mt-5 mb-2 pt-5 border-t border-[var(--color-border-light)] fade-in">
-              <a
-                href={`/card/${profile.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full relative overflow-hidden group btn-primary flex flex-col items-center justify-center gap-1.5 !py-3.5 shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-success-deep)] border-none"
-              >
-                {/* Visual texture */}
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "12px 12px" }}></div>
-                
-                <div className="flex items-center gap-2 z-10 relative">
-                  <ShieldCheck className="w-5 h-5 text-yellow-300" />
-                  <span className="font-extrabold text-[15px] text-white">デジタルお守りカードを使う</span>
-                </div>
-                <div className="text-[10px] font-bold text-white/80 z-10 relative">
-                  ばあば・お友だちへのアレルゲン共有に！
-                </div>
-              </a>
-            </div>
-          )}
+
         </div>
       </div>
 
@@ -582,10 +552,10 @@ export default function MyPage() {
               <Sparkles className="w-7 h-7 text-[var(--color-success)]" />
             </div>
             <p className="text-[14px] text-[var(--color-text)] mb-1 font-bold">
-              まだヒントに反映されたお声はありません
+              まだまとめ記事に採用された発言はありません
             </p>
             <p className="text-[12px] text-[var(--color-subtle)] leading-relaxed mb-4">
-              「トークルーム」で体験をお話しすると、<br/>AIがあなたのヒントを整理してプラットフォームの資産として残してくれます
+              「トークルーム」で発言すると、<br/>AIが自動でまとめ記事に追加してくれます
             </p>
             <Link href="/talk" className="btn-primary inline-flex items-center gap-2" id="go-talk-from-mypage">
               💬 トークルームで話してみる
@@ -594,31 +564,7 @@ export default function MyPage() {
          </div>
       )}
 
-      {/* === F7: Contribution Streak === */}
-      <div className="px-4 mb-4">
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shadow-sm">
-              <span className="text-xl">🔥</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-[13px] font-bold text-[var(--color-text)]">
-                参加のあゆみ
-              </p>
-              <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed">
-                {(() => {
-                  if (!profile) return "データを読み込み中...";
-                  const count = profile.total_contributions;
-                  if (count === 0) return "まだお話しがありません。日々の小さな気づきが誰かのヒントになります。";
-                  if (count < 5) return `${count}回のお話し — いい調子ですね！少しずつヒントが集まっています 🌱`;
-                  if (count < 10) return `${count}回のお話し — たくさんの体験を共有いただきありがとうございます。あなたのお声が誰かの支えになっています 🍀`;
-                  return `${count}回のお話し — いつも活動を支えてくださり、本当にありがとうございます 💐`;
-                })()}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* === F6: Privacy & Data Controls === */}
       <div className="px-4 pb-4">
@@ -691,57 +637,7 @@ export default function MyPage() {
         </div>
       </div>
 
-      {/* Support and Feedback */}
-      <div className="px-4 mb-4">
-        <h3 className="text-[13px] font-extrabold text-[var(--color-subtle)] mb-2 px-1 break-keep text-balance">運営・サポート</h3>
-        <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
-          <Link
-            href="/about"
-            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
-                <span className="text-sm">🍀</span>
-              </div>
-              <div>
-                <div className="text-[14px] font-bold text-[var(--color-text)] mb-0.5">あんしんキッズとは</div>
-                <div className="text-[11px] text-[var(--color-subtle)]">サービスの仕組み・安心ポイント</div>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[var(--color-muted)]" />
-          </Link>
-          <a
-            href="mailto:support@anshin-kids.app?subject=アプリへのアイデア・バグ報告"
-            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[var(--color-warning-light)]0 flex items-center justify-center text-[var(--color-warning)]">
-                <span className="text-sm">💡</span>
-              </div>
-              <div>
-                <div className="text-[14px] font-bold text-[var(--color-text)] mb-0.5">アイデア・バグ報告</div>
-                <div className="text-[11px] text-[var(--color-subtle)]">アプリをもっと良くするためのご意見</div>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[var(--color-muted)]" />
-          </a>
-          <a
-            href="mailto:partner@anshin-kids.app?subject=活動への協賛・支援について"
-            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-500">
-                <span className="text-sm">🤝</span>
-              </div>
-              <div>
-                <div className="text-[14px] font-bold text-[var(--color-text)] mb-0.5">この活動を支援する</div>
-                <div className="text-[11px] text-[var(--color-subtle)]">プロジェクトへのご意見・ご参画</div>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[var(--color-muted)]" />
-          </a>
-        </div>
-      </div>
+
 
       {/* Logout */}
       <div className="px-4 pb-8 pt-2">
@@ -769,13 +665,52 @@ export default function MyPage() {
                 <div className="w-16 h-16 shrink-0 shadow-sm relative">
                   {renderAvatar(editAvatar, editName || profile?.display_name || "👤")}
                   {editAvatar && (
-                    <button onClick={() => setEditAvatar(null)} className="absolute top-[-4px] right-[-4px] w-5 h-5 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] hover:text-[var(--color-danger)]">
-                      <X className="w-3 h-3" />
+                    <button onClick={() => setEditAvatar(null)} className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] shadow-md hover:text-[var(--color-danger)] z-10 transition-colors">
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
-                <div className="flex-1 text-[11px] text-[var(--color-muted)] leading-relaxed">
-                  下のリストから選ぶか、そのままにしてLINEのアイコン（取得済みの場合）を表示します。
+                <div className="flex-1">
+                  <p className="text-[11px] text-[var(--color-muted)] leading-relaxed mb-2">
+                    自由に写真を追加するか、お好みの絵文字を選択できます。
+                  </p>
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] hover:text-[var(--color-primary)] transition-colors rounded-lg text-[11px] font-bold text-[var(--color-text-secondary)] border border-[var(--color-border)] cursor-pointer">
+                    <span className="text-sm">📸</span> 写真を選択
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          const img = new window.Image();
+                          img.onload = () => {
+                            const canvas = document.createElement("canvas");
+                            const maxSize = 200;
+                            let { width, height } = img;
+                            if (width > height) {
+                              if (width > maxSize) {
+                                height = Math.round(height * maxSize / width);
+                                width = maxSize;
+                              }
+                            } else {
+                              if (height > maxSize) {
+                                width = Math.round(width * maxSize / height);
+                                height = maxSize;
+                              }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext("2d");
+                            if (ctx) {
+                              ctx.drawImage(img, 0, 0, width, height);
+                              setEditAvatar(canvas.toDataURL("image/jpeg", 0.7));
+                            }
+                          };
+                          img.src = e.target?.result as string;
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }} />
+                  </label>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
