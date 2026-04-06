@@ -190,9 +190,6 @@ async function TalkContent() {
           <MessageCircle size={16} className="text-[var(--color-primary)]" />
           トークルーム
         </h2>
-        {rooms.length > 0 && (
-          <span className="counter">{rooms.length}件</span>
-        )}
       </div>
 
       {/* Room List */}
