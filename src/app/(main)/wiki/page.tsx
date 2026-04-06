@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { searchWiki } from "@/app/actions/wiki";
+import { getInitialWikiEntries } from "@/app/actions/wiki";
 import WikiClient from "./wiki-client";
 
 function WikiSkeleton() {
@@ -24,7 +24,7 @@ function WikiSkeleton() {
 
 async function WikiContent() {
   // Server-side initial data fetch — no client round-trip needed
-  const result = await searchWiki("", { sortBy: "popular" });
+  const result = await getInitialWikiEntries();
   const initialEntries = result.success ? result.data : [];
 
   return <WikiClient initialEntries={initialEntries} />;

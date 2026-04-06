@@ -1,9 +1,33 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
-import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore, unstable_cache } from "next/cache";
+
+export const getInitialWikiEntries = unstable_cache(
+  async () => {
+    try {
+      const supabase = createStaticClient();
+      if (!supabase) return { success: true, data: [] };
+
+      const { data, error } = await supabase
+        .from("wiki_entries")
+        .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at")
+        .order("avg_trust_score", { ascending: false })
+        .order("source_count", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return { success: true, data: data || [] };
+    } catch (err) {
+      console.error("[getInitialWikiEntries]", err);
+      return { success: true, data: [] };
+    }
+  },
+  ["wiki-initial-entries"],
+  { revalidate: 3600, tags: ["wiki-entries"] }
+);
 
 export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[]; sortBy?: string }) {
   noStore();
@@ -13,7 +37,7 @@ export async function searchWiki(query: string, filters?: { category?: string; a
 
     let queryBuilder = supabase
       .from("wiki_entries")
-      .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, helpful_count, updated_at");
+      .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at");
 
     // Sort
     switch (filters?.sortBy) {
@@ -25,7 +49,7 @@ export async function searchWiki(query: string, filters?: { category?: string; a
         break;
       case "popular":
       default:
-        queryBuilder = queryBuilder.order("helpful_count", { ascending: false }).order("source_count", { ascending: false });
+        queryBuilder = queryBuilder.order("avg_trust_score", { ascending: false }).order("source_count", { ascending: false });
         break;
     }
 

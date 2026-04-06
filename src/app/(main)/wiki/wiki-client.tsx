@@ -50,7 +50,6 @@ interface WikiEntry {
   allergen_tags: string[];
   avg_trust_score: number;
   source_count: number;
-  helpful_count: number;
   updated_at: string;
 }
 

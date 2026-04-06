@@ -1,11 +1,40 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { THEMES, THEME_BY_SLUG } from "@/lib/themes";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 
 // ─── Topic CRUD ───────────────────────────────────────────
+
+export const getTalkRooms = unstable_cache(
+  async () => {
+    try {
+      const supabase = createStaticClient();
+      if (!supabase) return { success: true, data: [] };
+
+      const { data, error } = await supabase
+        .from("talk_rooms")
+        .select(`
+          id,
+          slug,
+          name,
+          description,
+          icon_emoji,
+          sort_order
+        `)
+        .order("sort_order", { ascending: true });
+        
+      if (error) throw error;
+      return { success: true, data: data || [] };
+    } catch (err) {
+      console.error("[getTalkRooms]", err);
+      return { success: true, data: [] };
+    }
+  },
+  ["talk-rooms-list"],
+  { revalidate: 3600, tags: ["talk-rooms"] } // Cache for 1 hour or until invalidated
+);
 
 export async function getTalkTopics(roomId: string) {
   try {
@@ -488,26 +517,6 @@ export async function getActiveMessages(roomId: string) {
 }
 
 // ─── Talk Room CRUD ────────────────────────────────────────
-
-export async function getTalkRooms() {
-  try {
-    const supabase = await createClient();
-    if (!supabase) return { success: true, data: THEMES };
-    const { data, error } = await supabase
-      .from("talk_rooms")
-      .select("*")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
-    if (error) throw error;
-    if (data && data.length > 0) {
-      return { success: true, data };
-    }
-    return { success: true, data: THEMES };
-  } catch (err) {
-    console.error("[getTalkRooms]", err);
-    return { success: true, data: THEMES };
-  }
-}
 
 export async function getTalkRoomBySlug(slug: string) {
   try {
