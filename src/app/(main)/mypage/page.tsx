@@ -198,7 +198,7 @@ export default function MyPage() {
 
   const handleShareImpact = async () => {
     if (!impact) return;
-    const shareText = `あんしんキッズで、私の体験が「${impact.articlesHelped}件のヒント」に変わり、「${impact.thanks}人」のパパ・ママの助けになりました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
+    const shareText = `あんしんキッズで、私の体験が「${impact.articlesHelped}件のまとめ記事」として採用され、「${impact.thanks}人」のパパ・ママから感謝されました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
     const url = `${window.location.origin}/`;
     if (navigator.share) {
       try {
@@ -282,8 +282,8 @@ export default function MyPage() {
           <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight break-keep text-balance">
             マイページ
           </h1>
-          <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-            あなたの体験が、新しいヒントに変わっています
+          <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 font-medium">
+            あなたの回答が、みんなのまとめ記事になります。
           </p>
         </div>
 
@@ -300,17 +300,18 @@ export default function MyPage() {
             />
           ) : (
             <>
-              <div className="flex items-center gap-4 mb-5">
-                <div className="w-14 h-14 relative group shrink-0">
-                  {renderAvatar(profile.avatar_url, profile.display_name)}
-                  <button onClick={() => setShowProfileEdit(true)} className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all z-10 border border-[var(--color-border-light)] hover:scale-105 active:scale-95">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 relative shrink-0">
+                    {renderAvatar(profile.avatar_url, profile.display_name)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-[18px] font-black text-[var(--color-text)] truncate">{profile.display_name}</h2>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-[18px] font-black text-[var(--color-text)] truncate">{profile.display_name}</h2>
-                  <p className="text-[12px] font-bold text-[var(--color-subtle)] mt-0.5">登録ユーザー</p>
-                </div>
+                <button onClick={() => setShowProfileEdit(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] text-[11px] font-bold text-[var(--color-text-secondary)] rounded-full transition-colors flex-shrink-0">
+                  <Settings className="w-3.5 h-3.5" /> 変更
+                </button>
               </div>
 
               {/* Stats */}
@@ -404,8 +405,8 @@ export default function MyPage() {
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
             みんなへのお役立ち
           </h3>
-          <p className="text-[12px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
-            ここで共有していただいたお話は、同じ悩みを抱える親御さんのための大切なヒントとして残っていきます。
+          <p className="text-[12px] text-[var(--color-text-secondary)] mb-4 leading-relaxed font-medium">
+            あなたの回答は、同じ悩みを抱える親御さんのための大切なまとめ記事として残ります。
           </p>
           
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -475,8 +476,8 @@ export default function MyPage() {
             <span className="text-xl">🔖</span>
             お気に入り
           </h3>
-          <p className="text-[12px] text-[var(--color-subtle)] mb-3 leading-relaxed">
-            保存した役立つヒントにいつでもアクセスできます。
+          <p className="text-[12px] text-[var(--color-text-secondary)] mb-3 font-medium">
+            お気に入りの情報にいつでもアクセスできます。
           </p>
           <div className="space-y-3">
             {bookmarks.map((bm) => (
@@ -556,8 +557,8 @@ export default function MyPage() {
             <p className="text-[15px] text-[var(--color-text)] mb-1.5 font-black tracking-tight leading-tight break-keep text-balance">
               まだまとめ記事に採用された発言はありません
             </p>
-            <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed font-bold mb-6 break-keep text-balance">
-              トークルームで発言すると、AIが共通のヒントを見つけて、自動でまとめ記事に追加します。
+            <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed font-medium mb-6 break-keep text-balance">
+              トークルームで話題に参加すると、AIが知見を抽出し、まとめ記事へと進化させます。
             </p>
             <Link href="/talk" className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform">
               <span className="text-lg">💬</span> トークルームへ行く
@@ -577,21 +578,21 @@ export default function MyPage() {
 
         {/* Data Info */}
         <div className="card p-4 mb-3">
-          <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed mb-3">
-            あんしんキッズでは、あなたのデータを大切に扱います。
+          <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed mb-3 font-medium">
+            あんしんキッズは、プライバシー優先のシステム設計です。
           </p>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>あなたのお声は一定時間でリセットされるので安心です</span>
+              <span>トークルームの投稿は一定時間経過後に自動消去されます</span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>まとめ記事は匿名化されて保存されます</span>
+              <span>まとめ記事には一切の個人情報を残しません</span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>LINEの友だちリストにはアクセスしません</span>
+              <span>LINE上の友だち情報等をシステムが取得することはありません</span>
             </div>
           </div>
         </div>
