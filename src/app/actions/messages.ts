@@ -112,6 +112,18 @@ export async function createTopic(
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
+    // Prevent duplicate topics
+    const { data: existingTopic } = await supabase
+      .from("talk_topics")
+      .select("id")
+      .eq("room_id", roomId)
+      .eq("title", title.trim())
+      .maybeSingle();
+      
+    if (existingTopic) {
+      return { success: true, topicId: existingTopic.id }; // Just return the existing one
+    }
+
     const { data, error } = await supabase
       .from("talk_topics")
       .insert({ room_id: roomId, title: title.trim(), creator_id: user.id })
