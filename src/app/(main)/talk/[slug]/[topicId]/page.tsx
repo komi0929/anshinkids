@@ -10,6 +10,8 @@ import {
   Send,
   MessageCircle,
   Trash2,
+  ChevronDown,
+  BookOpen,
 } from "@/components/icons";
 import {
   getTopicMessages,
@@ -20,6 +22,7 @@ import {
   getTalkRoomBySlug,
   getTalkTopicById,
 } from "@/app/actions/messages";
+import { getTopicSummary, TopicSummary } from "@/app/actions/topic-summary";
 import {
   checkContentSafety,
 } from "@/lib/ai/safety-guard";
@@ -72,6 +75,8 @@ export default function TopicChatPage() {
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [topicInfo, setTopicInfo] = useState<TopicInfo | null>(null);
   const [safetyWarning, setSafetyWarning] = useState<string | null>(null);
+  const [topicSummary, setTopicSummary] = useState<TopicSummary | null>(null);
+  const [showSummary, setShowSummary] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -121,7 +126,14 @@ export default function TopicChatPage() {
       }
       setTopicInfo(topicRes.data as TopicInfo);
 
-      await loadMessages();
+      // Load summary and messages in parallel
+      const [, summaryRes] = await Promise.all([
+        loadMessages(),
+        getTopicSummary(topicId),
+      ]);
+      if (summaryRes.success && summaryRes.data) {
+        setTopicSummary(summaryRes.data);
+      }
     }
     initData();
   }, [slug, topicId, router, loadMessages]);
@@ -478,6 +490,66 @@ export default function TopicChatPage() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto pb-6 relative z-10">
+        {/* AI Summary Section */}
+        {topicSummary && topicSummary.full_summary && (
+          <div className="mx-4 mt-4 mb-2">
+            <button
+              onClick={() => setShowSummary(!showSummary)}
+              className="w-full flex items-center justify-between p-4 rounded-t-2xl bg-gradient-to-r from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/15 border-b-0 transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-[var(--color-primary)]" />
+                <span className="text-[13px] font-bold text-[var(--color-primary)]">AIまとめ</span>
+                {topicSummary.allergen_tags && topicSummary.allergen_tags.length > 0 && (
+                  <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
+                    {topicSummary.allergen_tags.slice(0, 3).join("・")}
+                  </span>
+                )}
+              </div>
+              <ChevronDown className={`w-4 h-4 text-[var(--color-primary)] transition-transform ${showSummary ? 'rotate-180' : ''}`} />
+            </button>
+            {showSummary && (
+              <div className="p-4 rounded-b-2xl bg-white border border-[var(--color-primary)]/15 border-t-0 slide-up">
+                {topicSummary.summary_snippet && (
+                  <p className="text-[14px] font-medium text-[var(--color-text)] leading-relaxed mb-4">
+                    {topicSummary.summary_snippet}
+                  </p>
+                )}
+                {/* Render structured full_summary */}
+                {typeof topicSummary.full_summary === 'object' && topicSummary.full_summary !== null && (
+                  <div className="space-y-3">
+                    {Object.entries(topicSummary.full_summary as Record<string, unknown>).map(([key, val]) => {
+                      if (!val || key === 'title') return null;
+                      if (typeof val === 'string') {
+                        return (
+                          <div key={key}>
+                            <p className="text-[11px] font-black text-[var(--color-subtle)] mb-1 uppercase tracking-wider">{key}</p>
+                            <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">{val}</p>
+                          </div>
+                        );
+                      }
+                      if (Array.isArray(val)) {
+                        return (
+                          <div key={key}>
+                            <p className="text-[11px] font-black text-[var(--color-subtle)] mb-1 uppercase tracking-wider">{key}</p>
+                            <ul className="list-disc list-inside text-[13px] text-[var(--color-text-secondary)] leading-relaxed space-y-1">
+                              {(val as string[]).map((item, i) => <li key={i}>{String(item)}</li>)}
+                            </ul>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                )}
+                <p className="text-[10px] text-[var(--color-muted)] mt-4 pt-3 border-t border-[var(--color-border-light)]">
+                  ※会話の内容をもとにAIが自動生成した要約です
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="py-4">
           {renderedMessages}
           <div ref={messagesEndRef} className="h-4" />

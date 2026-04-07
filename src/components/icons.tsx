@@ -42,6 +42,10 @@ export const ArrowUpRight = ({ className, style, size = 20 }: IconProps) => (
 export const ChevronRight = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><polyline points="9 18 15 12 9 6" /></svg>
 );
+export const ChevronDown = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><polyline points="6 9 12 15 18 9" /></svg>
+);
+
 
 
 // ── Communication ──

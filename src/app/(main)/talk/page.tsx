@@ -24,7 +24,6 @@ function TalkSkeleton() {
 }
 
 async function TalkContent() {
-  // 最小限のデータフェッチ: トークルーム一覧のみ
   const roomsRes = await getTalkRooms().catch(() => ({ success: false, data: null }));
   const rooms = (roomsRes.success && roomsRes.data ? roomsRes.data : []) as Room[];
 
@@ -33,10 +32,10 @@ async function TalkContent() {
       {/* Header */}
       <div className="px-5 pt-8 pb-5">
         <h1 className="text-[26px] font-black tracking-tight leading-tight break-keep text-balance" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
-          トークルーム
+          テーマ一覧
         </h1>
         <p className="text-[14px] font-medium mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-          食物アレルギーの実体験をテーマ別にシェアする場所
+          気になるテーマを選んで、知恵を読む・会話に参加する
         </p>
       </div>
 

@@ -5,11 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import OnboardingWizard, { isOnboardingComplete } from "@/components/onboarding-wizard";
-import { MessageCircle, Book, User, LogIn, Settings } from "@/components/icons";
+import { MessageCircle, User, LogIn, Settings } from "@/components/icons";
 
 const navItems = [
-  { href: "/wiki", label: "まとめ", Icon: Book },
-  { href: "/talk", label: "トークルーム", Icon: MessageCircle },
+  { href: "/talk", label: "テーマ一覧", Icon: MessageCircle },
   { href: "/support", label: "サポート", Icon: Settings },
   { href: "/mypage", label: "マイページ", Icon: User },
 ];
@@ -69,7 +68,8 @@ export default function MainLayout({
     setShowOnboarding(false);
   }
 
-  const isTalkDetail = pathname.startsWith("/talk/") && pathname.length > "/talk/".length;
+  // Hide footer on topic detail pages (chat view)
+  const isTalkDetail = /^\/talk\/[^/]+\/[^/]+/.test(pathname);
 
   return (
     <div className={`min-h-[100dvh] ${isTalkDetail ? "" : "pb-[72px]"} max-w-md mx-auto relative bg-[var(--color-bg)] shadow-md`}>
