@@ -500,9 +500,14 @@ export default function TopicChatPage() {
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-[var(--color-primary)]" />
                 <span className="text-[13px] font-bold text-[var(--color-primary)]">AIまとめ</span>
-                {topicSummary.allergen_tags && topicSummary.allergen_tags.length > 0 && (
+                {topicSummary.allergen_tags && Array.isArray(topicSummary.allergen_tags) && topicSummary.allergen_tags.length > 0 && (
                   <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
                     {topicSummary.allergen_tags.slice(0, 3).join("・")}
+                  </span>
+                )}
+                {topicSummary.allergen_tags && !Array.isArray(topicSummary.allergen_tags) && (
+                  <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
+                    {String(topicSummary.allergen_tags).slice(0, 10)}
                   </span>
                 )}
               </div>
@@ -515,8 +520,8 @@ export default function TopicChatPage() {
                     {topicSummary.summary_snippet}
                   </p>
                 )}
-                {/* Render structured full_summary */}
-                {typeof topicSummary.full_summary === 'object' && topicSummary.full_summary !== null && (
+                {/* Render structured full_summary safely */}
+                {topicSummary.full_summary && typeof topicSummary.full_summary === 'object' && !Array.isArray(topicSummary.full_summary) && (
                   <div className="space-y-3">
                     {Object.entries(topicSummary.full_summary as Record<string, unknown>).map(([key, val]) => {
                       if (!val || key === 'title') return null;
@@ -533,7 +538,7 @@ export default function TopicChatPage() {
                           <div key={key}>
                             <p className="text-[11px] font-black text-[var(--color-subtle)] mb-1 uppercase tracking-wider">{key}</p>
                             <ul className="list-disc list-inside text-[13px] text-[var(--color-text-secondary)] leading-relaxed space-y-1">
-                              {(val as string[]).map((item, i) => <li key={i}>{String(item)}</li>)}
+                              {val.map((item, i) => <li key={i}>{String(item)}</li>)}
                             </ul>
                           </div>
                         );

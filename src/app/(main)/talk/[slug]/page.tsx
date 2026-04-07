@@ -247,9 +247,14 @@ export default function ThemeHubPage() {
                             <MessageCircle className="w-3 h-3" />
                             {topic.message_count}件
                           </span>
-                          {summary?.allergen_tags && summary.allergen_tags.length > 0 && (
+                          {summary?.allergen_tags && Array.isArray(summary.allergen_tags) && summary.allergen_tags.length > 0 && (
                             <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100">
                               {summary.allergen_tags.slice(0, 3).join("・")}
+                            </span>
+                          )}
+                          {summary?.allergen_tags && !Array.isArray(summary.allergen_tags) && (
+                            <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100">
+                              {String(summary.allergen_tags).slice(0, 10)}
                             </span>
                           )}
                           <span className="ml-auto">{timeAgo(topic.updated_at)}</span>
