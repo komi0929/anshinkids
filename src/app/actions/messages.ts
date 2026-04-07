@@ -256,21 +256,30 @@ export async function postTopicMessage(
       })
       .eq("id", topicId);
 
-    // Trigger AI extraction threshold check (Talk→Wiki pipeline)
+    // Trigger topic-level AI summary generation (new 2-layer architecture)
     // Use `after` to ensure Vercel edge/serverless does not kill the process prematurely
+    const currentMsgCount = msgCount ?? 0;
     import("next/server").then(({ after }) => {
        after(() => {
-         import("@/lib/ai/threshold-extractor")
-           .then(({ checkExtractionThresholds }) => checkExtractionThresholds())
+         import("@/lib/ai/topic-summary-generator")
+           .then(({ generateTopicSummary }) => {
+             if (currentMsgCount >= 5) {
+               generateTopicSummary(topicId).catch((err) =>
+                 console.error("[Background Error] generateTopicSummary", err)
+               );
+             }
+           })
            .catch((err) =>
-             console.error("[Background Error] checkExtractionThresholds", err)
+             console.error("[Background Error] import topic-summary-generator", err)
            );
        });
     }).catch(() => {
-       // Fallback if not available
-       import("@/lib/ai/threshold-extractor")
-         .then(({ checkExtractionThresholds }) => checkExtractionThresholds())
-         .catch((err) => console.error("[Background Error]", err));
+       // Fallback if after() not available
+       if (currentMsgCount >= 5) {
+         import("@/lib/ai/topic-summary-generator")
+           .then(({ generateTopicSummary }) => generateTopicSummary(topicId))
+           .catch((err) => console.error("[Background Error]", err));
+       }
     });
 
     // Replenish AI conversation prompts

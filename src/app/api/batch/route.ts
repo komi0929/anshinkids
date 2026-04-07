@@ -4,6 +4,7 @@ import { recalculateTrustScores } from "@/lib/ai/trust-calculator";
 import { checkFreshness } from "@/lib/ai/freshness-checker";
 import { purgeInactiveThreads } from "@/lib/ai/inactivity-purge";
 import { checkExtractionThresholds } from "@/lib/ai/threshold-extractor";
+import { generateAllPendingSummaries } from "@/lib/ai/topic-summary-generator";
 import { updateTalkRoomThemes, seedMegaWikis } from "@/app/actions/seed";
 
 /**
@@ -53,13 +54,16 @@ async function handleBatch(type: string) {
     case "threshold":
       result = await checkExtractionThresholds();
       break;
+    case "topic-summaries":
+      result = await generateAllPendingSummaries();
+      break;
     case "all": {
       const extraction = await runBatchExtraction();
       const trust = await recalculateTrustScores();
       const freshness = await checkFreshness();
       const purge = await purgeInactiveThreads();
-      const threshold = await checkExtractionThresholds();
-      result = { extraction, trust, freshness, purge, threshold };
+      const topicSummaries = await generateAllPendingSummaries();
+      result = { extraction, trust, freshness, purge, topicSummaries };
       break;
     }
     default:
