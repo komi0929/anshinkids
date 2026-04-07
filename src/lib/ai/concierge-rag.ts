@@ -52,10 +52,11 @@ export async function askConcierge(
      if (contextPayload.includes("小学生")) combinedQuery += " 学校 給食";
   }
 
-  const questionKeywords = combinedQuery
-    .replace(/[？?！!。、,，\s]+/g, " ")
-    .split(" ")
-    .filter(w => w.length >= 2)
+  // Extract meaningful Japanese keywords (Kanji, Katakana, Alphanumerics, and specific 1-char allergens)
+  // This completely eliminates the "0 hit" bug caused by space-splitting Japanese text.
+  const keywordMatches = combinedQuery.match(/([一-龯]+|[ァ-ヴー]+|[A-Za-z0-9]+|卵|乳|麦)/g) || [];
+  const questionKeywords = Array.from(new Set(keywordMatches))
+    .filter(w => w.length >= 2 || ["卵", "乳", "麦", "米", "魚", "肉"].includes(w))
     .slice(0, 5);
 
   let wikiResults: Record<string, unknown>[] = [];

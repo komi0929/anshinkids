@@ -23,6 +23,11 @@ function renderAvatar(avatar_url: string | null, name: string) {
   }
   if (avatar_url && avatar_url.length <= 4) return <span className="text-3xl">{avatar_url}</span>;
   const colors = ["from-[#7FA77A] to-[#5C8B56]", "from-[#B8956A] to-[#9A7A52]", "from-[#8B9EBF] to-[#6A7FA0]", "from-[#C2917A] to-[#A87060]", "from-[#9BB88F] to-[#7A9E6E]", "from-[#B8A07A] to-[#9A8560]"];
+  
+  if (!name || typeof name !== "string") {
+    return <div className="w-full h-full bg-gradient-to-br from-[#8B9EBF] to-[#6A7FA0] text-white font-extrabold flex items-center justify-center text-3xl rounded-2xl">👤</div>;
+  }
+  
   const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const bg = colors[hash % colors.length];
   return <div className={`w-full h-full bg-gradient-to-br ${bg} text-white font-extrabold flex items-center justify-center text-3xl rounded-2xl`}>{name?.[0] || "👤"}</div>;
@@ -169,10 +174,12 @@ export default function MyPage() {
     setIsSavingProfile(true);
     const result = await updateMyProfile({ display_name: editName.trim(), avatar_url: editAvatar });
     if (result.success) {
-      await loadData();
       setShowProfileEdit(false);
+      window.location.reload(); // Force full reload to reset Next.js layout cache
+    } else {
+      setIsSavingProfile(false);
+      alert(result.error || "設定の保存に失敗しました");
     }
-    setIsSavingProfile(false);
   }
 
   async function handleLogout() {

@@ -162,14 +162,20 @@ export async function updateMyProfile(updates: {
       payload.allergen_tags = Array.from(flatAllergens);
     }
 
-    const { error } = await supabase
+    const { data: updatedData, error } = await supabase
       .from("profiles")
       .update(payload as any)
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .select();
 
     if (error) throw error;
+    if (!updatedData || updatedData.length === 0) {
+      console.warn("[updateMyProfile] No rows updated. Check RLS or IDs.");
+      throw new Error("更新できませんでした");
+    }
     
     revalidatePath("/", "layout");
+    revalidatePath("/talk/[slug]/[topicId]", "page");
     return { success: true };
   } catch (err) {
     console.error("[updateMyProfile]", err);

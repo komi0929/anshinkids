@@ -2,11 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+import { Json } from "@/types/database";
+
 export interface TopicSummary {
   id: string;
   topic_id: string;
   summary_snippet: string | null;
-  full_summary: Record<string, unknown> | null;
+  full_summary: Json | null;
   allergen_tags: string[];
   source_count: number;
   last_generated_at: string;
@@ -17,8 +19,8 @@ export async function getTopicSummary(topicId: string): Promise<{ success: boole
     const supabase = await createClient();
     if (!supabase) return { success: true, data: null };
 
-    // Use .from() with type assertion since topic_summaries is a new table not yet in generated types
-    const { data, error } = await (supabase as unknown as { from: (t: string) => { select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: TopicSummary | null; error: unknown }> } } } }).from("topic_summaries")
+    const { data, error } = await supabase
+      .from("topic_summaries")
       .select("*")
       .eq("topic_id", topicId)
       .maybeSingle();
@@ -47,8 +49,8 @@ export async function getTopicSummariesForRoom(roomId: string): Promise<{ succes
 
     const topicIds = topics.map(t => t.id);
 
-    // Use type assertion for new table
-    const { data: summaries, error } = await (supabase as unknown as { from: (t: string) => { select: (c: string) => { in: (c: string, v: string[]) => Promise<{ data: TopicSummary[] | null; error: unknown }> } } }).from("topic_summaries")
+    const { data: summaries, error } = await supabase
+      .from("topic_summaries")
       .select("*")
       .in("topic_id", topicIds);
 

@@ -137,11 +137,23 @@ ${conversationText}
 
     try {
       let rawText = result.response.text().trim();
+      // Auto-repair markdown codeblock wraps
       if (rawText.startsWith("```")) {
-        rawText = rawText.replace(/^```(?:json)?\n?/, "").replace(/```$/, "").trim();
+        rawText = rawText.replace(/^```(?:json)?\n?/, "").replace(/```[\s\n]*$/, "").trim();
       }
-      parsed = JSON.parse(rawText);
+      try {
+        parsed = JSON.parse(rawText);
+      } catch (e) {
+        // Fallback: forcefully extract JSON if Gemini generated conversational text wrapping the object
+        const match = rawText.match(/\{[\s\S]*\}/);
+        if (match) {
+          parsed = JSON.parse(match[0]);
+        } else {
+          throw e; // Rethrow if completely unrecoverable
+        }
+      }
     } catch {
+      console.error("[generateTopicSummary] Auto-repair failed for output:", result.response.text());
       return { success: false, error: "Failed to parse AI response" };
     }
 

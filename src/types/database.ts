@@ -179,6 +179,21 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['contribution_days']['Row']>
         Relationships: any[]
       }
+      topic_summaries: {
+        Row: {
+          id: string
+          topic_id: string
+          summary_snippet: string | null
+          full_summary: Json | null
+          allergen_tags: string[]
+          source_count: number
+          last_generated_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['topic_summaries']['Row']>
+        Update: Partial<Database['public']['Tables']['topic_summaries']['Row']>
+        Relationships: any[]
+      }
     }
     Views: {
       [_ in never]: never

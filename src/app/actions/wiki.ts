@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient, createAdminClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_noStore as noStore, unstable_cache } from "next/cache";
@@ -29,7 +29,7 @@ export const getInitialWikiEntries = unstable_cache(
   { revalidate: 3600, tags: ["wiki-entries"] }
 );
 
-export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[]; sortBy?: string }) {
+export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[]; sortBy?: string }, offset: number = 0) {
   noStore();
   try {
     const supabase = await createClient();
@@ -65,7 +65,7 @@ export async function searchWiki(query: string, filters?: { category?: string; a
       queryBuilder = queryBuilder.overlaps("allergen_tags", filters.allergens);
     }
 
-    const { data, error } = await queryBuilder.limit(50);
+    const { data, error } = await queryBuilder.range(offset, offset + 49);
 
     if (error) throw error;
     return { success: true, data: data || [] };
@@ -157,23 +157,8 @@ export async function voteWikiHelpful(entryId: string): Promise<ActionResponse> 
     }
     if (error) throw error;
 
-    // Increment Wiki Entry helpful count
-    const { data: wiki } = await supabase.from("wiki_entries").select("helpful_count").eq("id", validEntry.data).single();
-    if (wiki) {
-      await supabase.from("wiki_entries").update({ helpful_count: (wiki.helpful_count || 0) + 1 }).eq("id", validEntry.data);
-    }
-
-    // Distribute helpful votes to contributors
-    const { data: sources } = await supabase.from("wiki_sources").select("contributor_id").eq("wiki_entry_id", validEntry.data);
-    if (sources && sources.length > 0) {
-      const uniqueContributorIds = [...new Set(sources.map(s => s.contributor_id).filter(Boolean))] as string[];
-      for (const cid of uniqueContributorIds) {
-        const { data: prof } = await supabase.from("profiles").select("total_helpful_votes").eq("id", cid).single();
-        if (prof) {
-          await supabase.from("profiles").update({ total_helpful_votes: (prof.total_helpful_votes || 0) + 1 }).eq("id", cid);
-        }
-      }
-    }
+    // Helpful counts and total contributor returns are natively evaluated
+    // by PostgreSQL Triggers (on_wiki_helpful_vote) to guarantee pure atomic scalability.
 
     revalidatePath("/", "layout");
     return { success: true };

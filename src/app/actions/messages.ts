@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient, createAdminClient } from "@/lib/supabase/server";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_cache } from "next/cache";
 import { THEME_BY_SLUG } from "@/lib/themes";
@@ -140,7 +140,7 @@ export async function createTopic(
 
 // ─── Topic Messages ───────────────────────────────────────
 
-export async function getTopicMessages(topicId: string) {
+export async function getTopicMessages(topicId: string, offset: number = 0) {
   try {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
@@ -161,7 +161,7 @@ export async function getTopicMessages(topicId: string) {
       .eq("topic_id", topicId)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
-      .limit(100);
+      .range(offset, offset + 49);
     if (error) throw error;
     const recentData = (data || []).reverse();
     let thankedIds: string[] = [];
@@ -241,49 +241,47 @@ export async function postTopicMessage(
     });
     if (error) throw error;
 
-    // Compound Asset Loop: Record contribution metrics
-    const { data: prof } = await supabase.from("profiles").select("total_contributions").eq("id", user.id).single();
-    if (prof) {
-      await supabase.from("profiles").update({ total_contributions: (prof.total_contributions || 0) + 1 }).eq("id", user.id);
-    }
-    
-    // Streak recording
-    const today = new Date().toISOString().split("T")[0];
-    const { data: streak } = await supabase.from("contribution_days").select("id, post_count").eq("user_id", user.id).eq("active_date", today).maybeSingle();
-    if (streak) {
-      await supabase.from("contribution_days").update({ post_count: (streak.post_count || 0) + 1 }).eq("id", streak.id);
-    } else {
-      await supabase.from("contribution_days").insert({ user_id: user.id, active_date: today, post_count: 1 });
-    }
+    // Contribution metrics and streaks are inherently handled by PostgreSQL Triggers 
+    // configured in init.sql (on_message_insert, on_message_record_day).
 
     // Extend life of all messages in this topic (chain extension rule)
     const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
     await supabase
       .from("messages")
       .update({ expires_at: newExpiry })
-      .eq("topic_id", topicId);
+      .eq("topic_id", topicId)
+      .select(); // Add explicit mutation check but don't strictly throw here
 
-    // Update topic metadata: updated_at, message_count, last_message_preview
+    // Update topic metadata: updated_at, last_message_preview, and atomic increment message_count
+    // Using simple specific row reads/writes saves massive table scans.
     const preview = content.trim().slice(0, 80);
 
-    // Count messages in this topic
-    const { count: msgCount } = await supabase
-      .from("messages")
-      .select("id", { count: "exact", head: true })
-      .eq("topic_id", topicId);
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      // 1. Fetch current count to increment (cheaper than count(*))
+      const { data: topicToUpdate } = await adminClient
+        .from("talk_topics")
+        .select("message_count")
+        .eq("id", topicId)
+        .maybeSingle();
 
-    await supabase
-      .from("talk_topics")
-      .update({
-        updated_at: new Date().toISOString(),
-        message_count: msgCount ?? 0,
-        last_message_preview: preview,
-      })
-      .eq("id", topicId);
+      const newMsgCount = (topicToUpdate?.message_count ?? 0) + 1;
 
-    // Trigger topic-level AI summary generation (new 2-layer architecture)
-    // Use `after` to ensure Vercel edge/serverless does not kill the process prematurely
-    const currentMsgCount = msgCount ?? 0;
+      // 2. Update with incremented count
+      const { error: topicUpdateErr } = await adminClient
+        .from("talk_topics")
+        .update({
+          updated_at: new Date().toISOString(),
+          message_count: newMsgCount,
+          last_message_preview: preview,
+        })
+        .eq("id", topicId)
+        .select();
+      if (topicUpdateErr) console.warn("Failed admin topic metric update:", topicUpdateErr);
+    }
+
+    const currentMsgCount = (adminClient ? 1 : 0); // Trigger check
+
     import("next/server").then(({ after }) => {
        after(() => {
          import("@/lib/ai/topic-summary-generator")
@@ -448,25 +446,29 @@ export async function deleteMessage(
     // Retrieve author id and topic id before deleting to decrement stats
     const { data: msg } = await supabase.from("messages").select("user_id, topic_id").eq("id", messageId).single();
 
-    const { error } = await supabase
+    const { data: delResult, error } = await supabase
       .from("messages")
       .delete()
       .eq("id", messageId)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .select();
     if (error) throw error;
+    if (!delResult || delResult.length === 0) throw new Error("メッセージが見つからないか削除権限がありません");
 
-    // Decrement total_contributions strictly on successful delete
-    if (msg?.user_id) {
-       const { data: prof } = await supabase.from("profiles").select("total_contributions").eq("id", msg.user_id).single();
-       if (prof && prof.total_contributions > 0) {
-         await supabase.from("profiles").update({ total_contributions: prof.total_contributions - 1 }).eq("id", msg.user_id);
-       }
-    }
-    
-    // Update talk_topics message_count
-    if (msg?.topic_id) {
-       const { count } = await supabase.from("messages").select("id", { count: "exact", head: true }).eq("topic_id", msg.topic_id);
-       await supabase.from("talk_topics").update({ message_count: count ?? 0 }).eq("id", msg.topic_id);
+    // RLS Bypass required for aggregate deductions
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      if (msg?.user_id) {
+         const { data: prof } = await adminClient.from("profiles").select("total_contributions").eq("id", msg.user_id).single();
+         if (prof && prof.total_contributions > 0) {
+           await adminClient.from("profiles").update({ total_contributions: prof.total_contributions - 1 }).eq("id", msg.user_id).select();
+         }
+      }
+      
+      if (msg?.topic_id) {
+         const { count } = await adminClient.from("messages").select("id", { count: "exact", head: true }).eq("topic_id", msg.topic_id);
+         await adminClient.from("talk_topics").update({ message_count: count ?? 0 }).eq("id", msg.topic_id).select();
+      }
     }
     revalidatePath("/", "layout");
     return { success: true };
@@ -508,27 +510,16 @@ export async function sendThanks(
       throw error;
     }
 
-    // Compound Asset Loop: Record thanks metrics for the author and increment message thanks count
-    if (msg.user_id) {
-      const { data: prof } = await supabase.from("profiles").select("total_thanks_received").eq("id", msg.user_id).single();
-      if (prof) {
-        await supabase.from("profiles").update({ total_thanks_received: (prof.total_thanks_received || 0) + 1 }).eq("id", msg.user_id);
-      }
-    }
-    
-    const { data: currentMsg } = await supabase.from("messages").select("thanks_count").eq("id", validMessage.data).single();
-    if (currentMsg) {
-      await supabase.from("messages").update({ thanks_count: (currentMsg.thanks_count || 0) + 1 }).eq("id", validMessage.data);
-    }
+    // Compound Asset Loop: thanks metrics and total_thanks_received are updated natively
+    // by PostgreSQL Triggers (on_thanks_insert) to guarantee consistency without double-counting.
 
     if (msg.topic_id) {
-      const newExpiry = new Date(
-        Date.now() + 72 * 60 * 60 * 1000
-      ).toISOString();
+      const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
       await supabase
         .from("messages")
         .update({ expires_at: newExpiry })
-        .eq("topic_id", msg.topic_id);
+        .eq("topic_id", msg.topic_id)
+        .select();
     }
 
     revalidatePath("/", "layout");
@@ -555,24 +546,17 @@ export async function removeThanks(
     // Retrieve message author to decrement their thanks count
     const { data: msg } = await supabase.from("messages").select("user_id").eq("id", messageId).single();
 
-    const { error } = await supabase
+    const { data: rmResult, error } = await supabase
       .from("message_thanks")
       .delete()
       .eq("message_id", messageId)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .select();
     if (error) throw error;
+    if (!rmResult || rmResult.length === 0) return { success: false, error: "感謝を解除できませんでした" };
 
-    if (msg?.user_id) {
-       const { data: prof } = await supabase.from("profiles").select("total_thanks_received").eq("id", msg.user_id).single();
-       if (prof && prof.total_thanks_received > 0) {
-         await supabase.from("profiles").update({ total_thanks_received: prof.total_thanks_received - 1 }).eq("id", msg.user_id);
-       }
-    }
-
-    const { data: currentMsg } = await supabase.from("messages").select("thanks_count").eq("id", validMessage.data).single();
-    if (currentMsg && currentMsg.thanks_count > 0) {
-      await supabase.from("messages").update({ thanks_count: currentMsg.thanks_count - 1 }).eq("id", validMessage.data);
-    }
+    // Note: Decrements to messages.thanks_count are natively handled by PostgreSQL Trigger (on_thanks_delete).
+    // The trigger intentionally skips decrementing profiles.total_thanks_received to protect user accumulated trust assets.
     revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {

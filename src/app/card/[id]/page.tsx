@@ -10,8 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function AmuletCardPage({ params }: { params: { id: string } }) {
-  const result = await getPublicAllergyCard(params.id);
+export default async function AmuletCardPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const result = await getPublicAllergyCard(resolvedParams.id);
 
   if (!result.success || !result.data) {
     return (

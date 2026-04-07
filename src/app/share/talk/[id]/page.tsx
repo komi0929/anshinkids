@@ -4,17 +4,18 @@ import Link from "next/link";
 import { MessageCircle, ArrowRight } from "@/components/icons";
 
 interface Props {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 // Dynamically generate OGP for the specified message
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params;
   const adminClient = createAdminClient();
   const { data: message } = await adminClient
     .from("messages")
     .select("content, room_id, talk_rooms(name)")
-    .eq("id", params.id)
+    .eq("id", resolvedParams.id)
     .single();
 
   if (!message) {
@@ -44,12 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function SharePostPage({ params }: Props) {
+  const resolvedParams = await params;
   const adminClient = createAdminClient();
   // Fetch message details to display a nice landing page and figure out the redirect target
   const { data: message } = await adminClient
     .from("messages")
     .select("content, room_id, talk_rooms(slug, name)")
-    .eq("id", params.id)
+    .eq("id", resolvedParams.id)
     .single();
 
   if (!message) {

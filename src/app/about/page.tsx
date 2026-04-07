@@ -1,264 +1,224 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Check, Shield, ChevronRight, Sparkles } from "@/components/icons";
+import { ArrowLeft, Check, Shield, ChevronRight, Sparkles, BookOpen, Heart, TrendingUp } from "@/components/icons";
 
 const STEPS = [
   {
     num: "1",
-    title: "トークルームで話す・見る",
-    desc: "テーマごとに分かれた部屋で、体験談やおすすめ情報を読んだり、気軽に書き込んだりできます。",
-    wip: false,
+    title: "トークルームでお話しする",
+    desc: "「テーマごとの部屋」で同じ悩みをもつ親御さんと会話できます。",
+    icon: "💬",
     points: [
-      "見るだけでもOK — ログインしなくても読めます",
-      "書き込みは自動消去 — ヒントはAIが永久保存",
-      "匿名のニックネームで参加できます",
+      "ログインしなくても読むことができます",
+      "会話は72時間で自動的にアーカイブ",
+      "「わかる！」と共感ボタンを押すだけでも参加できます"
     ],
   },
   {
     num: "2",
-    title: "まとめで調べる",
-    desc: "みんなの投稿をAIが自動で整理して、8つの大きなテーマ記事にまとめています。",
-    wip: false,
+    title: "会話が「まとめ」に進化",
+    desc: "AIがみんなの会話から有用なヒントを抽出し、8つのテーマ記事（メガWiki）に自動整理します。",
+    icon: "✨",
     points: [
-      "「毎日のごはん」「外食情報」など8テーマ別に探せます",
-      "あなたの情報もかんたんに追加できます",
-      "情報の信頼度が表示されるので安心",
+      "個人情報は一切含まれない形で抽出",
+      "誰かの解決策が、未来の親御さんの助けに",
+      "あなたの一言が、Wikiを少しずつ成長させます"
     ],
   },
   {
     num: "3",
-    title: "AIに相談する",
-    desc: "みんなの体験をもとに、AIがやさしくお答えします。",
-    wip: true,
+    title: "マイクロブックマーク",
+    desc: "まとめ記事の中から「この一文だけ覚えておきたい！」という役立つ知識をピンポイントで保存。",
+    icon: "🔖",
     points: [
-      "ログインなしでも使えます",
-      "よくある質問のサンプルが用意されています",
-      "自分の言葉で自由に質問できます",
+      "マイページに直接ストック可能",
+      "必要なときにすぐにヒントを引き出せます",
+      "自分専用の『おまもりノート』づくり"
     ],
   },
 ];
 
 const SAFETY_POINTS = [
-  { title: "匿名で参加できます", desc: "ニックネームで投稿。本名は出ません。" },
-  { title: "投稿は自動消去", desc: "発言が流れる心配なく、ヒントはAIが永久保存します。" },
-  { title: "信頼できる情報づくり", desc: "多くの体験に基づく情報ほど信頼度が高く表示されます。" },
-  { title: "当事者だけの安心空間", desc: "同じ悩みを持つ保護者同士で情報を共有します。" },
-];
-
-const USE_CASES = [
-  "「うちの子が食べられるおやつはどれ？」と市販品の情報を知りたいとき",
-  "「外食でアレルギー対応してくれるお店は？」と外食情報を探すとき",
-  "「保育園の給食、どう相談した？」と園への伝え方を知りたいとき",
-  "「血液検査のクラスってどう読むの？」と基礎知識を学びたいとき",
-  "「同じ悩みの人と話したい」と思ったとき",
+  { title: "全自動の匿名化", desc: "本名やLINEアイコンは出ません。システムが安全に匿名（ゲストAなど）であつかいます。" },
+  { title: "自律クリーンナップ", desc: "古い会話は自動で消去され、いつでもタイムラインは最新で綺麗に保たれます。" },
+  { title: "透明なAIハルシネーション対策", desc: "AIのアドバイスには、必ず「保護者の一次情報」のソース数を表示して信頼度を明かします。" },
+  { title: "SOSリップル・緊急アラート", desc: "どうしても困ったときはSNSへ拡散して助けを呼んだり、緊急時にはAIが119番の案内を行います。" },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="fade-in pb-24" style={{ background: "var(--color-bg)" }}>
+    <div className="fade-in pb-24 min-h-[100dvh] bg-[var(--color-bg)]">
       {/* Header */}
-      <div className="px-5 py-3.5 flex items-center gap-3 sticky top-0 z-40"
-        style={{ background: "rgba(248, 246, 242, 0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--color-border)" }}>
+      <div className="sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md shadow-sm">
         <button
           onClick={() => window.history.back()}
-          className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] transition-colors active:scale-95"
           id="back-from-about"
-          style={{ color: "var(--color-text)" }}
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </button>
-        <h1 className="text-[16px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
+        <h1 className="text-[17px] font-extrabold tracking-tight text-[var(--color-text)]">
           あんしんキッズとは
         </h1>
+        <div className="w-10 h-10" /> {/* Spacer for centering */}
       </div>
 
-      {/* Hero */}
-      <div className="px-6 pt-10 pb-8 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success-deep)] flex items-center justify-center shadow-lg">
-          <span className="text-[32px]">🍀</span>
+      {/* Hero Section */}
+      <div className="px-6 pt-12 pb-10 text-center">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-[28px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success-deep)] flex items-center justify-center shadow-xl transform transition-transform hover:scale-105">
+          <Sparkles className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-[22px] font-black leading-tight tracking-tight break-keep text-balance" style={{ color: "var(--color-text)" }}>
-          食物アレルギーのヒントを<br />みんなで、安心して
+        <h2 className="text-[26px] font-black leading-tight tracking-tight text-[var(--color-text)] mb-4">
+          みんなの日常が、<br />
+          やさしい知識になる。
         </h2>
-        <p className="text-[15px] font-medium mt-3 leading-[1.9] max-w-sm mx-auto" style={{ color: "var(--color-text-secondary)" }}>
-          お子さまの食物アレルギーに悩むママ・パパが
-          <strong>体験や情報を気軽に共有・検索</strong>できるサービスです。
+        <p className="text-[15px] font-medium leading-[1.9] text-[var(--color-text-secondary)] max-w-sm mx-auto">
+          「あんしんキッズ」は、食物アレルギーっ子をもつママ・パパの<strong>リアルな体験と知恵をAIで結晶化</strong>する、新しい『知識のコミュニティ』です。
         </p>
       </div>
 
-      {/* Mission Statement */}
-      <div className="px-5 -mt-2 mb-8">
-        <div className="card-elevated p-6 contrib-highlight">
-          <p className="text-[15px] font-medium leading-[2.1] text-center" style={{ color: "var(--color-text)" }}>
-            今日、あなたが自分の悩みを解消するために
-            した何気ない会話が、
-            <br />
-            明日、同じことで悩むどこかの親子にとっての
-            <br />
-            やさしい
-            <span className="font-extrabold" style={{ color: "var(--color-primary)" }}>「役立つヒント」</span>
-            に変わります。
+      {/* Core Mission Bento Card */}
+      <div className="px-5 mb-10">
+        <div className="rounded-[32px] p-8 text-center bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 shadow-[0_8px_32px_rgba(0,0,0,0.03)] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-2xl -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
+          <h3 className="text-[18px] font-extrabold text-[var(--color-text)] mb-4 relative z-10">
+            あなたの「今日」が、<br/>誰かの「明日」の安心に。
+          </h3>
+          <p className="text-[14px] font-semibold leading-relaxed text-[var(--color-text-secondary)] relative z-10">
+            毎日のごはんや外食での工夫。<br/>
+            あなたがトークルームで話した何気ない体験が、AIの力で自動的に<strong>『まとめ記事』</strong>として蓄積され、明日同じことで悩む別の家族のヒントとしてずっと輝き続けます。
           </p>
         </div>
       </div>
 
-      {/* こんな方に */}
-      <div className="px-5 mb-8">
-        <div className="card p-6">
-          <h3 className="text-[17px] font-extrabold mb-5 break-keep text-balance" style={{ color: "var(--color-text)" }}>
-            こんなとき、使ってください
-          </h3>
-          <ul className="space-y-4">
-            {USE_CASES.map((text, i) => (
-              <li key={i} className="flex gap-3 text-[14px] font-medium leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                <Check size={18} className="mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary)" }} />
-                <span>{text}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* 3 Steps */}
-      <div className="px-5 mb-3">
-        <h3 className="text-[17px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
-          使い方はかんたん3ステップ
+      {/* 3 Steps - Bento Grid Format */}
+      <div className="px-5 mb-10">
+        <h3 className="text-[18px] font-extrabold text-[var(--color-text)] mb-6 flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
+          つながる 3つの体験
         </h3>
-      </div>
-
-      <div className="px-5 space-y-3 mb-8">
-        {STEPS.map((step, i) => (
-          <div key={step.num}>
-            <div className={`card p-5 relative ${step.wip ? 'opacity-60' : ''}`}>
-              {step.wip && (
-                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-[10px] font-bold text-amber-700">準備中</div>
-              )}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-[15px]"
-                  style={{ background: step.wip ? 'var(--color-muted)' : 'var(--color-primary)', color: 'white' }}>
-                  {step.num}
+        <div className="space-y-4">
+          {STEPS.map((step) => (
+            <div key={step.num} className="bg-white/80 backdrop-blur-sm rounded-[28px] p-6 border border-[var(--color-border-light)] shadow-sm hover:shadow-md hover:border-[var(--color-primary)]/30 transition-all group">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-warm)] group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-[var(--color-primary)]/10 group-hover:to-[var(--color-success)]/10 flex items-center justify-center flex-shrink-0 transition-all font-black text-[22px]">
+                  {step.icon}
                 </div>
-                <h4 className="text-[16px] font-extrabold break-keep text-balance" style={{ color: "var(--color-text)" }}>
-                  {step.title}
-                </h4>
+                <div>
+                  <div className="text-[11px] font-extrabold text-[var(--color-primary)] mb-0.5">STEP {step.num}</div>
+                  <h4 className="text-[17px] font-black text-[var(--color-text)]">
+                    {step.title}
+                  </h4>
+                </div>
               </div>
-              <p className="text-[14px] font-medium mb-3 leading-[1.9]" style={{ color: "var(--color-text-secondary)" }}>
+              <p className="text-[13px] font-bold text-[var(--color-text-secondary)] mb-4 leading-relaxed">
                 {step.desc}
               </p>
-              <ul className="space-y-2">
+              <div className="space-y-2">
                 {step.points.map((point, j) => (
-                  <li key={j} className="flex items-start gap-2 text-[13px] font-semibold" style={{ color: "var(--color-text-secondary)" }}>
-                    <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: step.wip ? 'var(--color-muted)' : 'var(--color-primary)' }} />
-                    {point}
-                  </li>
+                  <div key={j} className="flex flex-start gap-2.5">
+                    <Check size={16} className="mt-0.5 flex-shrink-0 text-[var(--color-success)]" />
+                    <span className="text-[12.5px] font-semibold text-[var(--color-subtle)] leading-snug">{point}</span>
+                  </div>
                 ))}
-              </ul>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div className="flex justify-center py-2">
-                <ChevronRight size={16} className="rotate-90" style={{ color: "var(--color-muted)" }} />
               </div>
-            )}
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Safety Points */}
-      <div className="px-5 mb-8">
-        <div className="card p-6">
-          <h3 className="text-[17px] font-extrabold mb-5 break-keep text-balance" style={{ color: "var(--color-text)" }}>
-            安心して使えるポイント
-          </h3>
-          <div className="space-y-4">
-            {SAFETY_POINTS.map(({ title, desc }) => (
-              <div key={title} className="flex gap-3.5">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "var(--color-primary-bg)" }}>
-                  <Shield size={18} style={{ color: "var(--color-primary)" }} />
-                </div>
-                <div>
-                  <h4 className="text-[14px] font-bold break-keep text-balance" style={{ color: "var(--color-text)" }}>{title}</h4>
-                  <p className="text-[13px] font-medium mt-0.5 leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Warning */}
-      <div className="px-5 mb-8">
-        <div className="p-4 rounded-2xl" style={{ background: "var(--color-warning-light)", border: "1px solid rgba(217, 119, 6, 0.15)" }}>
-          <p className="text-[13px] font-semibold leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-            ⚠️ このサービスの情報は保護者の体験に基づく参考情報です。
-            <strong>医療的な判断は必ず主治医にご相談ください。</strong>
-          </p>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="px-5 pb-8">
-        <h3 className="text-[18px] font-extrabold text-center mb-5 break-keep text-balance" style={{ color: "var(--color-text)" }}>
-          さっそく使ってみましょう！
+      <div className="px-5 mb-10">
+        <h3 className="text-[18px] font-extrabold text-[var(--color-text)] mb-6 flex items-center gap-2">
+          <Shield className="w-5 h-5 text-[var(--color-primary)]" />
+          徹底した安心への配慮
         </h3>
-        <div className="space-y-3 max-w-sm mx-auto">
-          <Link href="/wiki" className="btn-primary w-full text-center block" id="go-to-wiki-cta" style={{ background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))" }}>
-            📖 今すぐみんなのまとめを見てみる
-          </Link>
-          <Link href="/talk" className="btn-secondary w-full text-center block" id="go-to-talk-cta">
-            💬 トークルームを見てみる
-          </Link>
-          <Link href="/login" className="btn-secondary w-full text-center block" id="login-cta">
-            LINEでログインして参加する
-          </Link>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {SAFETY_POINTS.map(({ title, desc }) => (
+            <div key={title} className="bg-[var(--color-surface-warm)] rounded-[24px] p-5 border border-[var(--color-border-light)]">
+              <h4 className="text-[14px] font-extrabold text-[var(--color-text)] mb-2 flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
+                {title}
+              </h4>
+              <p className="text-[12.5px] font-semibold text-[var(--color-text-secondary)] leading-relaxed">
+                {desc}
+              </p>
+            </div>
+          ))}
         </div>
-        <p className="text-[12px] font-medium text-center mt-4" style={{ color: "var(--color-subtle)" }}>
-          ログインしなくてもまとめ記事の閲覧はご利用いただけます
-        </p>
       </div>
 
-      {/* Collaboration CTA */}
-      <div className="px-5 mb-8">
-        <div className="card p-6 text-center border-2 border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all bg-[var(--color-surface)]">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-[16px] bg-[var(--color-primary)]/10 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
+      {/* Medical Warning */}
+      <div className="px-5 mb-10">
+        <div className="p-5 rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-200">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">⚠️</span>
+            <p className="text-[13px] font-bold leading-relaxed text-amber-900">
+              このサービスの情報は保護者の様々な体験に基づく参考情報です。<br/>お子さまの症状やアレルゲンに関する<strong>医療的な判断・摂取については、必ず主治医にご相談ください。</strong>
+            </p>
           </div>
-          <h3 className="text-[17px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">
-            開発者・協力者の方へ
-          </h3>
-          <p className="text-[13px] font-medium text-[var(--color-text-secondary)] leading-relaxed mb-5">
-            あんしんキッズをより強力な「保護者の味方」へと進化させるため、私たちの実装したSNS的アプローチや自律AIループなど、<strong>約50の機能仕様をすべてオープン</strong>にしています。
-          </p>
-          <Link href="/features" className="w-full text-center flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[14px] border border-[var(--color-border)] hover:bg-[var(--color-border-light)] transition-colors">
-            <Sparkles className="w-4 h-4" /> オープンな開発・機能仕様を見る
-          </Link>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="px-5 pb-8 flex flex-col items-center justify-center gap-3 text-[12px] font-medium" style={{ color: "var(--color-subtle)" }}>
-        <div className="flex items-center gap-5">
-          <Link href="/guide" className="underline hover:no-underline transition-colors">
-            使い方ガイド
+      {/* CTA Section */}
+      <div className="px-5 pb-8 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--color-primary)]/10 blur-[60px] rounded-full point-events-none -z-10" />
+        <h3 className="text-[20px] font-black text-center mb-6 text-[var(--color-text)]">
+          さっそく始めましょう！
+        </h3>
+        
+        <div className="space-y-3 max-w-[320px] mx-auto">
+          <Link href="/wiki" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
+            <BookOpen className="w-5 h-5 text-[var(--color-primary)] group-hover:scale-110 transition-transform" /> 
+            みんなのまとめ記事を読む
           </Link>
-          <span style={{ color: "var(--color-border)" }}>|</span>
-          <Link href="/terms" className="underline hover:no-underline transition-colors">
-            利用規約
+          <Link href="/talk" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
+            <TrendingUp className="w-5 h-5 text-[var(--color-primary)] group-hover:scale-110 transition-transform" /> 
+            話題のトークルームを見る
           </Link>
-          <span style={{ color: "var(--color-border)" }}>|</span>
-          <Link href="/privacy" className="underline hover:no-underline transition-colors">
-            プライバシー
+          
+          <div className="h-4" />
+          
+          <Link href="/login" className="btn-primary w-full text-center flex items-center justify-center gap-2 py-4 shadow-lg active:scale-95 transition-all text-[15px]">
+            <Heart className="w-5 h-5" />
+            LINEで参加する (無料)
           </Link>
+          <p className="text-[11px] font-bold text-center mt-3 text-[var(--color-muted)]">
+            ※ ログインしなくてもまとめ記事の閲覧はご利用いただけます
+          </p>
         </div>
-        <div className="flex items-center gap-5 mt-2">
-          <a href="mailto:support@anshin-kids.app?subject=お問い合わせ" className="underline hover:no-underline transition-colors">
-            運営へのお問い合わせ
-          </a>
-          <span style={{ color: "var(--color-border)" }}>|</span>
-          <a href="mailto:partner@anshin-kids.app?subject=活動へのご協賛・サポートについて" className="underline hover:no-underline transition-colors">
-            企業・医療提携について
-          </a>
+      </div>
+
+      {/* Collaboration Link */}
+      <div className="px-5 mb-10 max-w-md mx-auto relative pt-4">
+        <div className="absolute top-0 left-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[var(--color-border)] to-transparent -translate-x-1/2" />
+        <div className="text-center">
+            <span className="inline-block px-3 py-1 mb-3 rounded-full bg-[var(--color-surface-warm)] text-[10px] font-black tracking-wider text-[var(--color-subtle)] uppercase">Open Source Project</span>
+            <h3 className="text-[15px] font-black text-[var(--color-text)] mb-2">
+              開発者・協力者の方へ
+            </h3>
+            <p className="text-[12px] font-bold text-[var(--color-subtle)] mb-5 leading-relaxed">
+              プラットフォームの核となる自律AIループやSNS設計など、コミュニティを育てるための全技術仕様を公開しています。
+            </p>
+            <Link href="/features" className="inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[var(--color-primary)] hover:underline">
+              オープンな開発仕様を見る <ChevronRight className="w-4 h-4" />
+            </Link>
+        </div>
+      </div>
+
+      {/* Footer Links */}
+      <div className="px-5 pb-10 flex flex-col items-center justify-center gap-4 text-[12px] font-bold text-[var(--color-muted)]">
+        <div className="flex items-center gap-5">
+          <Link href="/guide" className="hover:text-[var(--color-text)] transition-colors">使い方ガイド</Link>
+          <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
+          <Link href="/terms" className="hover:text-[var(--color-text)] transition-colors">利用規約</Link>
+          <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
+          <Link href="/privacy" className="hover:text-[var(--color-text)] transition-colors">プライバシー</Link>
+        </div>
+        <div className="flex flex-col items-center gap-2 mt-2">
+          <a href="mailto:support@anshin-kids.app?subject=お問い合わせ" className="hover:text-[var(--color-text)] transition-colors">運営・フィードバック</a>
+          <a href="mailto:partner@anshin-kids.app?subject=活動へのご協賛・サポートについて" className="hover:text-[var(--color-text)] transition-colors">医療提携・NPO/企業スポンサーシップ</a>
         </div>
       </div>
     </div>

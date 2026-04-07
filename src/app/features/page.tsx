@@ -1,201 +1,117 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, MessageCircle, Shield, User, Heart, Leaf, BookOpen, Check, TrendingUp, ShieldCheck, RefreshCw, Clock, Search, Plus, Trash2, Bell } from "@/components/icons";
+import { Sparkles, MessageCircle, Shield, User, Heart, Leaf, BookOpen, Check, TrendingUp, ShieldCheck, RefreshCw, Clock, Search, Plus, Trash2, Bell, Share } from "@/components/icons";
 
-const Cloud = ({ className }: { className?: string }) => <Sparkles className={className} />;
-
-interface Feature {
-  title: string;
-  desc: string;
-  icon: React.ReactNode;
-  tags?: string[];
-}
-
-interface Category {
-  title: string;
-  desc: string;
-  colorClass: string;
-  features: Feature[];
-}
-
-const CATEGORIES: Category[] = [
+const CATEGORIES = [
   {
-    title: "SNS・コミュニティ設計",
-    desc: "ユーザー同士が助け合い、ポジティブなループを生み出すための機能群",
-    colorClass: "from-pink-100/50 to-rose-50 border-rose-100 text-rose-600 bg-rose-500/10",
+    title: "SNS・コミュニティアプローチ",
+    desc: "ユーザー同士が助け合い、自発的な「善意のループ」を回すための機能設計。",
+    colorClass: "from-pink-100 to-rose-50 text-rose-600 border-rose-200",
+    iconBg: "bg-rose-500",
     features: [
-      { title: "完全匿名トークルーム", desc: "LINEのアカウント名や実名を出さず、安全にお話しできるルーム設計。各ユーザーには匿名ID（Slug）が発行されます。", icon: <User className="w-5 h-5" />, tags: ["Privacy", "Auth"] },
-      { title: "「ありがとう」フィードバック", desc: "誰かのヒントが役に立った時、ワンタップで感謝を伝えられる共感機能。「お話ししてよかった」という体験を作ります。", icon: <Heart className="w-5 h-5" />, tags: ["Engagement"] },
-      { title: "連続参加のあしあと（🔥）", desc: "続けて体験をお話しした日数をマイページで可視化。誰かの助けになり続けている実感を届けます。", icon: <TrendingUp className="w-5 h-5" />, tags: ["UX"] },
-      { title: "影響の可視化", desc: "「あなたの体験が〇人の親御さんに読まれています」など、あなたの声がどれだけ誰かの役に立っているかを温かく伝えます。", icon: <Sparkles className="w-5 h-5" />, tags: ["MyPage"] },
-      { title: "声の数バッジ", desc: "そのまとめ記事にどれだけの実体験が反映されたかを「たくさんの声・つながる声・はじめの声」として温かく表示。全員の体験が平等に価値をもちます。", icon: <ShieldCheck className="w-5 h-5" />, tags: ["Trust"] },
-      { title: "トピックへの「召喚」CTA", desc: "回答が少ない時に「みんなの経験を教えてください」と協力を促す、SNS的なダイナミックコールトゥアクション。", icon: <MessageCircle className="w-5 h-5" /> },
-      { title: "あなたの声が届いた通知", desc: "あなたの体験がAIに整理されて「みんなのまとめ」に反映されたとき、温かくお知らせするフィードバック。", icon: <TrendingUp className="w-5 h-5" /> },
-      { title: "トークルームの共感ボタン", desc: "コメントを返さなくても、「わかる！」という共感だけを手軽に残せる機能。", icon: <Heart className="w-5 h-5" /> },
-      { title: "アカウント削除と資産の匿名化", desc: "退会時には個人情報を完全消去しつつ、まとめ記事に抽出されたノウハウのみをコミュニティの資産として匿名で保持するセキュアシステム。", icon: <Shield className="w-5 h-5" />, tags: ["Privacy"] },
-      { title: "カテゴリ別おすすめルーム", desc: "ユーザーのアレルゲン情報から、現在最も盛り上がっている最適なトークルームを自動推薦。", icon: <Sparkles className="w-5 h-5" /> },
-      { title: "Micro-Bookmarking（スニペット保存）", desc: "長いWiki記事全体ではなく、本当に自分に役立つ一行単位の「ヒント（スニペット）」だけを抽出してマイページにブックマークできる機能。", icon: <BookOpen className="w-5 h-5" />, tags: ["Engagement", "UX"] },
-      { title: "ティア別ダイナミックダッシュボード", desc: "階層や称号といった権威的なバッジを一切廃止し、未ログイン、閲覧のみ、お話し参加者の3つの状態ごとにフラットに最適なアクションを提案するダッシュボード。", icon: <User className="w-5 h-5" />, tags: ["Egalitarian", "UX"] },
-      { title: "SOS Ripple 拡散連携", desc: "深刻な悩みや助けを求める声を、美しいOG画像付きのカードとしてSNS（X等）へシームレスに拡散し、外部からヒントを集める機能。", icon: <TrendingUp className="w-5 h-5" />, tags: ["Growth", "Share"] },
+      { title: "完全匿名・安全なトークルーム", desc: "LINEの個人情報を完全遮断。システム上で固有の「匿名ID（Slug）」を発行し、実名やSNS連携のリスクを排除します。", icon: <Shield className="w-5 h-5" />, tags: ["Privacy", "Auth"] },
+      { title: "「ありがとう」共感フィードバック", desc: "解決策ではなくとも、ただ「わかるよ」と感謝を伝えるだけのワンタップアクションを実装し、心理的安全性を確保。", icon: <Heart className="w-5 h-5" /> },
+      { title: "影響の可視化 (Compound Impact)", desc: "「あなたの体験が〇人の親御さんに読まれています」と具体的に数値化し、マイページでやりがいを提示。", icon: <TrendingUp className="w-5 h-5" />, tags: ["UX"] },
+      { title: "SOSリップル（外部連携）", desc: "どうしても助けが必要な投稿を、OGP画像付きの「ヘルプカード」として生成し、外部SNS(X等)へ拡散できる機能。", icon: <Share className="w-5 h-5" />, tags: ["Growth"] },
+      { title: "階層のないダイナミックダッシュボード", desc: "権威性（モデレーターや称号）を排除し、未ログイン、閲覧のみ、お話し参加者の3つの状態に応じてUIがフラットに変化。", icon: <User className="w-5 h-5" /> },
     ]
   },
   {
-    title: "AI自律ループとDB機構",
-    desc: "データ抽出・整理から安全性担保まで、プラットフォームを自動で育てるAI基盤",
-    colorClass: "from-[var(--color-primary)]/10 to-[var(--color-success)]/10 border-[var(--color-success)]/20 text-[var(--color-success-deep)] bg-[var(--color-success)]/10",
+    title: "AI自律ループとアーキテクチャ",
+    desc: "トークを知識に変え、プラットフォームを自動で育てるLiving Knowledgeエンジンの裏側。",
+    colorClass: "from-emerald-100 to-green-50 text-emerald-700 border-emerald-200",
+    iconBg: "bg-emerald-500",
     features: [
-      { title: "3日間のお声リセット（非アクティブ時）", desc: "トークルームで72時間（3日間）新しいお声がなかった場合、自動で会話をアーカイブしタイムラインを常に最新に保ちます。", icon: <Clock className="w-5 h-5" />, tags: ["Cron", "DB"] },
-      { title: "トークルーム → まとめ抽出ループ", desc: "上記のリセット時、Gemini AIが会話の文脈を読み取り、一次情報（Snippet）として自動抽出・要約を行う自律システム。", icon: <RefreshCw className="w-5 h-5" />, tags: ["Gemini 2.0"] },
-      { title: "8テーマのHub & Spoke分配", desc: "抽出された知識を「外食」「代替レシピ」「保育園」などの8つの巨大なメガWikiへ自動的に分類・紐付けする情報ハブ構造。", icon: <BookOpen className="w-5 h-5" /> },
-      { title: "文脈考慮のAIコンシェルジュ", desc: "個々のプロフィール（年齢枠・アレルゲン）を常に暗黙のコンテキストとして保持し、それに寄り添って回答する相談AI。", icon: <MessageCircle className="w-5 h-5" /> },
-      { title: "AI回答の信頼度バッジ", desc: "回答に必要な「保護者の一次情報」のデータ量に基づき、回答の確かさを判定してバッジ（緑/橙/赤）で視覚的警告を出す機能。", icon: <ShieldCheck className="w-5 h-5" /> },
-      { title: "情報ソース（参照元）の透明性追跡", desc: "AIがどのお声（wiki_sources）を参考にしたかカウントを追跡することで、AI特有のハルシネーションを極小化。", icon: <Search className="w-5 h-5" /> },
-      { title: "緊急度判定ガード（119番誘導）", desc: "「息苦しい」「蕁麻疹が広がった」等のアナフィラキシー疑いをAIが検知し、即座に回答を停止して119番を促すセーフティガード。", icon: <Shield className="w-5 h-5" />, tags: ["Safety", "Urgent"] },
-      { title: "AI検索システムの自律制御", desc: "データ品質を最優先し、圧倒的な良質な一次情報が十分蓄積されるまではAI検索機能を意図的にロック・不可視化するクオリティコントロール機構。", icon: <ShieldCheck className="w-5 h-5" /> },
-      { title: "バウンスアニメーションUI", desc: "AIが思考中であることを伝える、心地よくリズミカルなWaiting UIパターン。", icon: <Sparkles className="w-5 h-5" /> },
-      { title: "動的JSONBスキーマ拡張対応", desc: "構造化データやJSONスキーマを用いてAPIのレスポンスを厳格に管理するフルスタックAIアーキテクチャ。", icon: <TrendingUp className="w-5 h-5" /> },
-      { title: "複数こども×アレルゲン完全考慮RAG", desc: "ユーザーが設定した複数のお子さまの年齢や複雑なアレルゲン情報（28品目＋自由記述）をすべてAIにコンテキストとして渡し、一人ひとりに寄り添った高精度の回答を動的生成します。", icon: <User className="w-5 h-5" />, tags: ["RAG", "Context Injection"] },
-      { title: "DBスキーマレス・ポリフィル機構", desc: "リモートDBのマイグレーション状況に依存せず、複雑な複数こどもJSON配列を既存のテキスト配列カラムへ安全にフォールバックして同期させる耐障害システム。", icon: <Shield className="w-5 h-5" />, tags: ["Polyfill", "Resilience"] },
+      { title: "3日間の自動アーカイブ（自律掃除）", desc: "トークルームで72時間発言がなかった場合、自動で会話をクローズし、コミュニティの文脈を常に最新に保ちます。", icon: <Clock className="w-5 h-5" />, tags: ["Cron", "DB"] },
+      { title: "文脈抽出エンジン (Talk-to-Wiki)", desc: "アーカイブ時、Gemini 3 Flashが会話の全スレッドを解析し、有益な一次情報を「Snippet」として自動抽出する中核機能。", icon: <RefreshCw className="w-5 h-5" />, tags: ["Gemini"] },
+      { title: "8テーマのHub & Spoke分配", desc: "抽出されたSnippetを、外食・レシピ・学校生活などの「8つの巨大なメガWiki（Hub）」へ自動で分類・マージする構造。", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "緊急度判定ガード (Medical Safety)", desc: "「息苦しい」等のアナフィラキシー疑いをAIが検知し、APIレベルで即時回答を遮断、119番への誘導へ強制フォールバック。", icon: <ShieldCheck className="w-5 h-5" />, tags: ["Safety"] },
+      { title: "ハルシネーション追跡機構", desc: "まとめ記事の一文ごとに、「どの親御さんの発言（ID）をもとにAIが書いたか」を紐づけ、情報の出所を完全にトラッキング。", icon: <Search className="w-5 h-5" /> },
+      { title: "ポリフィル型スキーママッチング", desc: "リモートDBのマイグレーションが遅延しても、フロントエンドで安全にJSONをフォールバックする高耐障害設計。", icon: <Check className="w-5 h-5" /> },
     ]
   },
   {
-    title: "高精細 MyPage ＆ オンボーディング",
-    desc: "複雑なアレルギー管理を、直感的に楽しく入力させるためのユーザー体験",
-    colorClass: "from-amber-100/50 to-orange-50 border-orange-200 text-orange-700 bg-orange-500/10",
+    title: "最高精細 UI/UX (Nani System)",
+    desc: "アレルギー管理の難しさを消し飛ばす、Bento UIとモダンフロントエンドの融合。",
+    colorClass: "from-blue-100 to-indigo-50 text-indigo-700 border-indigo-200",
+    iconBg: "bg-indigo-500",
     features: [
-      {
-        title: "自己修復型セッション初期化",
-        desc: "AIによるコンテキスト維持の限界に達した場合、直感的に記憶をクリア（RefreshCw）して新しい話題の精度を確保",
-        icon: <RefreshCw className="w-5 h-5" />,
-        tags: ["RAG", "相談"]
-      },
-      {
-        title: "お声の引用返信 (Quoted Reply)",
-        desc: "気になる体験談をワンタップで引用し、コンテキスト付きでスムーズにトークを継続できるシステム",
-        icon: <MessageCircle className="w-5 h-5" />,
-        tags: ["トークルーム"]
-      },
-      {
-        title: "自身の発言の取り消し・削除",
-        desc: "リアルタイムな削除権限の検証を行い、誤ったお声や後悔したお声を即座に取り消せる安心安全機能",
-        icon: <Trash2 className="w-5 h-5" />,
-        tags: ["トークルーム"]
-      },
-      {
-        title: "統合通知フィード",
-        desc: "記事の閲覧数アップ、感謝リアクションの獲得、まとめ記事への採用などのポジティブなアクションをひとまとめに確認",
-        icon: <Bell className="w-5 h-5" />,
-        tags: ["インセンティブ"]
-      },
-      {
-        title: "プロフィールカスタマイズ",
-        desc: "表示名とアイコンの変更に対応。実名を隠しつつ10種類のアバター（またはLINEアイコン）で個性を表現可能",
-        icon: <User className="w-5 h-5" />,
-        tags: ["プロフィール"]
-      },
-      { title: "特定原材料8品目の視覚化", desc: "厚労省が定める最新の義務8品目を、直感的な絵文字と大きく押しやすいボタンで表示。", icon: <Leaf className="w-5 h-5" />, tags: ["UI/UX"] },
-      { title: "準ずるもの20品目のチップ選択", desc: "通知対象となる20品目の中から、タグ（チップ）形式でサクサクと選択できる軽量UI。", icon: <Check className="w-5 h-5" /> },
-      { title: "「その他のアレルゲン」エンター追加入力", desc: "一覧にない珍しい食材アレルギーでも、エンターキー（またはスマホの確定）で自由に無制限に追加できるTag Inputシステム。", icon: <Plus className="w-5 h-5" /> },
-      { title: "非同期での複数こども管理タブ", desc: "「1人目」「2人目」のタブを切り替えることで、兄弟姉妹の異なるアレルゲン・年齢を同一画面で並行して入力可能。", icon: <User className="w-5 h-5" />, tags: ["JSONB"] },
-      { title: "ステップ型オンボーディング機構", desc: "情報入力を「アレルゲン」「年齢」「悩み」の3ステップに分割し、離脱率を下げるウィザードUI。", icon: <Sparkles className="w-5 h-5" /> },
-      { title: "年齢別のコンテンツ自動出し分け", desc: "登録されたこどもの年齢（離乳食期、園児期など）とアレルゲンを掛け合わせ、巨大なWiki記事の中から「あなたに今必要な見出し」だけを自動抽出して推薦する機能。", icon: <User className="w-5 h-5" />, tags: ["Personalize"] },
-      { title: "入力状況のローカルストレージ保存", desc: "アプリを閉じてもオンボーディングの途中状態が消えず、すぐに再開できる同期機構。", icon: <Cloud className="w-5 h-5" /> },
-      { title: "「一番の悩み」に基づくAI例文生成", desc: "「市販品探し」「外食」などの選択に応じ、コンシェルジュ画面に「この質問をしてみよう」というサジェストを兄弟それぞれのプロファイルから動的に提示。", icon: <MessageCircle className="w-5 h-5" /> },
-      { title: "Bento UIベースのマイページ", desc: "複雑な各種設定や貢献ステータスを、視覚的境界が美しい角丸（Bento）カードとして整列。", icon: <BookOpen className="w-5 h-5" />, tags: ["Nani Style"] },
-      { title: "シームレスなプロファイル再編集", desc: "情報の整合性を保ちながら、複数こどもの名前・年齢・アレルゲン設定をウィザード形式でスムーズに再編集できる体験。", icon: <Check className="w-5 h-5" /> },
-      { title: "体験ノートの28品目＋フル対応フィルター", desc: "特定原材料8品目に加え、準ずる20品目でヒント（Wiki）を正確に横断検索・絞り込みできる動的タグフィルター機構。", icon: <Search className="w-5 h-5" />, tags: ["Search", "UX"] },
-    ]
-  },
-  {
-    title: "パフォーマンス・アーキテクチャ (Nani Design)",
-    desc: "最速のレンダリングと美しい「Tech-Natural Fusion」デザインシステム",
-    colorClass: "from-blue-100/50 to-indigo-50 border-indigo-200 text-indigo-700 bg-indigo-500/10",
-    features: [
-      { title: "手書き軽量SVGフルスクラッチ（Lucide排除）", desc: "汎用アイコンライブラリを全て撤廃し、温かみのある太線の「手書き風カスタムSVGアイコン」群を自給。", icon: <Leaf className="w-5 h-5" />, tags: ["Performance"] },
-      { title: "ノイズを削ぎ落とした洗練UI", desc: "過度な装飾（テクスチャや波線）を完全排除。「超・角丸（32px）とパステルGlassmorphism」のみを残し、情報に没入できるクリーンな設計。", icon: <Sparkles className="w-5 h-5" /> },
-      { title: "インクブルー × コーラルピンク基調", desc: "医療的な冷たさを排除し、ノートに描いたような安心感のあるTech-Natural Fusionカラーパレット。", icon: <Heart className="w-5 h-5" /> },
-      { title: "Hydration Mismatch自動回避", desc: "Server/Clientのレンダリング差によるReactのクラッシュを先読みして防ぐ `isMounted` SSRバリデーション。", icon: <ShieldCheck className="w-5 h-5" />, tags: ["React"] },
-      { title: "PWA・モバイル最適化 (100dvh & safe-bottom)", desc: "スマホブラウザのURLバーやiOSのセーフエリア（ノッチ・ホームバー）を考慮した、完全なネイティブアプリ風レイアウト。", icon: <User className="w-5 h-5" /> },
-      { title: "Shimmer（スケルトン）ローディング", desc: "データ取得中に画面が真っ白になるのを防ぎ、キラキラと光る波紋のようなローディングで待ち時間を軽減。", icon: <RefreshCw className="w-5 h-5" /> },
-      { title: "Smart Sticky ナビゲーション", desc: "スクロールしても入力欄や送信ボタンが常に指を届きやすい下部に固定される追従UI。", icon: <MessageCircle className="w-5 h-5" /> },
-      { title: "APIエンドポイントレス構想 (Server Actions)", desc: "Next.js 16のServer Actionsをフル活用し、フロントとバックエンドの中間API層を排除した高速データ通信。", icon: <TrendingUp className="w-5 h-5" /> },
-      { title: "Speculation Rules (0ms画面遷移)", desc: "ユーザーがリンクをホバーした瞬間に次ページを裏でプリレンダリングし、0ミリ秒の瞬時体感遷移を実現する最新Web API。", icon: <Sparkles className="w-5 h-5" />, tags: ["Performance"] },
-      { title: "Supabase RLS & Role Separation", desc: "Row Level Securityとサービスロールキーを組み合わせ、バッチ処理とユーザー操作を完全に分離した強固な認証DB。", icon: <Shield className="w-5 h-5" />, tags: ["Security"] },
-      { title: "TypeScriptによる厳密型安全運用", desc: "NullやUndefinedを許容しない厳格な型推論による、ビルド時にバグを撲滅するセーフティ開発体制。", icon: <Check className="w-5 h-5" /> },
+      { title: "マイクロブックマーク", desc: "メガWiki全体ではなく、記事の「この一文だけ！」をピンポイントで切り抜いてマイページにストックする個人辞書機能。", icon: <BookOpen className="w-5 h-5" />, tags: ["UX"] },
+      { title: "Bento UIとGlassmorphism", desc: "視覚的境界が美しい32pxの角丸カード（Bento）を並べ、背景には半透明グラスエフェクトを適用したノイズレスなデザイン。", icon: <Sparkles className="w-5 h-5" />, tags: ["Design"] },
+      { title: "動的兄弟プロファイル管理", desc: "「1人目」「2人目」のタブを切り替え、別々の年齢・複雑なアレルゲンデータを一つのRAGコンテキストとしてAIに同時伝達。", icon: <User className="w-5 h-5" /> },
+      { title: "28品目＋自由記述のTag Input", desc: "厚労省指定の最新28品目に加え、入力欄でエンターを押すだけであらゆる食材を無制限に追加できる動的ラベルUI。", icon: <Plus className="w-5 h-5" /> },
+      { title: "Hydration Mismatch自動回避", desc: "Server/ClientのSSRレンダリング差異によるReact18のクラッシュを先読みして防ぐ `isMounted` フック基盤。", icon: <Check className="w-5 h-5" />, tags: ["React"] },
+      { title: "Server ActionsのAPIレス通信", desc: "Next.js 16のServer Actionsをフル活用し、GraphQLやREST API層を持たずに直接セキュアにDBと会話する高速アーキテクチャ。", icon: <TrendingUp className="w-5 h-5" /> },
     ]
   }
 ];
 
-
 export default function FeaturesPage() {
   return (
-    <div className="fade-in pb-12 w-full max-w-2xl mx-auto">
+    <div className="fade-in pb-16 min-h-[100dvh] bg-[var(--color-bg)]">
       {/* Header */}
-      <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md sticky top-0 z-40">
+      <div className="sticky top-0 z-40 px-5 py-4 border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-md">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-2xl bg-[var(--color-surface-warm)] flex items-center justify-center flex-shrink-0">
+            <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-[17px] font-extrabold text-[var(--color-text)] break-keep text-balance">オープンな開発仕様</h1>
-            <p className="text-[11px] text-[var(--color-subtle)]">これまでに実装された50の全機能・仕様</p>
+            <h1 className="text-[17px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">オープンな開発仕様</h1>
+            <p className="text-[11px] font-bold text-[var(--color-text-secondary)] mt-0.5">Living Knowledge を実現する技術とUX</p>
           </div>
         </div>
       </div>
 
-      <div className="px-5 py-6">
-        <div className="mb-8 p-5 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)] slide-up shadow-sm">
-          <h2 className="text-[15px] font-extrabold text-[var(--color-text)] mb-2 flex items-center gap-2 break-keep text-balance">
+      <div className="px-5 py-6 space-y-10 max-w-2xl mx-auto">
+        {/* Intro */}
+        <div className="p-6 rounded-[28px] bg-white border border-[var(--color-border-light)] shadow-sm">
+          <h2 className="text-[16px] font-black text-[var(--color-text)] mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
             なぜ全ての仕様を公開するのか？
           </h2>
-          <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mb-4">
-            「あんしんキッズ」は、アレルギーをもつ子どもたちとその家族を守り、助け合うためのプラットフォームです。<br/>
-            極めて細かいSNSの心理的アプローチから、裏側で稼働する自律型のAIモデルやデータベース抽出ループまで、約50の機能を独自に実装しています。<br/>
-            これらをすべて透明にオープンにすることで、更なる改善へのアイデアや、開発に協力いただけるパートナー（コラボレーター）を広く募りたいと考えています。
+          <p className="text-[13px] font-bold text-[var(--color-text-secondary)] leading-[1.8] mb-5">
+            「あんしんキッズ」は、アレルギーをもつ子どもたちとその家族を守るためのプラットフォームです。この仕組みをブラックボックスにせず、自律型のAI抽出ループから細かなUXのアプローチまで全てをオープン化することで、より多くの技術者やコミュニティと共に発展していくことを目指しています。
           </p>
-          <div className="flex gap-2 flex-wrap">
-            <span className="px-3 py-1 bg-white border border-[var(--color-border-light)] rounded-full text-[11px] font-bold text-[var(--color-subtle)]">Next.js 16</span>
-            <span className="px-3 py-1 bg-white border border-[var(--color-border-light)] rounded-full text-[11px] font-bold text-[var(--color-subtle)]">Supabase</span>
-            <span className="px-3 py-1 bg-white border border-[var(--color-border-light)] rounded-full text-[11px] font-bold text-[var(--color-subtle)]">Gemini AI</span>
-            <span className="px-3 py-1 bg-white border border-[var(--color-border-light)] rounded-full text-[11px] font-bold text-[var(--color-subtle)]">Tailwind CSS v4</span>
+          <div className="flex flex-wrap gap-2">
+            {["Next.js 16", "Supabase", "Gemini 3 Flash", "Bento UI"].map(tag => (
+               <span key={tag} className="px-3 py-1 bg-[var(--color-surface-warm)] rounded-full text-[11px] font-extrabold text-[var(--color-subtle)] border border-[var(--color-border-light)]">
+                 {tag}
+               </span>
+            ))}
           </div>
         </div>
 
+        {/* Feature List */}
         <div className="space-y-10">
           {CATEGORIES.map((category, index) => (
-            <section key={category.title} className="slide-up" style={{ animationDelay: `${index * 100}ms` }}>
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[14px] bg-gradient-to-br ${category.colorClass} shadow-sm border`}>
-                    {index + 1}
-                  </span>
-                  <h3 className="text-[16px] font-extrabold text-[var(--color-text)] break-keep text-balance">{category.title}</h3>
+            <section key={category.title} className="slide-up relative" style={{ animationDelay: `${index * 100}ms` }}>
+              <div className="flex items-center gap-3 mb-5">
+                <span className={`w-10 h-10 rounded-[18px] flex items-center justify-center font-black text-[14px] text-white ${category.iconBg} shadow-sm border border-white/20`}>
+                  {index + 1}
+                </span>
+                <div>
+                  <h3 className="text-[17px] font-black text-[var(--color-text)] tracking-tight leading-tight">{category.title}</h3>
+                  <p className="text-[11.5px] font-bold text-[var(--color-subtle)] mt-0.5">{category.desc}</p>
                 </div>
-                <p className="text-[12px] font-medium text-[var(--color-subtle)] ml-10 leading-snug">
-                  {category.desc}
-                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2 sm:pl-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {category.features.map((feature, fIndex) => (
-                  <div key={fIndex} className="p-4 rounded-2xl bg-white border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 hover:shadow-sm transition-all group">
+                  <div key={fIndex} className="p-5 rounded-[24px] bg-white border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:shadow-md transition-all group">
                     <div className="flex items-start gap-3">
                       <div className="pt-0.5 text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors">
                         {feature.icon}
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <h4 className="text-[14px] font-bold text-[var(--color-text)] leading-tight break-keep text-balance">{feature.title}</h4>
-                        </div>
-                        <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
+                        <h4 className="text-[14px] font-black text-[var(--color-text)] mb-2 leading-tight">{feature.title}</h4>
+                        <p className="text-[12.5px] font-semibold text-[var(--color-text-secondary)] leading-relaxed">
                           {feature.desc}
                         </p>
                         {feature.tags && (
-                          <div className="flex flex-wrap gap-1.5 mt-2.5">
+                          <div className="flex flex-wrap gap-1.5 mt-3">
                             {feature.tags.map(tag => (
-                              <span key={tag} className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-muted)] bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
+                              <span key={tag} className="text-[9.5px] font-black uppercase tracking-wider text-[var(--color-muted)] bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-lg border border-[var(--color-border-light)]">
                                 {tag}
                               </span>
                             ))}
@@ -211,27 +127,26 @@ export default function FeaturesPage() {
         </div>
 
         {/* Global CTA */}
-        <div className="mt-12 p-6 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] text-white text-center shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150 duration-700" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-5 -mb-5" />
+        <div className="mt-12 p-8 rounded-[32px] bg-[var(--color-text)] text-white text-center relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
           
           <div className="relative z-10">
-            <div className="w-14 h-14 mx-auto bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md mb-3 shadow-inner border border-white/30">
-              <Leaf className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 mx-auto bg-white/10 rounded-[20px] flex items-center justify-center backdrop-blur-md mb-4 border border-white/20">
+              <Leaf className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-[18px] font-extrabold mb-2 text-shadow-sm break-keep text-balance">力を貸してください 🤝</h2>
-            <p className="text-[13px] font-medium text-white/90 mb-5 leading-relaxed max-w-[280px] mx-auto">
-              これらの仕様を一緒に洗練させ、より多くのアレルギーっ子家族を救う開発メンバー・デザイナー・コミュニティリードを探しています。
+            <h2 className="text-[18px] font-extrabold mb-3 tracking-tight">力を貸してください 🤝</h2>
+            <p className="text-[13px] font-bold text-white/80 mb-6 leading-relaxed max-w-[280px] mx-auto">
+              これらの仕様を一緒に洗練させ、より多くのアレルギーっ子家族を救う開発メンバー・デザイナーを探しています。
             </p>
-            <a href="mailto:contact@example.com" className="inline-flex items-center justify-center gap-2 bg-white text-[var(--color-primary)] px-6 py-3 rounded-xl text-[14px] font-extrabold shadow-md hover:scale-105 active:scale-95 transition-all">
-              <User className="w-4 h-4" /> 開発に協力する
+            <a href="mailto:partner@anshin-kids.app" className="inline-flex items-center justify-center gap-2 bg-white text-[var(--color-text)] px-6 py-3.5 rounded-2xl text-[14px] font-black shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform">
+              <User className="w-4 h-4" /> 開発・デザインに協力する
             </a>
           </div>
         </div>
 
-        <div className="text-center mt-6">
-          <Link href="/about" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[var(--color-subtle)] hover:text-[var(--color-text)] transition-colors">
-            <ArrowLeftIcon className="w-4 h-4" /> お知らせ・概要に戻る
+        <div className="text-center mt-8 pb-4">
+          <Link href="/about" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[var(--color-subtle)] hover:text-[var(--color-primary)] transition-colors">
+            <ArrowLeftIcon className="w-4 h-4" /> 概要（アバウト）に戻る
           </Link>
         </div>
       </div>
@@ -240,5 +155,5 @@ export default function FeaturesPage() {
 }
 
 const ArrowLeftIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
 );

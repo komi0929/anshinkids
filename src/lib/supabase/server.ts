@@ -52,3 +52,24 @@ export function createStaticClient() {
     },
   });
 }
+
+/**
+ * Creates an Admin Supabase client executing strictly under the SERVICE_ROLE.
+ * WARNING: This completely bypasses Row-Level Security (RLS). 
+ * Use ONLY for server-side aggregate metric updates (e.g. Thanks count increment) that span across user boundaries.
+ */
+export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !key) return null;
+
+  return createJSClient<Database>(url, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+

@@ -39,16 +39,33 @@ export default function MainLayout({
         if (user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("allergen_tags, children_profiles")
+            .select("allergen_tags")
             .eq("id", user.id)
             .maybeSingle();
 
           if (!cancelled && profile) {
-            const cp = profile.children_profiles as unknown[];
+            // First check standard allergens to clear onboarding quickly
             const at = profile.allergen_tags as string[];
-            if ((cp && cp.length > 0) || (at && at.length > 0)) {
+            if (at && at.length > 0) {
               setShowOnboarding(false);
               localStorage.setItem("anshin_onboarding_done", "true");
+            } else {
+              // Try to safely fetch children_profiles if standard is empty (ignore 400 error if column is missing)
+              try {
+                const { data: fullProfile } = await supabase
+                  .from("profiles")
+                  .select("children_profiles")
+                  .eq("id", user.id)
+                  .maybeSingle();
+                
+                const cp = fullProfile?.children_profiles as unknown[];
+                if (cp && cp.length > 0) {
+                  setShowOnboarding(false);
+                  localStorage.setItem("anshin_onboarding_done", "true");
+                }
+              } catch {
+                // If it fails (HTTP 400 bad request due to missing column), we just default to not having children profiles.
+              }
             }
           }
         }
