@@ -136,7 +136,11 @@ ${conversationText}
     };
 
     try {
-      parsed = JSON.parse(result.response.text());
+      let rawText = result.response.text().trim();
+      if (rawText.startsWith("```")) {
+        rawText = rawText.replace(/^```(?:json)?\n?/, "").replace(/```$/, "").trim();
+      }
+      parsed = JSON.parse(rawText);
     } catch {
       return { success: false, error: "Failed to parse AI response" };
     }

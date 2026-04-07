@@ -219,6 +219,19 @@ export async function postTopicMessage(
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
+    // Anti-spam Rate Limiting: Prevent more than 1 message per 3 seconds
+    const threeSecondsAgo = new Date(Date.now() - 3000).toISOString();
+    const { data: recentMsg } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("user_id", user.id)
+      .gte("created_at", threeSecondsAgo)
+      .maybeSingle();
+
+    if (recentMsg) {
+      return { success: false, error: "連続投稿は少し時間をおいてください" };
+    }
+
     // Insert message
     const { error } = await supabase.from("messages").insert({
       room_id: roomId,

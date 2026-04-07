@@ -54,9 +54,15 @@ export async function recalculateTrustScores() {
     const thanks = profile.total_thanks_received || 0;
     const helpfulVotes = profile.total_helpful_votes || 0;
 
-    // Egalitarian Paradigm: pure impact sum, no decay, no cap, no 'exam score' mentality.
-    const impactSum = contributions + thanks + (helpfulVotes * 2);
-    const trustScore = impactSum;
+    // Monetization/SaaS Strategy: Volume != Trust.
+    // We use logarithmic diminishing returns for pure message volume to prevent spam abuse.
+    // Peer validation (thanks, helpful votes) scales linearly to reward true helpfulness.
+    
+    // e.g. 10 messages = 10 pts, 100 messages = 20 pts, 1000 messages = 30 pts.
+    const volumeScore = contributions > 0 ? Math.round(10 * Math.log10(contributions + 1)) : 0;
+    const validationScore = (thanks * 3) + (helpfulVotes * 5);
+    
+    const trustScore = volumeScore + validationScore;
     profileScoreMap[profile.id] = trustScore;
 
     // Optional optimization: Only update if changed
