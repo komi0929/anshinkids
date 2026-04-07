@@ -13,6 +13,7 @@ import { ArrowLeft, MessageCircle, Plus, Search } from "@/components/icons";
 import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
 import { THEME_PROMPTS } from "@/lib/theme-prompts";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RoomInfo {
   id: string;
@@ -170,8 +171,13 @@ export default function ThemeHubPage() {
             <div className="slide-up" style={{ animationDelay: '50ms' }}>
               <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2 ml-0.5">💡 タップですぐに話題をスタート</p>
               <div className="grid grid-cols-1 gap-2">
+                <AnimatePresence>
                 {suggestedPrompts.map((prompt, i) => (
-                  <button
+                  <motion.button
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     key={i}
                     type="button"
                     onClick={() => {
@@ -189,8 +195,9 @@ export default function ThemeHubPage() {
                     <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0">
                       話す
                     </span>
-                  </button>
+                  </motion.button>
                 ))}
+                </AnimatePresence>
               </div>
             </div>
           )}
@@ -232,8 +239,14 @@ export default function ThemeHubPage() {
                       <Link
                         key={topic.id}
                         href={`/talk/${slug}/${topic.id}`}
-                        className="block p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                        className="block"
                       >
+                       <motion.div
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                       >
                         <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-2 break-keep text-balance leading-snug">
                           {topic.title}
                         </h3>
@@ -259,6 +272,7 @@ export default function ThemeHubPage() {
                           )}
                           <span className="ml-auto">{timeAgo(topic.updated_at)}</span>
                         </div>
+                       </motion.div>
                       </Link>
                     );
                   })}
@@ -281,8 +295,14 @@ export default function ThemeHubPage() {
                     <Link
                       key={topic.id}
                       href={`/talk/${slug}/${topic.id}`}
-                      className="block p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                      className="block"
                     >
+                     <motion.div
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-1.5 break-keep text-balance leading-snug">
@@ -307,6 +327,7 @@ export default function ThemeHubPage() {
                           </svg>
                         </div>
                       </div>
+                     </motion.div>
                     </Link>
                   ))}
                 </div>

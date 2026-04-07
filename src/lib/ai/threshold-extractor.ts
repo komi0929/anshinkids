@@ -24,15 +24,15 @@ export async function checkExtractionThresholds() {
   // 2. ルームごとに未抽出メッセージの見積もり（カウント）をチェック
   for (const room of rooms) {
     const threshold = room.extraction_threshold || 50;
-    
-    const { count } = await supabase
+    const { data: thresholdMessages } = await supabase
       .from("messages")
-      .select("id", { count: "exact", head: true })
+      .select("id")
       .eq("room_id", room.id)
       .eq("ai_extracted", false)
-      .eq("is_system_bot", false);
+      .eq("is_system_bot", false)
+      .limit(threshold);
 
-    if (count !== null && count >= threshold) {
+    if (thresholdMessages && thresholdMessages.length >= threshold) {
       shouldRunExtraction = true;
       triggerRooms.push(room.slug);
     }

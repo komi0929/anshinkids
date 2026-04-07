@@ -25,7 +25,7 @@ import {
 import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
 import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
@@ -378,9 +378,13 @@ export default function ChatClient({
 
       if (isMyMessage) {
         return (
-          <div
+          <motion.div
+            layout
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
             key={msg.id}
-            className={`flex flex-col items-end px-4 mb-4 ${opacityClass} fade-in`}
+            className={`flex flex-col items-end px-4 mb-4 ${opacityClass}`}
           >
             <div className="flex gap-2 max-w-[85%] flex-row-reverse">
               <div
@@ -418,13 +422,17 @@ export default function ChatClient({
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         );
       } else {
         return (
-          <div
+          <motion.div
+            layout
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
             key={msg.id}
-            className={`flex flex-col items-start px-4 mb-4 ${opacityClass} fade-in`}
+            className={`flex flex-col items-start px-4 mb-4 ${opacityClass}`}
           >
             <div className="flex gap-2 max-w-[85%]">
               <div
@@ -447,6 +455,7 @@ export default function ChatClient({
                     })}
                   </span>
                   <motion.button
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.85 }}
                     onClick={(e) => handleThanks(msg.id, e)}
                     className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] transition-all border ${
@@ -464,7 +473,7 @@ export default function ChatClient({
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         );
       }
     });
@@ -561,7 +570,9 @@ export default function ChatClient({
         )}
 
         <div className="py-4">
-          {renderedMessages}
+          <AnimatePresence initial={false}>
+            {renderedMessages}
+          </AnimatePresence>
           <div ref={messagesEndRef} className="h-4" />
         </div>
       </div>
@@ -594,7 +605,7 @@ export default function ChatClient({
               className="w-full bg-transparent border-none outline-none resize-none text-[15px] p-0 text-[var(--color-text)] placeholder-[var(--color-muted)] placeholder:font-medium leading-[1.5] max-h-[120px]"
               rows={1}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if ((e.key === "Enter" && !e.shiftKey) || (e.key === "Enter" && (e.metaKey || e.ctrlKey))) {
                   e.preventDefault();
                   handleSend();
                 }

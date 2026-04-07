@@ -21,6 +21,7 @@ export async function recalculateTrustScores() {
       .range(pPage * 1000, (pPage + 1) * 1000 - 1);
     
     if (!profilesBatch || profilesBatch.length === 0) break;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allProfiles = allProfiles.concat(profilesBatch as any[]);
     pPage++;
   }
@@ -48,6 +49,7 @@ export async function recalculateTrustScores() {
 
   let updated = 0;
   const profileScoreMap: Record<string, number> = {};
+  const profileUpdates: { id: string; trustScore: number; }[] = [];
 
   for (const profile of allProfiles) {
     const contributions = profile.total_contributions || 0;
@@ -65,14 +67,21 @@ export async function recalculateTrustScores() {
     const trustScore = volumeScore + validationScore;
     profileScoreMap[profile.id] = trustScore;
 
-    // Optional optimization: Only update if changed
     if (profile.trust_score !== trustScore) {
-      await supabase
-        .from("profiles")
-        .update({ trust_score: trustScore })
-        .eq("id", profile.id);
-      updated++;
+      profileUpdates.push({ id: profile.id, trustScore });
     }
+  }
+
+  // 1.5 Execute profile updates in chunks of 50 to prevent connection exhaustion
+  const chunkSize = 50;
+  for (let i = 0; i < profileUpdates.length; i += chunkSize) {
+    const chunk = profileUpdates.slice(i, i + chunkSize);
+    await Promise.all(
+      chunk.map((p) =>
+        supabase.from("profiles").update({ trust_score: p.trustScore }).eq("id", p.id)
+      )
+    );
+    updated += chunk.length;
   }
 
   // 2. Compute avg_trust_score for all Wiki Entries using the newly updated profile scores
@@ -81,11 +90,14 @@ export async function recalculateTrustScores() {
   while (true) {
     const { data: wikiBatch } = await supabase.from("wiki_entries").select("id").range(wPage * 1000, (wPage + 1) * 1000 - 1);
     if (!wikiBatch || wikiBatch.length === 0) break;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allWikiEntries = allWikiEntries.concat(wikiBatch as any[]);
     wPage++;
   }
 
   let wikiUpdated = 0;
+  const wikiUpdates: { id: string; avg: number; }[] = [];
+
   for (const entry of allWikiEntries) {
     const { data: sources } = await supabase.from("wiki_sources").select("contributor_id").eq("wiki_entry_id", entry.id);
     if (sources && sources.length > 0) {
@@ -100,11 +112,22 @@ export async function recalculateTrustScores() {
       }
       if (validContributors > 0) {
         const avg = Math.round(totalScore / validContributors);
-        await supabase.from("wiki_entries").update({ avg_trust_score: avg }).eq("id", entry.id);
-        wikiUpdated++;
+        wikiUpdates.push({ id: entry.id, avg });
       }
     }
   }
 
+  // 2.5 Execute wiki entry updates in chunks of 50
+  for (let i = 0; i < wikiUpdates.length; i += chunkSize) {
+    const chunk = wikiUpdates.slice(i, i + chunkSize);
+    await Promise.all(
+      chunk.map((w) =>
+        supabase.from("wiki_entries").update({ avg_trust_score: w.avg }).eq("id", w.id)
+      )
+    );
+    wikiUpdated += chunk.length;
+  }
+
   return { updated, wikiUpdated };
 }
+

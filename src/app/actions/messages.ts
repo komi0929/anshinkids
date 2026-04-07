@@ -53,7 +53,8 @@ export async function getTalkTopics(roomId: string) {
       `)
       .eq("room_id", roomId)
       .eq("is_active", true)
-      .order("updated_at", { ascending: false });
+      .order("updated_at", { ascending: false })
+      .limit(200);
     if (error) throw error;
     
     const enhancedData = data?.map(t => {
@@ -245,45 +246,41 @@ export async function postTopicMessage(
     // configured in init.sql (on_message_insert, on_message_record_day).
 
     // Extend life of all messages in this topic (chain extension rule)
-    const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
-    await supabase
-      .from("messages")
-      .update({ expires_at: newExpiry })
-      .eq("topic_id", topicId)
-      .select(); // Add explicit mutation check but don't strictly throw here
+    // 致命的遅延 (O(N)操作) であった全メッセージの expires_at 更新を削除。
+    // トピック自体の updated_at で生存期間を追跡する方針に一元化しました。
 
-    // Update topic metadata: updated_at, last_message_preview, and atomic increment message_count
-    // Using simple specific row reads/writes saves massive table scans.
     const preview = content.trim().slice(0, 80);
 
-    const adminClient = createAdminClient();
-    if (adminClient) {
-      // 1. Fetch current count to increment (cheaper than count(*))
-      const { data: topicToUpdate } = await adminClient
-        .from("talk_topics")
-        .select("message_count")
-        .eq("id", topicId)
-        .maybeSingle();
-
-      const newMsgCount = (topicToUpdate?.message_count ?? 0) + 1;
-
-      // 2. Update with incremented count
-      const { error: topicUpdateErr } = await adminClient
-        .from("talk_topics")
-        .update({
-          updated_at: new Date().toISOString(),
-          message_count: newMsgCount,
-          last_message_preview: preview,
-        })
-        .eq("id", topicId)
-        .select();
-      if (topicUpdateErr) console.warn("Failed admin topic metric update:", topicUpdateErr);
-    }
-
-    const currentMsgCount = (adminClient ? 1 : 0); // Trigger check
-
+    // 非同期(Background)でメタデータ更新・AI要約を行うことで、ユーザーへの直列でのレスポンス待機時間を撤廃
     import("next/server").then(({ after }) => {
-       after(() => {
+       after(async () => {
+         const adminClient = await import("@/lib/supabase/server").then(m => m.createAdminClient());
+         let currentMsgCount = 0;
+
+         if (adminClient) {
+           // 1. Fetch current count to increment (cheaper than count(*))
+           const { data: topicToUpdate } = await adminClient
+             .from("talk_topics")
+             .select("message_count")
+             .eq("id", topicId)
+             .maybeSingle();
+
+           const newMsgCount = (topicToUpdate?.message_count ?? 0) + 1;
+           currentMsgCount = newMsgCount;
+
+           // 2. Update with incremented count safely in background
+           const { error: topicUpdateErr } = await adminClient
+             .from("talk_topics")
+             .update({
+               updated_at: new Date().toISOString(),
+               message_count: newMsgCount,
+               last_message_preview: preview,
+             })
+             .eq("id", topicId)
+             .select();
+           if (topicUpdateErr) console.warn("Failed admin topic metric update:", topicUpdateErr);
+         }
+
          import("@/lib/ai/topic-summary-generator")
            .then(({ generateTopicSummary }) => {
              if (currentMsgCount >= 5) {
@@ -297,12 +294,8 @@ export async function postTopicMessage(
            );
        });
     }).catch(() => {
-       // Fallback if after() not available
-       if (currentMsgCount >= 5) {
-         import("@/lib/ai/topic-summary-generator")
-           .then(({ generateTopicSummary }) => generateTopicSummary(topicId))
-           .catch((err) => console.error("[Background Error]", err));
-       }
+       // Fallback if after() is somehow not strictly available
+       console.warn("[Background Error] after() API not found");
     });
 
     // Replenish AI conversation prompts

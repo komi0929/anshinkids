@@ -40,25 +40,20 @@ export async function purgeInactiveThreads() {
   }
 
   // 3. メッセージが0件のトピックを非活性化（トピック自体は削除しない）
-  const { data: allTopics } = await supabase
+  // 以前のN+1ループ(全トピックのメッセージをcount: "exact"で数える)を廃止し、DBトリガーで同期されているmessage_count=0を利用。
+  const { data: emptyTopics } = await supabase
     .from("talk_topics")
-    .select("id, linked_wiki_entry_id")
-    .eq("is_active", true);
+    .select("id")
+    .eq("is_active", true)
+    .eq("message_count", 0)
+    .is("linked_wiki_entry_id", null);
 
-  if (allTopics) {
-    for (const topic of allTopics) {
-      const { count: msgCount } = await supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("topic_id", topic.id);
-
-      if (msgCount === 0 && !topic.linked_wiki_entry_id) {
-        await supabase
-          .from("talk_topics")
-          .update({ is_active: false })
-          .eq("id", topic.id);
-      }
-    }
+  if (emptyTopics && emptyTopics.length > 0) {
+    const topicIds = emptyTopics.map(t => t.id);
+    await supabase
+      .from("talk_topics")
+      .update({ is_active: false })
+      .in("id", topicIds);
   }
 
   console.log(`[InactivityPurge] Purged ${count || 0} expired messages. Topics preserved.`);

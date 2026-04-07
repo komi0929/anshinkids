@@ -1,7 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { unstable_cache } from "next/cache";
 
 /**
  * Trending Topics — 直近24hの投稿数・ありがとう数から「盛り上がっているテーマ」を検出
@@ -663,27 +664,31 @@ export async function getEngagementTier(): Promise<{ success: boolean; error?: s
   }
 }
 
-export async function getCommunityStats() {
-  try {
-    const supabase = await createClient();
-    if (!supabase) return { success: true, data: { totalMembers: 0, totalExperiences: 0, totalWikiEntries: 0 } };
+export const getCommunityStats = unstable_cache(
+  async () => {
+    try {
+      const supabase = createStaticClient();
+      if (!supabase) return { success: true, data: { totalMembers: 0, totalExperiences: 0, totalWikiEntries: 0 } };
 
-    const [profilesRes, sourcesRes, wikiRes] = await Promise.all([
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
-      supabase.from("wiki_sources").select("id", { count: "exact", head: true }),
-      supabase.from("wiki_entries").select("id", { count: "exact", head: true }),
-    ]);
+      const [profilesRes, sourcesRes, wikiRes] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "estimated", head: true }),
+        supabase.from("wiki_sources").select("id", { count: "estimated", head: true }),
+        supabase.from("wiki_entries").select("id", { count: "estimated", head: true }),
+      ]);
 
-    return {
-      success: true,
-      data: {
-        totalMembers: profilesRes.count || 0,
-        totalExperiences: sourcesRes.count || 0,
-        totalWikiEntries: wikiRes.count || 0,
-      },
-    };
-  } catch (err) {
-    console.error("[getCommunityStats]", err);
-    return { success: true, data: { totalMembers: 0, totalExperiences: 0, totalWikiEntries: 0 } };
-  }
-}
+      return {
+        success: true,
+        data: {
+          totalMembers: profilesRes.count || 0,
+          totalExperiences: sourcesRes.count || 0,
+          totalWikiEntries: wikiRes.count || 0,
+        },
+      };
+    } catch (err) {
+      console.error("[getCommunityStats]", err);
+      return { success: true, data: { totalMembers: 0, totalExperiences: 0, totalWikiEntries: 0 } };
+    }
+  },
+  ["community-stats"],
+  { revalidate: 3600, tags: ["community-stats"] }
+);

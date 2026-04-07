@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Heart, BookOpen, TrendingUp, LogOut, Pencil, Check, Loader2, Sparkles, Settings, X, Share } from "@/components/icons";
 import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
+import { motion } from "framer-motion";
 
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
@@ -296,17 +297,23 @@ export default function MyPage() {
 
       </div>
 
+      {isEditing && (
+        <OnboardingWizard
+          initialPrefs={getMigratedInitialPrefs()}
+          onSkip={() => setIsEditing(false)}
+          onComplete={handleWizardComplete}
+        />
+      )}
+
       {/* Profile Card */}
-      <div className="px-4 mb-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className="px-4 mb-4"
+      >
         <div className="bg-white/90 backdrop-blur-md border border-[var(--color-border-light)] rounded-[32px] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-          {isEditing ? (
-            <OnboardingWizard
-              initialPrefs={getMigratedInitialPrefs()}
-              onSkip={() => setIsEditing(false)}
-              onComplete={handleWizardComplete}
-            />
-          ) : (
-            <>
+          <>
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 relative shrink-0">
@@ -323,21 +330,21 @@ export default function MyPage() {
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-2">
-                <div className="bg-[var(--color-surface-warm)] rounded-[20px] p-4 text-center border border-[var(--color-border-light)] transform transition-transform hover:scale-105">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, type: "spring" }} className="bg-[var(--color-surface-warm)] rounded-[20px] p-4 text-center border border-[var(--color-border-light)] transform transition-transform hover:scale-105">
                   <BookOpen className="w-5 h-5 text-[var(--color-text)] mx-auto mb-2 opacity-50" />
                   <div className="text-[20px] font-black text-[var(--color-text)] leading-none">{profile.total_contributions}</div>
                   <div className="text-[10px] font-bold text-[var(--color-subtle)] mt-1.5 break-keep text-balance line-clamp-2 leading-tight">発言回数</div>
-                </div>
-                <div className="bg-rose-50/70 rounded-[20px] p-4 text-center border border-rose-100 transform transition-transform hover:scale-105">
+                </motion.div>
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: "spring" }} className="bg-rose-50/70 rounded-[20px] p-4 text-center border border-rose-100 transform transition-transform hover:scale-105">
                   <Heart className="w-5 h-5 text-rose-400 mx-auto mb-2" />
                   <div className="text-[20px] font-black text-rose-600 leading-none">{profile.total_thanks_received}</div>
                   <div className="text-[10px] font-bold text-rose-400 mt-1.5 break-keep text-balance line-clamp-2 leading-tight">いいね</div>
-                </div>
-                <div className="bg-emerald-50/70 rounded-[20px] p-4 text-center border border-emerald-100 transform transition-transform hover:scale-105">
+                </motion.div>
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, type: "spring" }} className="bg-emerald-50/70 rounded-[20px] p-4 text-center border border-emerald-100 transform transition-transform hover:scale-105">
                   <TrendingUp className="w-5 h-5 text-emerald-500 mx-auto mb-2" />
                   <div className="text-[20px] font-black text-emerald-600 leading-none">{contributions.length}</div>
                   <div className="text-[10px] font-bold text-emerald-500 mt-1.5 break-keep text-balance line-clamp-2 leading-tight">まとめ記事へ採用</div>
-                </div>
+                </motion.div>
               </div>
 
               {/* Streak */}
@@ -399,15 +406,17 @@ export default function MyPage() {
                 </div>
               </div>
             </>
-          )}
-
-
         </div>
-      </div>
+      </motion.div>
 
       {/* === F8: Visual Impact Dashboard (Bento UI) === */}
       {impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0)) && (
-        <div className="px-4 mb-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, type: "spring" }}
+          className="px-4 mb-6"
+        >
           <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
             みんなへのお役立ち
@@ -473,12 +482,17 @@ export default function MyPage() {
                 自分の貢献実績をSNSでシェア
              </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* === F9: Bookmarked Snippets (Micro-Bookmarking) === */}
       {bookmarks.length > 0 && (
-        <div className="px-4 mb-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, type: "spring" }}
+          className="px-4 mb-6"
+        >
           <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
             <span className="text-xl">🔖</span>
             お気に入り
@@ -508,7 +522,7 @@ export default function MyPage() {
               </Link>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Contributions Fallback list (Historical data not in top 3 Bento UI) */}

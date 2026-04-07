@@ -43,7 +43,9 @@ export async function getTopicSummariesForRoom(roomId: string): Promise<{ succes
       .from("talk_topics")
       .select("id")
       .eq("room_id", roomId)
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .order("updated_at", { ascending: false })
+      .limit(200);
 
     if (!topics || topics.length === 0) return { success: true, data: {} };
 
