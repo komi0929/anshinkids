@@ -489,7 +489,7 @@ export default function MyPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] text-[var(--color-subtle)] mb-1.5 flex items-center gap-1 group-hover:text-[var(--color-primary)] transition-colors">
                     <BookOpen className="w-3 h-3" />
-                    {bm.wiki_entries.category} / {bm.wiki_entries.title}
+                    {bm.wiki_entries.category} / {bm.wiki_entries.title.replace("【みんなの知恵袋】", "").trim()}
                   </p>
                   <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 leading-tight break-keep text-balance">
                     {bm.snippet_title}
@@ -526,7 +526,7 @@ export default function MyPage() {
                     <div className="flex-1 min-w-0">
                       {contrib.wiki_entries && (
                         <h4 className="font-bold text-[14px] text-[var(--color-text)] break-keep text-balance">
-                          {(contrib.wiki_entries as Record<string, string>).title}
+                          {((contrib.wiki_entries as Record<string, string>).title || "").replace("【みんなの知恵袋】", "").trim()}
                         </h4>
                       )}
                       <p className="text-[12px] text-[var(--color-subtle)] mt-1 line-clamp-2 leading-relaxed">

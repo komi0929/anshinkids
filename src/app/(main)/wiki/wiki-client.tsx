@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, Filter, Clock, BookOpen, MessageCircle, Bookmark } from "@/components/icons";
 import Link from "next/link";
 import { searchWiki } from "@/app/actions/wiki";
-import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20 } from "@/components/onboarding-wizard";
+import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20, getUserPreferences, UserPreferences } from "@/components/onboarding-wizard";
 
 const CATEGORIES = [
   "すべて",
@@ -66,6 +66,11 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>("popular");
   const [searchQuery, setSearchQuery] = useState("");
+  const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
+
+  useEffect(() => {
+    setUserPrefs(getUserPreferences());
+  }, []);
 
 
   const loadEntries = useCallback(async () => {
@@ -100,12 +105,6 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
           <h1 className="text-[24px] font-black text-[var(--color-text)] tracking-tight">
             みんなのまとめ
           </h1>
-          <Link
-            href="/mypage#bookmarks"
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-[var(--color-border-light)] text-[var(--color-text-secondary)]"
-          >
-            <Bookmark className="w-5 h-5" />
-          </Link>
         </div>
 
         {/* Search Bar */}
@@ -171,6 +170,30 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
                 クリア
               </button>
             </div>
+            {userPrefs && userPrefs.children && userPrefs.children.length > 0 && (
+              <div className="mb-5 pb-5 border-b border-[var(--color-border-light)]">
+                <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2 uppercase tracking-wider">
+                  マイページの設定から一括選択
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {userPrefs.children.map((child, idx) => (
+                    <button
+                      key={child.id || idx}
+                      onClick={() => {
+                        const allChildAllergens = [...child.allergens, ...child.customAllergens];
+                        if (allChildAllergens.length > 0) {
+                          setSelectedAllergens(allChildAllergens);
+                        }
+                      }}
+                      disabled={child.allergens.length === 0 && child.customAllergens.length === 0}
+                      className="px-4 py-2 rounded-full text-[13px] font-bold transition-all bg-[var(--color-surface-warm)] text-[var(--color-text)] hover:bg-[var(--color-border-light)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {child.name} {(child.allergens.length > 0 || child.customAllergens.length > 0) ? `のアレルゲンを選択` : `(未設定)`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {ALLERGEN_GROUPS.map((group, groupIdx) => (
               <div key={group.label} className={groupIdx > 0 ? "mt-5" : ""}>
                 <p className="text-[11px] font-bold text-[var(--color-subtle)] mb-2 uppercase tracking-wider">
@@ -256,7 +279,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
                   </div>
                 </div>
                 <h3 className="font-extrabold text-[18px] text-[var(--color-text)] mb-2.5 leading-tight tracking-tight text-balance">
-                  {entry.title}
+                  {entry.title.replace("【みんなの知恵袋】", "").trim()}
                 </h3>
                 <p className="text-[13px] text-[var(--color-text-secondary)] leading-[1.7] line-clamp-2 opacity-90">
                   {entry.summary}
@@ -265,18 +288,6 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
                   <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[var(--color-subtle)]">
                     <MessageCircle className="w-4 h-4" />
                     {entry.source_count}件の実体験
-                  </div>
-                  <div className="flex text-[18px] -space-x-1.5">
-                    {Array.from({ length: Math.min(entry.source_count, 3) }).map((_, i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-[var(--color-surface-warm)] flex items-center justify-center">
-                        <span className="text-[10px]">👶</span>
-                      </div>
-                    ))}
-                    {entry.source_count > 3 && (
-                      <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-gray-500">+{entry.source_count - 3}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </Link>

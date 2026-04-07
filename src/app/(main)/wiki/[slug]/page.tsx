@@ -121,7 +121,7 @@ export default function WikiDetailPage() {
       <main className="px-5 py-8 max-w-2xl mx-auto w-full">
         {/* Title Area */}
         <h1 className="text-[28px] font-black tracking-tight text-gray-900 leading-tight mb-4 break-keep text-balance">
-          {entry.title}
+          {entry.title.replace("【みんなの知恵袋】", "").trim()}
         </h1>
         <p className="text-[15px] leading-relaxed text-gray-600 mb-8">
           {entry.summary}
