@@ -127,12 +127,7 @@ export default function WikiDetailPage() {
           {entry.summary}
         </p>
 
-        {/* Official Guideline Minimal Banner */}
-        <a href="https://allergyportal.jp/knowledge/food/" target="_blank" rel="noopener noreferrer" className="block mb-10 p-4 rounded-2xl bg-blue-50/50 border border-blue-100 text-[13px] font-bold text-blue-800 hover:bg-blue-50 transition-colors flex items-center justify-between group">
-          <span className="flex items-center gap-2">
-            🏥 <span className="group-hover:underline">国や学会が提供する基礎知識はこちら</span>
-          </span>
-        </a>
+
 
         {/* Sticky Section Navigation */}
         {entry.sections && entry.sections.length > 1 && (
