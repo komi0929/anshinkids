@@ -187,7 +187,7 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
     );
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (step < 2) {
       setStep(step + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -199,10 +199,14 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
       localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
       localStorage.setItem(ONBOARDING_DONE_KEY, "true");
 
-      syncPreferencesToProfile(prefs).catch(() => { /* skip */ });
-
       setShowAnimation(true);
-      setTimeout(() => onComplete(prefs), 1200);
+      
+      await Promise.all([
+        syncPreferencesToProfile(prefs).catch(() => { /* skip */ }),
+        new Promise(resolve => setTimeout(resolve, 1200))
+      ]);
+
+      onComplete(prefs);
     }
   }
 

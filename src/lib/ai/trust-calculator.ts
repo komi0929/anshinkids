@@ -12,11 +12,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function recalculateTrustScores() {
   const supabase = createAdminClient();
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, total_contributions, total_thanks_received, total_helpful_votes, created_at");
+  let allProfiles: {id: string, total_contributions: number, total_thanks_received: number, total_helpful_votes: number, created_at: string, trust_score: number}[] = [];
+  let pPage = 0;
+  while (true) {
+    const { data: profilesBatch } = await supabase
+      .from("profiles")
+      .select("id, total_contributions, total_thanks_received, total_helpful_votes, created_at, trust_score")
+      .range(pPage * 1000, (pPage + 1) * 1000 - 1);
+    
+    if (!profilesBatch || profilesBatch.length === 0) break;
+    allProfiles = allProfiles.concat(profilesBatch as any[]);
+    pPage++;
+  }
 
-  if (!profiles) return { updated: 0 };
+  if (allProfiles.length === 0) return { updated: 0 };
 
   // Fetch active days for streak bonus (last 30 days)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -38,25 +47,58 @@ export async function recalculateTrustScores() {
   }
 
   let updated = 0;
+  const profileScoreMap: Record<string, number> = {};
 
-  for (const profile of profiles as unknown as {id: string, total_contributions: number, total_thanks_received: number, total_helpful_votes: number, created_at: string}[]) {
+  for (const profile of allProfiles) {
     const contributions = profile.total_contributions || 0;
     const thanks = profile.total_thanks_received || 0;
     const helpfulVotes = profile.total_helpful_votes || 0;
-    // Intentionally removed activeDays to prevent gamification loop
 
     // Egalitarian Paradigm: pure impact sum, no decay, no cap, no 'exam score' mentality.
-    // 1 contribution = 1 impact. 1 thanks = 1 impact. 1 helpful vote = 2 impact.
     const impactSum = contributions + thanks + (helpfulVotes * 2);
     const trustScore = impactSum;
+    profileScoreMap[profile.id] = trustScore;
 
-    await supabase
-      .from("profiles")
-      .update({ trust_score: trustScore })
-      .eq("id", profile.id);
-
-    updated++;
+    // Optional optimization: Only update if changed
+    if (profile.trust_score !== trustScore) {
+      await supabase
+        .from("profiles")
+        .update({ trust_score: trustScore })
+        .eq("id", profile.id);
+      updated++;
+    }
   }
 
-  return { updated };
+  // 2. Compute avg_trust_score for all Wiki Entries using the newly updated profile scores
+  let allWikiEntries: {id: string}[] = [];
+  let wPage = 0;
+  while (true) {
+    const { data: wikiBatch } = await supabase.from("wiki_entries").select("id").range(wPage * 1000, (wPage + 1) * 1000 - 1);
+    if (!wikiBatch || wikiBatch.length === 0) break;
+    allWikiEntries = allWikiEntries.concat(wikiBatch as any[]);
+    wPage++;
+  }
+
+  let wikiUpdated = 0;
+  for (const entry of allWikiEntries) {
+    const { data: sources } = await supabase.from("wiki_sources").select("contributor_id").eq("wiki_entry_id", entry.id);
+    if (sources && sources.length > 0) {
+      let totalScore = 0;
+      let validContributors = 0;
+      const uniqueIds = [...new Set(sources.map(s => s.contributor_id).filter(Boolean))] as string[];
+      for (const cid of uniqueIds) {
+        if (profileScoreMap[cid] !== undefined) {
+          totalScore += profileScoreMap[cid];
+          validContributors++;
+        }
+      }
+      if (validContributors > 0) {
+        const avg = Math.round(totalScore / validContributors);
+        await supabase.from("wiki_entries").update({ avg_trust_score: avg }).eq("id", entry.id);
+        wikiUpdated++;
+      }
+    }
+  }
+
+  return { updated, wikiUpdated };
 }

@@ -95,7 +95,7 @@ export default function NotificationsPage() {
           });
         }
 
-        setNotifications(notifs.sort(() => -1)); // just inverse basically to show mostly recent first conceptually
+        setNotifications(notifs.reverse()); // Use .reverse() instead of flawed sort(() => -1)
       } catch (err) {
         console.error("Failed to load notifications", err);
       } finally {

@@ -1,12 +1,16 @@
 /**
  * Phase 3: Mega-Wiki AI Templates & Section Merger
- * 
+ *
  * 8本のMega-Wikiのセクションごとの階層JSONを推論・マージするロジック。
  */
 
 import { THEME_BY_SLUG, MegaWikiSection, MegaWikiItem } from "@/lib/themes";
 
-export function getExtractionPrompt(themeSlug: string, messagesText: string, existingSectionsTitleList: string): string {
+export function getExtractionPrompt(
+  themeSlug: string,
+  messagesText: string,
+  existingSectionsTitleList: string,
+): string {
   const theme = THEME_BY_SLUG[themeSlug];
   if (!theme) return "";
 
@@ -42,75 +46,99 @@ ${theme.sectionSchema}
  */
 export function mergeMegaWikiSections(
   existingSections: MegaWikiSection[],
-  incomingSections: MegaWikiSection[]
+  incomingSections: MegaWikiSection[],
 ): MegaWikiSection[] {
-  const merged = [...existingSections];
+  const merged = Array.isArray(existingSections) ? [...existingSections] : [];
 
-  for (const incSec of incomingSections) {
+  for (const incSec of (Array.isArray(incomingSections) ? incomingSections : [])) {
+    if (!incSec || typeof incSec !== 'object') continue;
+    const heading = String(incSec.heading || "その他");
+    const incItems = Array.isArray(incSec.items) ? incSec.items : [];
+
     // 既存セクションを探す
-    const existingSecIndex = merged.findIndex(s => s.heading === incSec.heading);
-    
+    const existingSecIndex = merged.findIndex(
+      (s) => (s.heading || "その他") === heading,
+    );
+
     if (existingSecIndex === -1) {
       // 新規セクションならそのまま追加
-      merged.push({ ...incSec, items: incSec.items.map(ensureItemDefaults) });
+      merged.push({ ...incSec, heading, items: incItems.map(ensureItemDefaults) });
     } else {
       // 既存セクション内でのアイテムマージ
       const existingSec = merged[existingSecIndex];
-      const mergedItems = [...existingSec.items];
+      const mergedItems = Array.isArray(existingSec.items) ? [...existingSec.items] : [];
 
-      for (const incItem of incSec.items) {
-        const existingItemIndex = mergedItems.findIndex(i => i.title === incItem.title);
+      for (const incItem of incItems) {
+        if (!incItem || typeof incItem !== 'object') continue;
+        const incTitle = String((incItem as Record<string, unknown>).title || "");
+        if (!incTitle) continue;
+
+        const existingItemIndex = mergedItems.findIndex(
+          (i) => i.title === incTitle,
+        );
         if (existingItemIndex === -1) {
           // 新規アイテム
-          mergedItems.push(ensureItemDefaults(incItem));
+          mergedItems.push(ensureItemDefaults(incItem as Record<string, unknown>));
         } else {
           // 既存アイテムとの結合・スコア加算
           const extItem = mergedItems[existingItemIndex];
-          
+          const extItemRec = extItem as Record<string, unknown>;
+          const incItemRec = incItem as Record<string, unknown>;
+
           mergedItems[existingItemIndex] = {
             ...extItem, // 既存のフィールドを保持
             ...incItem, // 新しいスカラー値を上書き
-            content: mergeText(extItem.content, incItem.content),
-            mention_count: (extItem.mention_count || 1) + (incItem.mention_count || 1),
-            heat_score: (extItem.heat_score || 0) + (incItem.heat_score || 0),
+            title: incTitle,
+            content: mergeText(String(extItem.content || ""), String(incItemRec.content || "")),
+            mention_count:
+              (Number(extItem.mention_count) || 1) + (Number(incItemRec.mention_count) || 1),
+            heat_score: (Number(extItem.heat_score) || 0) + (Number(incItemRec.heat_score) || 0),
             // 配列系の結合
-            tips: mergeArrays(extItem.tips, incItem.tips),
-            reviews: mergeArrays(extItem.reviews, incItem.reviews),
-            is_recommended: (extItem.heat_score || 0) + (incItem.heat_score || 0) > 10 || extItem.is_recommended || incItem.is_recommended,
+            tips: mergeArrays(extItemRec.tips, incItemRec.tips),
+            reviews: mergeArrays(extItemRec.reviews, incItemRec.reviews),
+            is_recommended:
+              (Number(extItem.heat_score) || 0) + (Number(incItemRec.heat_score) || 0) > 10 ||
+              !!extItem.is_recommended ||
+              !!incItemRec.is_recommended,
           };
         }
       }
-      
+
       // アイテムをスコア順（熱量）でソート
-      mergedItems.sort((a, b) => (b.heat_score || 0) - (a.heat_score || 0));
-      merged[existingSecIndex] = { ...existingSec, items: mergedItems };
+      mergedItems.sort((a, b) => (Number(b.heat_score) || 0) - (Number(a.heat_score) || 0));
+      merged[existingSecIndex] = { ...existingSec, heading, items: mergedItems };
     }
   }
 
   // セクション自体は名前でソート（または定義順）
-  merged.sort((a, b) => a.heading.localeCompare(b.heading, 'ja'));
+  merged.sort((a, b) => String(a.heading || "").localeCompare(String(b.heading || ""), "ja"));
   return merged;
 }
 
-function ensureItemDefaults(item: Record<string, unknown>): MegaWikiItem {
+function ensureItemDefaults(item: unknown): MegaWikiItem {
+  const rec = (item || {}) as Record<string, unknown>;
   return {
-    ...item,
-    title: String(item.title || ""),
-    content: String(item.content || ""),
-    mention_count: Number(item.mention_count || 1),
-    heat_score: Number(item.heat_score || 0),
-    is_recommended: !!item.is_recommended,
+    ...rec,
+    title: String(rec.title || "無題"),
+    content: String(rec.content || ""),
+    mention_count: Number(rec.mention_count || 1),
+    heat_score: Number(rec.heat_score || 0),
+    is_recommended: !!rec.is_recommended,
   };
 }
 
 function mergeText(a: string, b: string): string {
-  if (!a) return b || "";
-  if (!b) return a || "";
-  
+  const strA = String(a || "");
+  const strB = String(b || "");
+  if (!strA) return strB;
+  if (!strB) return strA;
+
   // Clean, split, and deduplicate sentences
-  const sentences = [...a.split(/[。\n]+/), ...b.split(/[。\n]+/)].map(s => s.trim()).filter(Boolean);
+  const sentences = [...strA.split(/[。\n]+/), ...strB.split(/[。\n]+/)]
+    .map((s) => s.trim())
+    .filter(Boolean);
   const uniqueSentences = Array.from(new Set(sentences));
-  
+
   // Cap length to prevent infinite growth (max ~3-4 key sentences)
   const capped = uniqueSentences.slice(0, 4);
   return capped.join("。") + (capped.length > 0 ? "。" : "");
@@ -120,14 +148,15 @@ function mergeArrays(a: unknown, b: unknown): unknown[] {
   const arrA = Array.isArray(a) ? a : [];
   const arrB = Array.isArray(b) ? b : [];
   // 重複排除（JSON比較）
-  const extSet = new Set(arrA.map(v => typeof v === 'string' ? v : JSON.stringify(v)));
+  const extSet = new Set(
+    arrA.map((v) => (typeof v === "string" ? v : JSON.stringify(v))),
+  );
   const merged = [...arrA];
   for (const item of arrB) {
-    const key = typeof item === 'string' ? item : JSON.stringify(item);
+    const key = typeof item === "string" ? item : JSON.stringify(item);
     if (!extSet.has(key)) {
       merged.push(item);
     }
   }
   return merged;
 }
-

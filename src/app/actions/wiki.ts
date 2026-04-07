@@ -157,6 +157,24 @@ export async function voteWikiHelpful(entryId: string): Promise<ActionResponse> 
     }
     if (error) throw error;
 
+    // Increment Wiki Entry helpful count
+    const { data: wiki } = await supabase.from("wiki_entries").select("helpful_count").eq("id", validEntry.data).single();
+    if (wiki) {
+      await supabase.from("wiki_entries").update({ helpful_count: (wiki.helpful_count || 0) + 1 }).eq("id", validEntry.data);
+    }
+
+    // Distribute helpful votes to contributors
+    const { data: sources } = await supabase.from("wiki_sources").select("contributor_id").eq("wiki_entry_id", validEntry.data);
+    if (sources && sources.length > 0) {
+      const uniqueContributorIds = [...new Set(sources.map(s => s.contributor_id).filter(Boolean))] as string[];
+      for (const cid of uniqueContributorIds) {
+        const { data: prof } = await supabase.from("profiles").select("total_helpful_votes").eq("id", cid).single();
+        if (prof) {
+          await supabase.from("profiles").update({ total_helpful_votes: (prof.total_helpful_votes || 0) + 1 }).eq("id", cid);
+        }
+      }
+    }
+
     revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {

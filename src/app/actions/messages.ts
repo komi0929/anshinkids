@@ -3,6 +3,7 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_cache } from "next/cache";
+import { THEME_BY_SLUG } from "@/lib/themes";
 
 // ─── Topic CRUD ───────────────────────────────────────────
 
@@ -215,6 +216,21 @@ export async function postTopicMessage(
     });
     if (error) throw error;
 
+    // Compound Asset Loop: Record contribution metrics
+    const { data: prof } = await supabase.from("profiles").select("total_contributions").eq("id", user.id).single();
+    if (prof) {
+      await supabase.from("profiles").update({ total_contributions: (prof.total_contributions || 0) + 1 }).eq("id", user.id);
+    }
+    
+    // Streak recording
+    const today = new Date().toISOString().split("T")[0];
+    const { data: streak } = await supabase.from("contribution_days").select("id, post_count").eq("user_id", user.id).eq("active_date", today).maybeSingle();
+    if (streak) {
+      await supabase.from("contribution_days").update({ post_count: (streak.post_count || 0) + 1 }).eq("id", streak.id);
+    } else {
+      await supabase.from("contribution_days").insert({ user_id: user.id, active_date: today, post_count: 1 });
+    }
+
     // Extend life of all messages in this topic (chain extension rule)
     const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
     await supabase
@@ -395,12 +411,29 @@ export async function deleteMessage(
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
+    // Retrieve author id and topic id before deleting to decrement stats
+    const { data: msg } = await supabase.from("messages").select("user_id, topic_id").eq("id", messageId).single();
+
     const { error } = await supabase
       .from("messages")
       .delete()
       .eq("id", messageId)
       .eq("user_id", user.id);
     if (error) throw error;
+
+    // Decrement total_contributions strictly on successful delete
+    if (msg?.user_id) {
+       const { data: prof } = await supabase.from("profiles").select("total_contributions").eq("id", msg.user_id).single();
+       if (prof && prof.total_contributions > 0) {
+         await supabase.from("profiles").update({ total_contributions: prof.total_contributions - 1 }).eq("id", msg.user_id);
+       }
+    }
+    
+    // Update talk_topics message_count
+    if (msg?.topic_id) {
+       const { count } = await supabase.from("messages").select("id", { count: "exact", head: true }).eq("topic_id", msg.topic_id);
+       await supabase.from("talk_topics").update({ message_count: count ?? 0 }).eq("id", msg.topic_id);
+    }
     revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
@@ -441,6 +474,19 @@ export async function sendThanks(
       throw error;
     }
 
+    // Compound Asset Loop: Record thanks metrics for the author and increment message thanks count
+    if (msg.user_id) {
+      const { data: prof } = await supabase.from("profiles").select("total_thanks_received").eq("id", msg.user_id).single();
+      if (prof) {
+        await supabase.from("profiles").update({ total_thanks_received: (prof.total_thanks_received || 0) + 1 }).eq("id", msg.user_id);
+      }
+    }
+    
+    const { data: currentMsg } = await supabase.from("messages").select("thanks_count").eq("id", validMessage.data).single();
+    if (currentMsg) {
+      await supabase.from("messages").update({ thanks_count: (currentMsg.thanks_count || 0) + 1 }).eq("id", validMessage.data);
+    }
+
     if (msg.topic_id) {
       const newExpiry = new Date(
         Date.now() + 72 * 60 * 60 * 1000
@@ -472,12 +518,27 @@ export async function removeThanks(
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
+    // Retrieve message author to decrement their thanks count
+    const { data: msg } = await supabase.from("messages").select("user_id").eq("id", messageId).single();
+
     const { error } = await supabase
       .from("message_thanks")
       .delete()
       .eq("message_id", messageId)
       .eq("user_id", user.id);
     if (error) throw error;
+
+    if (msg?.user_id) {
+       const { data: prof } = await supabase.from("profiles").select("total_thanks_received").eq("id", msg.user_id).single();
+       if (prof && prof.total_thanks_received > 0) {
+         await supabase.from("profiles").update({ total_thanks_received: prof.total_thanks_received - 1 }).eq("id", msg.user_id);
+       }
+    }
+
+    const { data: currentMsg } = await supabase.from("messages").select("thanks_count").eq("id", validMessage.data).single();
+    if (currentMsg && currentMsg.thanks_count > 0) {
+      await supabase.from("messages").update({ thanks_count: currentMsg.thanks_count - 1 }).eq("id", validMessage.data);
+    }
     revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {

@@ -53,7 +53,7 @@ export async function askConcierge(
   }
 
   const questionKeywords = combinedQuery
-    .replace(/[？?！!。、\s]+/g, " ")
+    .replace(/[？?！!。、,，\s]+/g, " ")
     .split(" ")
     .filter(w => w.length >= 2)
     .slice(0, 5);
