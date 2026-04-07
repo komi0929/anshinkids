@@ -79,10 +79,17 @@ export async function getMyProfile() {
 
     if (!profile && !queryError) {
       // Profile not found — create one
-      const displayName = user.user_metadata?.full_name
-        || user.user_metadata?.name
-        || "あんしんユーザー";
-      const avatarUrl = user.user_metadata?.avatar_url || null;
+      const displayName = 
+        user.user_metadata?.custom_claims?.name ||
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.user_metadata?.display_name ||
+        "ゲスト";
+      const avatarUrl = 
+        user.user_metadata?.custom_claims?.picture ||
+        user.user_metadata?.avatar_url ||
+        user.user_metadata?.picture || 
+        null;
 
       const { data: newProfile, error: insertError } = await supabase
         .from("profiles")

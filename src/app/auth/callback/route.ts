@@ -47,12 +47,14 @@ export async function GET(request: Request) {
         if (!profile) {
           // Create profile from LINE user metadata
           const displayName =
+            user.user_metadata?.custom_claims?.name ||
             user.user_metadata?.full_name ||
             user.user_metadata?.name ||
             user.user_metadata?.display_name ||
             user.user_metadata?.preferred_username ||
-            "あんしんユーザー";
+            "ゲスト";
           const avatarUrl =
+            user.user_metadata?.custom_claims?.picture ||
             user.user_metadata?.avatar_url ||
             user.user_metadata?.picture ||
             null;

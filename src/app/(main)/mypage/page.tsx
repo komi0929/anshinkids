@@ -717,7 +717,7 @@ export default function MyPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {["👦", "👧", "👨", "👩", "🐻", "🐶", "🐱", "🐰", "🐼", "🐨"].map(emoji => (
+                {["👦", "👧", "👨", "👩", "🐻", "🐶", "🐱", "🐰", "🐼", "🐨", "🦊", "🦁"].map(emoji => (
                   <button key={emoji} onClick={() => setEditAvatar(emoji)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${editAvatar === emoji ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10" : "border-[var(--color-border-light)] bg-white hover:bg-[var(--color-surface-warm)]"}`}>
                     {emoji}
                   </button>
@@ -733,7 +733,7 @@ export default function MyPage() {
                 onChange={e => setEditName(e.target.value)}
                 maxLength={20}
                 className="w-full text-[14px] px-4 py-3 rounded-xl border border-[var(--color-border-light)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
-                placeholder="あんしんユーザー"
+                placeholder="表示名（例：ゆいママ）"
               />
             </div>
 
