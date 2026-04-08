@@ -176,7 +176,8 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
       if (thanksData) thankedIds = thanksData.map((t) => t.message_id);
     }
     const enhancedData = recentData.map((msg) => {
-      const prof = msg.profiles as unknown as { display_name?: string, avatar_url?: string, trust_score?: number, allergen_tags?: string[] };
+      const profs = msg.profiles as any;
+      const prof = Array.isArray(profs) ? profs[0] : profs;
       return {
         ...msg,
         has_thanked: thankedIds.includes(msg.id),
@@ -439,17 +440,21 @@ export async function deleteMessage(
     // Retrieve author id and topic id before deleting to decrement stats
     const { data: msg } = await supabase.from("messages").select("user_id, topic_id").eq("id", messageId).single();
 
-    const { data: delResult, error } = await supabase
+    if (!msg || msg.user_id !== user.id) {
+      return { success: false, error: "メッセージが見つからないか削除権限がありません" };
+    }
+
+    const adminClient = createAdminClient();
+    if (!adminClient) {
+      return { success: false, error: "サーバー設定（Admin権限）が不足しています" };
+    }
+    const { error } = await adminClient
       .from("messages")
       .delete()
-      .eq("id", messageId)
-      .eq("user_id", user.id)
-      .select();
+      .eq("id", messageId);
+      
     if (error) throw error;
-    if (!delResult || delResult.length === 0) throw new Error("メッセージが見つからないか削除権限がありません");
 
-    // RLS Bypass required for aggregate deductions
-    const adminClient = createAdminClient();
     if (adminClient) {
       if (msg?.user_id) {
          const { data: prof } = await adminClient.from("profiles").select("total_contributions").eq("id", msg.user_id).single();

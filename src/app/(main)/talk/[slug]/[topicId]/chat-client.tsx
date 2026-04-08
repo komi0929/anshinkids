@@ -219,8 +219,14 @@ export default function ChatClient({
 
   async function handleDelete(messageId: string) {
     if (!confirm("本当にこの投稿を削除しますか？")) return;
+    const backupMessages = [...messages];
     setMessages((prev) => prev.filter((m) => m.id !== messageId));
-    await deleteMessage(messageId);
+    
+    const result = await deleteMessage(messageId);
+    if (!result.success) {
+      setMessages(backupMessages);
+      alert(result.error || "削除に失敗しました");
+    }
   }
 
   const handleThanks = useCallback(async (messageId: string, event?: React.MouseEvent) => {
@@ -289,13 +295,15 @@ export default function ChatClient({
     "bg-[#E0C8C8]", // rose
   ];
 
-  function getAvatarBg(user_id: string) {
+  function getAvatarBg(user_id: string | null) {
+    if (!user_id || typeof user_id !== 'string') return AVATAR_COLORS[0];
     const hash = user_id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
     return AVATAR_COLORS[hash % AVATAR_COLORS.length];
   }
 
-  function getAvatarInitial(user_id: string, name: string): string {
+  function getAvatarInitial(user_id: string | null, name: string): string {
     if (name && name !== "あんしんユーザー" && name !== "参加者") return name[0];
+    if (!user_id) return "?";
     return anonymousLabels.get(user_id) || "?";
   }
 
