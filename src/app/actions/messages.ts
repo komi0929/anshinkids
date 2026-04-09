@@ -58,7 +58,8 @@ export async function getTalkTopics(roomId: string) {
     if (error) throw error;
     
     const enhancedData = data?.map(t => {
-      const prof = t.profiles as unknown as { display_name?: string, avatar_url?: string };
+      const profs = t.profiles;
+      const prof = (Array.isArray(profs) ? profs[0] : profs) as { display_name?: string, avatar_url?: string } | null;
       return {
         ...t,
         creator_name: prof?.display_name || "参加者",
@@ -176,8 +177,13 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
       if (thanksData) thankedIds = thanksData.map((t) => t.message_id);
     }
     const enhancedData = recentData.map((msg) => {
-      const profs = msg.profiles as any;
-      const prof = Array.isArray(profs) ? profs[0] : profs;
+      const profs = msg.profiles;
+      const prof = (Array.isArray(profs) ? profs[0] : profs) as {
+        display_name?: string;
+        avatar_url?: string;
+        trust_score?: number;
+        allergen_tags?: string[];
+      } | null;
       return {
         ...msg,
         has_thanked: thankedIds.includes(msg.id),
