@@ -540,8 +540,7 @@ export async function removeThanks(
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "ログインが必要です" };
-    // Retrieve message author to decrement their thanks count
-    const { data: msg } = await supabase.from("messages").select("user_id").eq("id", messageId).single();
+    // Retrieve message author to decrement their thanks count (handled by trigger)
 
     const { data: rmResult, error } = await supabase
       .from("message_thanks")

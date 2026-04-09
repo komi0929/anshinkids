@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getGeminiFlash, SYSTEM_PROMPTS } from "@/lib/ai/gemini";
 import { getExtractionPrompt, mergeMegaWikiSections } from "@/lib/wiki/article-templates";
 import { THEME_BY_SLUG, MegaWikiSection } from "@/lib/themes";
-import { revalidateTag, revalidatePath } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 export async function runBatchExtraction() {
   const supabase = createAdminClient();
@@ -267,14 +267,12 @@ export async function runBatchExtraction() {
               console.warn("[Batch] Failed to log wiki_sources (ignoring):", err);
             }
 
-            let saveSuccessful = false;
             try {
               const { error: markErr } = await supabase
                 .from("messages")
                 .update({ ai_extracted: true })
                 .in("id", chunk.map(m => m.id));
               if (markErr) throw markErr;
-              saveSuccessful = true;
             } catch (err) {
                console.error("[Batch] Failed to mark messages as extracted:", err);
                // Fatal error for this chunk: rollback currentSections mutation to prevent infinite duplicate extraction loops

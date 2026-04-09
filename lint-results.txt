@@ -1,0 +1,172 @@
+﻿
+> anshin-kids@0.1.0 lint
+> eslint
+
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\e2e\mobile_audit.spec.ts
+  2:13  warning  'fs' is defined but never used    @typescript-eslint/no-unused-vars
+  3:13  warning  'path' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\fix.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\parse_all_walkthroughs.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\parse_walkthroughs.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\playwright.config.ts
+  1:24  warning  'devices' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\apply-phase10.mjs
+  7:10  warning  'readFileSync' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\audit-screenshots.js
+  1:19  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\clear_talk_data.js
+   1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  16:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\query_entries.js
+  1:27  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  4:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\query_logs.js
+  1:27  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  4:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\reseed_mega_wikis.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\seed-dummy-talk.ts
+  28:9  warning  'dummyAuthUserId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\simulate-extraction.mjs
+  454:15  warning  'slug' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\test-batch.js
+  1:27  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  4:31  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\scripts\test-gemini.js
+  1:27  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  3:44  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  4:33  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\(main)\concierge\concierge-client.tsx
+   5:10  warning  'Send' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  31:19  warning  'setIsGuest' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  41:19  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\(main)\concierge\concierge-client.tsx:41:19
+  39 |     try {
+  40 |       const stored = sessionStorage.getItem("anshin_concierge_messages");
+> 41 |       if (stored) setMessages(JSON.parse(stored));
+     |                   ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |       const sid = sessionStorage.getItem("anshin_concierge_session");
+  43 |       if (sid) setSessionId(sid);
+  44 |     } catch { /* empty */ }  react-hooks/set-state-in-effect
+  54:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+  99:18  warning  'handleSend' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\(main)\mypage\mypage-client.tsx
+    4:47  warning  'Pencil' is defined but never used        @typescript-eslint/no-unused-vars
+   81:70  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:75  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:94  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\(main)\talk\[slug]\[topicId]\chat-client.tsx
+   85:24  warning  'setTopicSummary' is assigned a value but never used                                                                                                                             @typescript-eslint/no-unused-vars
+  488:6   warning  React Hook useMemo has missing dependencies: 'getAnonymousName', 'handleDelete', 'renderAvatar', and 'roomInfo?.icon_emoji'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\(main)\wiki\wiki-client.tsx
+   4:58  warning  'Bookmark' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  72:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\(main)\wiki\wiki-client.tsx:72:5
+  70 |
+  71 |   useEffect(() => {
+> 72 |     setUserPrefs(getUserPreferences());
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  73 |   }, []);
+  74 |
+  75 |  react-hooks/set-state-in-effect
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\about\page.tsx
+  3:10  warning  'ArrowLeft' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\actions\messages.ts
+  544:19  warning  'msg' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\actions\mypage.ts
+   36:12  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  167:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\actions\wiki.ts
+   3:44  warning  'createAdminClient' is defined but never used  @typescript-eslint/no-unused-vars
+   4:10  warning  'z' is defined but never used                  @typescript-eslint/no-unused-vars
+  78:74  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\api\clear-data\route.ts
+  18:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\api\og\sos\route.tsx
+  177:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\features\page.tsx
+  3:20   warning  'MessageCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  3:136  warning  'Trash2' is defined but never used         @typescript-eslint/no-unused-vars
+  3:144  warning  'Bell' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\app\share\talk\[id]\page.tsx
+  26:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\components\ui\ImpactToast.tsx
+  21:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\components\ui\ImpactToast.tsx:21:7
+  19 |
+  20 |     if (currentHelpfulVotes > lastSeen) {
+> 21 |       setDelta(currentHelpfulVotes - lastSeen);
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  22 |       setShow(true);
+  23 |       // Update local storage so we don't show it again until score increases
+  24 |       localStorage.setItem(key, currentHelpfulVotes.toString());  react-hooks/set-state-in-effect
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\lib\ai\batch-processor.ts
+    5:10  warning  'revalidateTag' is defined but never used            @typescript-eslint/no-unused-vars
+  277:15  warning  'saveSuccessful' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\hisak\.gemini\antigravity\scratch\anshin-kids\src\lib\supabase\admin.ts
+  2:10  warning  'Database' is defined but never used  @typescript-eslint/no-unused-vars
+
+笨・60 problems (36 errors, 24 warnings)
+

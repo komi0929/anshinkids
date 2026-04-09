@@ -1,6 +1,6 @@
 import { BackButton } from "@/components/ui/back-button";
 import Link from "next/link";
-import { ArrowLeft, Check, Shield, ChevronRight, Sparkles, BookOpen, Heart, TrendingUp } from "@/components/icons";
+import { Check, Shield, ChevronRight, Sparkles, BookOpen, Heart, TrendingUp } from "@/components/icons";
 
 const STEPS = [
   {

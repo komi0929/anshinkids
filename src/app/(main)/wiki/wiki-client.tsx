@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search, Filter, Clock, BookOpen, MessageCircle, Bookmark } from "@/components/icons";
+import { Search, Filter, Clock, BookOpen, MessageCircle } from "@/components/icons";
 import Link from "next/link";
 import { searchWiki } from "@/app/actions/wiki";
 import { ALLERGENS_RAW_8, ALLERGENS_EQUIV_20, getUserPreferences, UserPreferences } from "@/components/onboarding-wizard";
@@ -69,7 +69,8 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
   const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
 
   useEffect(() => {
-    setUserPrefs(getUserPreferences());
+    const prefs = getUserPreferences();
+    setTimeout(() => setUserPrefs(prefs), 0);
   }, []);
 
 

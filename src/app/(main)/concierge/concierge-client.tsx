@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Send, Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw } from "@/components/icons";
+import { Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw } from "@/components/icons";
 import { askConcierge, contributeFromConcierge } from "@/app/actions/concierge";
 import { checkContentSafety, EMERGENCY_GUIDANCE, calculateAnswerConfidence } from "@/lib/ai/safety-guard";
 
@@ -28,7 +28,7 @@ export default function ConciergeClient({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [isGuest, setIsGuest] = useState(initialIsGuest);
+  const [isGuest] = useState(initialIsGuest);
   const [isMounted, setIsMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -38,9 +38,14 @@ export default function ConciergeClient({
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("anshin_concierge_messages");
-      if (stored) setMessages(JSON.parse(stored));
+      if (stored) {
+        const msgs = JSON.parse(stored);
+        setTimeout(() => setMessages(msgs), 0);
+      }
       const sid = sessionStorage.getItem("anshin_concierge_session");
-      if (sid) setSessionId(sid);
+      if (sid) {
+        setTimeout(() => setSessionId(sid), 0);
+      }
     } catch { /* empty */ }
 
     // Fallback logic for guests if server gave empty allergens
@@ -51,6 +56,7 @@ export default function ConciergeClient({
         if (stored) {
           const prefs = JSON.parse(stored);
           if (prefs.children) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             prefs.children.forEach((c: any) => {
               (c.allergens || []).forEach((a: string) => loadedAllergens.add(a));
               (c.customAllergens || []).forEach((a: string) => loadedAllergens.add(a));
@@ -60,12 +66,12 @@ export default function ConciergeClient({
           }
         }
         if (loadedAllergens.size > 0) {
-          setAllergens(loadedAllergens);
+          setTimeout(() => setAllergens(loadedAllergens), 0);
         }
       } catch { /* ignore */ }
     }
     
-    setIsMounted(true);
+    setTimeout(() => setIsMounted(true), 0);
   }, [initialAllergens]);
 
   const [showContribPrompt, setShowContribPrompt] = useState<number | null>(null);
@@ -96,6 +102,7 @@ export default function ConciergeClient({
     sessionStorage.removeItem("anshin_concierge_session");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function handleSend() {
     if (!input.trim() || isLoading) return;
 

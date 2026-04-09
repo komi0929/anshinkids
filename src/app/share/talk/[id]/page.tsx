@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const text = message.content.substring(0, 80);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roomName = (message.talk_rooms as any)?.name || "コミュニティ";
   // Point to the new dynamic API endpoint for OGP
   const ogImageUrl = `/api/og/sos?text=${encodeURIComponent(text)}`;
@@ -66,7 +67,9 @@ export default async function SharePostPage({ params }: Props) {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roomSlug = (message.talk_rooms as any)?.slug || "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roomName = (message.talk_rooms as any)?.name || "";
 
   return (

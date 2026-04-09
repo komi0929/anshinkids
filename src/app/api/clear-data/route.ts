@@ -15,7 +15,7 @@ export async function GET() {
     await supabase.from("wiki_entries").delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
     return NextResponse.json({ success: true, message: "Cleared successfully" });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message });
+  } catch (err) {
+    return NextResponse.json({ success: false, error: err instanceof Error ? err.message : "Unknown error" });
   }
 }

@@ -1,7 +1,6 @@
 "use server";
 
-import { createClient, createStaticClient, createAdminClient } from "@/lib/supabase/server";
-import { z } from "zod";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_noStore as noStore, unstable_cache } from "next/cache";
 
@@ -75,6 +74,7 @@ export async function searchWiki(query: string, filters?: { category?: string; a
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getWikiEntry(slug: string): Promise<ActionResponse<any>> {
   try {
     const validSlug = CommonSchemas.PageSlug.safeParse(slug);

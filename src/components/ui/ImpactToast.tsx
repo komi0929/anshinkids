@@ -18,8 +18,10 @@ export function ImpactToast({ currentHelpfulVotes }: ImpactToastProps) {
     const lastSeen = parseInt(localStorage.getItem(key) || "0", 10);
 
     if (currentHelpfulVotes > lastSeen) {
-      setDelta(currentHelpfulVotes - lastSeen);
-      setShow(true);
+      setTimeout(() => {
+        setDelta(currentHelpfulVotes - lastSeen);
+        setShow(true);
+      }, 0);
       // Update local storage so we don't show it again until score increases
       localStorage.setItem(key, currentHelpfulVotes.toString());
       

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, BookOpen, TrendingUp, LogOut, Pencil, Check, Loader2, Sparkles, Settings, X, Share } from "@/components/icons";
+import { Heart, BookOpen, TrendingUp, LogOut, Check, Loader2, Sparkles, Settings, X, Share } from "@/components/icons";
 import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
 import { motion } from "framer-motion";
 
@@ -78,6 +78,7 @@ interface BookmarkData {
   wiki_entries: { id: string; title: string; slug: string; category: string };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function MyPageClient({ initialData }: { initialData: any }) {
   const [profile, setProfile] = useState<Profile | null>(initialData?.data?.profile || null);
   const [contributions, setContributions] = useState<Contribution[]>(initialData?.data?.contributions || []);
@@ -97,7 +98,9 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
 
   // Profile Basic Info Edit Modal
   const [showProfileEdit, setShowProfileEdit] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editName, setEditName] = useState((initialData?.data?.profile as any)?.display_name || "");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editAvatar, setEditAvatar] = useState<string | null>((initialData?.data?.profile as any)?.avatar_url || null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -109,7 +112,9 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       const d = result.data;
       if (d.profile) {
         setProfile(d.profile as unknown as Profile);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setEditName((d.profile as any).display_name || "");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setEditAvatar((d.profile as any).avatar_url);
       }
       setBookmarks(d.bookmarks as unknown as BookmarkData[]);

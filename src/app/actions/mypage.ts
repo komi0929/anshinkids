@@ -33,7 +33,7 @@ export async function getFullMyPageData() {
         streak: streakRes.success ? streakRes.data : null
       }
     }
-  } catch (err) {
+  } catch {
     return { success: false, error: "データ一括取得に失敗しました", data: null };
   }
 }
@@ -164,6 +164,7 @@ export async function updateMyProfile(updates: {
 
     const { data: updatedData, error } = await supabase
       .from("profiles")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update(payload as any)
       .eq("id", user.id)
       .select();

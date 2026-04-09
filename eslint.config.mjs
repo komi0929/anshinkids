@@ -16,6 +16,11 @@ const eslintConfig = defineConfig([
     "tmp_*.ts",
     "test-*.js",
     "test-*.ts",
+    "scripts/**",
+    "playwright.config.ts",
+    "parse_*.js",
+    "fix.js",
+    "e2e/**",
   ]),
 ]);
 

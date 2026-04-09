@@ -174,8 +174,8 @@ export async function GET(request: Request) {
         ] : undefined,
       }
     );
-  } catch (e: any) {
-    console.error(`OG image generation failed: ${e.message}`);
+  } catch (e) {
+    console.error(`OG image generation failed: ${e instanceof Error ? e.message : 'Unknown Error'}`);
     return new Response('Failed to generate image', { status: 500 });
   }
 }

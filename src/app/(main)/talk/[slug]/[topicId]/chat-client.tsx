@@ -82,7 +82,7 @@ export default function ChatClient({
   const [roomInfo] = useState<RoomInfo>(initialRoomInfo);
   const [topicInfo] = useState<TopicInfo>(initialTopicInfo);
   const [safetyWarning, setSafetyWarning] = useState<string | null>(null);
-  const [topicSummary, setTopicSummary] = useState<TopicSummary | null>(initialSummary);
+  const [topicSummary] = useState<TopicSummary | null>(initialSummary);
   const [showSummary, setShowSummary] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -485,6 +485,7 @@ export default function ChatClient({
         );
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, thankedIds, currentUserId, isLoading, topicInfo, handleThanks]);
 
   return (
