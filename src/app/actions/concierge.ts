@@ -18,15 +18,15 @@ export async function askConcierge(sessionId: string | null, question: string, c
       if (userId) {
         const profileResponse = await getMyProfile();
         if (profileResponse.success && profileResponse.data) {
-          const profile = profileResponse.data as unknown as { allergen_tags?: string[], children_profiles?: { ageGroup?: string }[], trust_score?: number };
+          const safeProfile = profileResponse.data as Record<string, unknown>;
           // 1. アレルゲンの抽出
-          const allergens: string[] = profile.allergen_tags || [];
+          const allergens: string[] = Array.isArray(safeProfile.allergen_tags) ? safeProfile.allergen_tags : [];
 
           // 2. 年齢情報の抽出
           let childrenStr = "お子様";
-          const childrenProfiles = profile.children_profiles;
+          const childrenProfiles = safeProfile.children_profiles;
           if (childrenProfiles && Array.isArray(childrenProfiles) && childrenProfiles.length > 0) {
-             const groups = childrenProfiles.map(c => c.ageGroup).filter(Boolean) as string[];
+             const groups = (childrenProfiles as Record<string, unknown>[]).map(c => c.ageGroup).filter(Boolean) as string[];
              if (groups.length > 0) {
                childrenStr = groups.map(g => {
                  if (g === '0-1') return '離乳食期(0-1歳)のお子様';
@@ -39,7 +39,8 @@ export async function askConcierge(sessionId: string | null, question: string, c
           }
 
           // 3. コミュニティ参加情報（ランク付けしない）
-          const memberStatus = (profile.trust_score || 0) > 0 ? "体験を共有してくれている参加者" : "コミュニティ参加者";
+          const trustScore = typeof safeProfile.trust_score === "number" ? safeProfile.trust_score : 0;
+          const memberStatus = trustScore > 0 ? "体験を共有してくれている参加者" : "コミュニティ参加者";
           
           finalPayload = `【相談者のコンテキスト】\n- 対象: ${childrenStr}\n- アレルゲン: ${allergens.length > 0 ? allergens.join("・") : "登録なし"}\n- アカウント状態: ${memberStatus}`;
         }

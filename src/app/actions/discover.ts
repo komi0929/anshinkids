@@ -588,7 +588,9 @@ export async function getKnowledgeRipple(wikiSlug: string) {
       .order("extracted_at", { ascending: true });
 
     const contributors = (sources || []).map(s => {
-      const prof = s.profiles as unknown as { display_name?: string, trust_score?: number };
+      // Supabase join might return an array or object depending on schema
+      const profData = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
+      const prof = profData as { display_name?: string, trust_score?: number } | undefined;
       return {
         extractedAt: s.extracted_at,
         trustScore: s.contributor_trust_score,

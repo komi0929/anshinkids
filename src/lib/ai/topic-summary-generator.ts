@@ -158,26 +158,30 @@ ${conversationText}
     }
 
     // 6. topic_summaries テーブルに upsert
+    const safeKeyPoints = Array.isArray(parsed.key_points) ? parsed.key_points : (parsed.key_points ? [String(parsed.key_points)] : ["要約データを取得できませんでした"]);
+    const safeProducts = Array.isArray(parsed.recommended_products) ? parsed.recommended_products : [];
+    const safeTips = Array.isArray(parsed.tips) ? parsed.tips : [];
+    const safeAllergens = Array.isArray(parsed.allergen_tags) ? parsed.allergen_tags : (parsed.allergen_tags ? [String(parsed.allergen_tags)] : []);
+
     const summaryData = {
       topic_id: topicId,
-      summary_snippet: parsed.summary_snippet,
+      summary_snippet: parsed.summary_snippet || "要約を生成しました。",
       full_summary: {
-        key_points: parsed.key_points,
-        recommended_products: parsed.recommended_products || [],
-        tips: parsed.tips || [],
+        key_points: safeKeyPoints,
+        recommended_products: safeProducts,
+        tips: safeTips,
       },
-      allergen_tags: parsed.allergen_tags,
+      allergen_tags: safeAllergens,
       source_count: messages.length,
       last_generated_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
     // Use raw SQL-style upsert since topic_summaries isn't in generated types
-    const { error: upsertErr } = await (supabase as unknown as {
-      from: (t: string) => {
-        upsert: (d: typeof summaryData, o: { onConflict: string }) => Promise<{ error: unknown }>;
-      };
-    }).from("topic_summaries").upsert(summaryData, { onConflict: "topic_id" });
+    // Use properly typed db client if available, or direct insert
+    const { error: upsertErr } = await supabase
+      .from("topic_summaries")
+      .upsert(summaryData, { onConflict: "topic_id" });
 
     if (upsertErr) {
       console.error("[generateTopicSummary] Upsert error:", upsertErr);
@@ -215,13 +219,8 @@ export async function generateAllPendingSummaries(): Promise<{ generated: number
 
   // 既存のサマリーを取得して、更新が必要なものだけ処理
   const topicIds = topics.map(t => t.id);
-  const { data: existingSummaries } = await (supabase as unknown as {
-    from: (t: string) => {
-      select: (c: string) => {
-        in: (c: string, v: string[]) => Promise<{ data: { topic_id: string; source_count: number }[] | null; error: unknown }>;
-      };
-    };
-  }).from("topic_summaries")
+  const { data: existingSummaries } = await supabase
+    .from("topic_summaries")
     .select("topic_id, source_count")
     .in("topic_id", topicIds);
 

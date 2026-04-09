@@ -267,15 +267,22 @@ export async function runBatchExtraction() {
               console.warn("[Batch] Failed to log wiki_sources (ignoring):", err);
             }
 
-            // Mark as extracted
+            let saveSuccessful = false;
             try {
-              await supabase
+              const { error: markErr } = await supabase
                 .from("messages")
                 .update({ ai_extracted: true })
                 .in("id", chunk.map(m => m.id));
+              if (markErr) throw markErr;
+              saveSuccessful = true;
             } catch (err) {
                console.error("[Batch] Failed to mark messages as extracted:", err);
-               // Fatal error for this chunk, don't continue to topics so we can retry later or manual fix
+               // Fatal error for this chunk: rollback currentSections mutation to prevent infinite duplicate extraction loops
+               currentSections = existingEntry.sections as unknown as MegaWikiSection[] || [];
+               roomUpdated = false;
+               extractionSuccess = false;
+               processedMessagesCount -= chunk.length;
+               break; 
             }
 
             // リビングナレッジ: トピック↔記事アイテムの双方向リンクを記録 (非同期処理・失敗無視)
