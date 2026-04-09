@@ -3,6 +3,7 @@
 import { createClient, createStaticClient, createAdminClient } from "@/lib/supabase/server";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_cache } from "next/cache";
+import { after } from "next/server";
 import { THEME_BY_SLUG } from "@/lib/themes";
 
 // ─── Topic CRUD ───────────────────────────────────────────
@@ -259,50 +260,42 @@ export async function postTopicMessage(
     const preview = content.trim().slice(0, 80);
 
     // 非同期(Background)でメタデータ更新・AI要約を行うことで、ユーザーへの直列でのレスポンス待機時間を撤廃
-    import("next/server").then(({ after }) => {
-       after(async () => {
-         const adminClient = await import("@/lib/supabase/server").then(m => m.createAdminClient());
-         let currentMsgCount = 0;
+    after(async () => {
+      try {
+        const adminClient = await import("@/lib/supabase/server").then(m => m.createAdminClient());
+        let currentMsgCount = 0;
 
-         if (adminClient) {
-           // 1. Fetch current count to increment (cheaper than count(*))
-           const { data: topicToUpdate } = await adminClient
-             .from("talk_topics")
-             .select("message_count")
-             .eq("id", topicId)
-             .maybeSingle();
+        if (adminClient) {
+          // 1. Fetch current count to increment (cheaper than count(*))
+          const { data: topicToUpdate } = await adminClient
+            .from("talk_topics")
+            .select("message_count")
+            .eq("id", topicId)
+            .maybeSingle();
 
-           const newMsgCount = (topicToUpdate?.message_count ?? 0) + 1;
-           currentMsgCount = newMsgCount;
+          const newMsgCount = (topicToUpdate?.message_count ?? 0) + 1;
+          currentMsgCount = newMsgCount;
 
-           // 2. Update with incremented count safely in background
-           const { error: topicUpdateErr } = await adminClient
-             .from("talk_topics")
-             .update({
-               updated_at: new Date().toISOString(),
-               message_count: newMsgCount,
-               last_message_preview: preview,
-             })
-             .eq("id", topicId)
-             .select();
-           if (topicUpdateErr) console.warn("Failed admin topic metric update:", topicUpdateErr);
-         }
+          // 2. Update with incremented count safely in background
+          const { error: topicUpdateErr } = await adminClient
+            .from("talk_topics")
+            .update({
+              updated_at: new Date().toISOString(),
+              message_count: newMsgCount,
+              last_message_preview: preview,
+            })
+            .eq("id", topicId)
+            .select();
+          if (topicUpdateErr) console.warn("Failed admin topic metric update:", topicUpdateErr);
+        }
 
-         import("@/lib/ai/topic-summary-generator")
-           .then(({ generateTopicSummary }) => {
-             if (currentMsgCount >= 5) {
-               generateTopicSummary(topicId).catch((err) =>
-                 console.error("[Background Error] generateTopicSummary", err)
-               );
-             }
-           })
-           .catch((err) =>
-             console.error("[Background Error] import topic-summary-generator", err)
-           );
-       });
-    }).catch(() => {
-       // Fallback if after() is somehow not strictly available
-       console.warn("[Background Error] after() API not found");
+        const { generateTopicSummary } = await import("@/lib/ai/topic-summary-generator");
+        if (currentMsgCount >= 5) {
+          await generateTopicSummary(topicId);
+        }
+      } catch (err) {
+        console.error("[Background Error] after task failed:", err);
+      }
     });
 
     // Replenish AI conversation prompts

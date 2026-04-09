@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Send, Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw } from "@/components/icons";
 import { askConcierge, contributeFromConcierge } from "@/app/actions/concierge";
 import { checkContentSafety, EMERGENCY_GUIDANCE, calculateAnswerConfidence } from "@/lib/ai/safety-guard";
@@ -327,9 +328,9 @@ export default function ConciergeClient({
           <div className="flex flex-col items-center justify-center py-2 text-center">
             <span className="text-2xl mb-1">🔒</span>
             <p className="text-[13px] font-bold text-[var(--color-text)] mb-3">個別相談はメンバー専用機能です</p>
-            <a href="/login" className="btn-primary !text-[12px] !py-2.5 px-6 rounded-full">
+            <Link href="/login" className="btn-primary !text-[12px] !py-2.5 px-6 rounded-full">
               ログインして相談する
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-2 text-center">
