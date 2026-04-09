@@ -79,8 +79,12 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
 - 短く、読みやすく、実用的にまとめる`
     );
 
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: `以下の会話を要約してください。
+    let result = null;
+    let lastError = null;
+    for (let retry = 0; retry < 3; retry++) {
+      try {
+        result = await model.generateContent({
+          contents: [{ role: "user", parts: [{ text: `以下の会話を要約してください。
 
 テーマ: ${themeName}
 話題: ${topicTitle}
@@ -91,41 +95,55 @@ ${conversationText}
 --- 会話ここまで ---
 
 以下のJSON形式で出力してください:` }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: SchemaType.OBJECT,
-          properties: {
-            summary_snippet: {
-              type: SchemaType.STRING,
-              description: "2〜3行の要約テキスト（一覧表示用、80文字以内）",
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: SchemaType.OBJECT,
+              properties: {
+                summary_snippet: {
+                  type: SchemaType.STRING,
+                  description: "2〜3行の要約テキスト（一覧表示用、80文字以内）",
+                },
+                key_points: {
+                  type: SchemaType.ARRAY,
+                  items: { type: SchemaType.STRING },
+                  description: "主要なポイント（3〜5個）",
+                },
+                recommended_products: {
+                  type: SchemaType.ARRAY,
+                  items: { type: SchemaType.STRING },
+                  description: "言及された商品・サービス（あれば）",
+                },
+                tips: {
+                  type: SchemaType.ARRAY,
+                  items: { type: SchemaType.STRING },
+                  description: "実践的なコツ・工夫（あれば）",
+                },
+                allergen_tags: {
+                  type: SchemaType.ARRAY,
+                  items: { type: SchemaType.STRING },
+                  description: "関連するアレルゲン（卵, 乳, 小麦, etc.）",
+                },
+              },
+              required: ["summary_snippet", "key_points", "allergen_tags"],
             },
-            key_points: {
-              type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING },
-              description: "主要なポイント（3〜5個）",
-            },
-            recommended_products: {
-              type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING },
-              description: "言及された商品・サービス（あれば）",
-            },
-            tips: {
-              type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING },
-              description: "実践的なコツ・工夫（あれば）",
-            },
-            allergen_tags: {
-              type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING },
-              description: "関連するアレルゲン（卵, 乳, 小麦, etc.）",
-            },
+            temperature: 0.3,
           },
-          required: ["summary_snippet", "key_points", "allergen_tags"],
-        },
-        temperature: 0.3,
-      },
-    });
+        });
+        break;
+      } catch (err: unknown) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("503") || msg.includes("429") || msg.includes("UNAVAILABLE") || msg.includes("CAPACITY")) {
+          console.log(`[TopicSummary] LLM Capacity Exhausted/Timeout. Retrying ${retry + 1}/3...`);
+          await new Promise(r => setTimeout(r, 2000 * Math.pow(2, retry)));
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    if (!result) throw lastError || new Error("Max LLM retries reached.");
 
     let parsed: {
       summary_snippet: string;

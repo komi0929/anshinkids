@@ -74,8 +74,27 @@ export async function searchWiki(query: string, filters?: { category?: string; a
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function getWikiEntry(slug: string): Promise<ActionResponse<any>> {
+export interface WikiEntryWithSources {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  summary: string;
+  allergen_tags: string[];
+  avg_trust_score: number;
+  source_count: number;
+  updated_at: string;
+  created_at: string;
+  sections?: unknown;
+  wiki_sources?: {
+    id: string;
+    original_message_snippet: string;
+    contributor_trust_score: number;
+    extracted_at: string;
+  }[];
+}
+
+export async function getWikiEntry(slug: string): Promise<ActionResponse<WikiEntryWithSources>> {
   try {
     const validSlug = CommonSchemas.PageSlug.safeParse(slug);
     if (!validSlug.success) return { success: false, error: "不正なURLです" };
@@ -257,7 +276,8 @@ export async function getMyBookmarks() {
         )
       `)
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(200);
 
     if (error) throw error;
     return { success: true, data };

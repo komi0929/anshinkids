@@ -185,13 +185,33 @@ export async function runBatchExtraction() {
         if (!prompt) continue;
 
           try {
-            const result = await model.generateContent({
-              contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: { 
-                responseMimeType: "application/json",
-                temperature: 0.2 
+            // LLM Fault Tolerance: Retry with Exponential Backoff (3 max retries)
+            let result = null;
+            let lastError = null;
+            for (let retry = 0; retry < 3; retry++) {
+              try {
+                result = await model.generateContent({
+                  contents: [{ role: "user", parts: [{ text: prompt }] }],
+                  generationConfig: { 
+                    responseMimeType: "application/json",
+                    temperature: 0.2 
+                  }
+                });
+                break; // success
+              } catch (err: unknown) {
+                lastError = err;
+                // HTTP 503 or 429 backoff
+                const msg = err instanceof Error ? err.message : String(err);
+                if (msg.includes("503") || msg.includes("429") || msg.includes("UNAVAILABLE") || msg.includes("CAPACITY")) {
+                   console.log(`[Batch] LLM Capacity Exhausted/Timeout. Retrying ${retry + 1}/3...`);
+                   await new Promise(r => setTimeout(r, 2000 * Math.pow(2, retry)));
+                } else {
+                   throw err; // Stop retrying on Bad Request / 400
+                }
               }
-            });
+            }
+            if (!result) throw lastError || new Error("Max LLM retries reached.");
+            
             const responseText = result.response.text();
           
           let extractionSuccess = false;

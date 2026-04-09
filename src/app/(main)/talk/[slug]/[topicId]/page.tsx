@@ -3,7 +3,7 @@ import { getTopicSummary } from "@/app/actions/topic-summary";
 import ChatClient from "./chat-client";
 import { notFound } from "next/navigation";
 
-export default async function TopicPage({ params }: { params: { slug: string; topicId: string } }) {
+export default async function TopicPage({ params }: { params: Promise<{ slug: string; topicId: string }> }) {
   const { slug, topicId } = await params;
   
   // Parallel fetch to eliminate waterfall
