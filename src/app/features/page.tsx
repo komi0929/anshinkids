@@ -1,4 +1,3 @@
-"use client";
 
 import Link from "next/link";
 import { Sparkles, MessageCircle, Shield, User, Heart, Leaf, BookOpen, Check, TrendingUp, ShieldCheck, RefreshCw, Clock, Search, Plus, Trash2, Bell, Share } from "@/components/icons";

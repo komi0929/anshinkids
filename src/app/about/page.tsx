@@ -1,5 +1,4 @@
-"use client";
-
+import { BackButton } from "@/components/ui/back-button";
 import Link from "next/link";
 import { ArrowLeft, Check, Shield, ChevronRight, Sparkles, BookOpen, Heart, TrendingUp } from "@/components/icons";
 
@@ -51,13 +50,7 @@ export default function AboutPage() {
     <div className="fade-in pb-24 min-h-[100dvh] bg-[var(--color-bg)]">
       {/* Header */}
       <div className="sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md shadow-sm">
-        <button
-          onClick={() => window.history.back()}
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] transition-colors active:scale-95"
-          id="back-from-about"
-        >
-          <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
-        </button>
+        <BackButton />
         <h1 className="text-[17px] font-extrabold tracking-tight text-[var(--color-text)]">
           あんしんキッズとは
         </h1>
