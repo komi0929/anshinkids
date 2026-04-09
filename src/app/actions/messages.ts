@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient, createStaticClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_cache } from "next/cache";
 import { after } from "next/server";
@@ -262,7 +263,7 @@ export async function postTopicMessage(
     // 非同期(Background)でメタデータ更新・AI要約を行うことで、ユーザーへの直列でのレスポンス待機時間を撤廃
     after(async () => {
       try {
-        const adminClient = await import("@/lib/supabase/server").then(m => m.createAdminClient());
+        const adminClient = await import("@/lib/supabase/admin").then(m => m.createAdminClient());
         let currentMsgCount = 0;
 
         if (adminClient) {
