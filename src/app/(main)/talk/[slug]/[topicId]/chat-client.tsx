@@ -27,7 +27,7 @@ import { AudioHaptics } from "@/lib/audio-haptics";
 import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface Message {
+export interface Message {
   id: string;
   user_id: string;
   content: string;

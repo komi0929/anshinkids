@@ -21,10 +21,10 @@ export default async function TopicPage({ params }: { params: { slug: string; to
     <ChatClient
       slug={slug}
       topicId={topicId}
-      initialRoomInfo={roomRes.data as any}
-      initialTopicInfo={topicRes.data as any}
-      initialMessages={(messagesRes.data as any) || []}
-      initialSummary={(summaryRes.data as any) || null}
+      initialRoomInfo={roomRes.data as { id: string; name: string; description: string; icon_emoji: string; }}
+      initialTopicInfo={topicRes.data as { id: string; title: string; message_count: number; }}
+      initialMessages={(messagesRes.data as import("./chat-client").Message[]) || []}
+      initialSummary={(summaryRes.data as import("@/app/actions/topic-summary").TopicSummary) || null}
     />
   );
 }
