@@ -1,6 +1,8 @@
 import { getMyProfile, getMyContributions, getMyImpact } from "@/app/actions/mypage";
 import NotificationsClient from "./notifications-client";
 
+export const dynamic = "force-dynamic";
+
 interface Notification {
   id: string;
   type: "thanks" | "wiki_extracted" | "impact_milestone" | "trust_up";

@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { ArrowRight } from "@/components/icons";
 import { getTalkRooms } from "@/app/actions/messages";
 
+export const dynamic = "force-dynamic";
+
 interface Room {
   id: string;
   slug: string;

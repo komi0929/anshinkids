@@ -3,6 +3,8 @@ import { getTopicSummary } from "@/app/actions/topic-summary";
 import ChatClient from "./chat-client";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function TopicPage({ params }: { params: Promise<{ slug: string; topicId: string }> }) {
   const { slug, topicId } = await params;
   

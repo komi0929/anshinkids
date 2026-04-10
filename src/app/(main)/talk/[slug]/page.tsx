@@ -4,6 +4,8 @@ import { getTopicSummariesForRoom, TopicSummary } from "@/app/actions/topic-summ
 import { THEME_PROMPTS } from "@/lib/theme-prompts";
 import ThemeHubClient from "./theme-hub-client";
 
+export const dynamic = "force-dynamic";
+
 interface Topic {
   id: string;
   title: string;

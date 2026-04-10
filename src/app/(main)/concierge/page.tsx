@@ -1,6 +1,8 @@
 import ConciergeClient from "./concierge-client";
 import { getMyProfile } from "@/app/actions/mypage";
 
+export const dynamic = "force-dynamic";
+
 export default async function ConciergePage() {
   const profileRes = await getMyProfile();
   
