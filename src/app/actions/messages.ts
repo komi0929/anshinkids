@@ -162,7 +162,8 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
           display_name,
           avatar_url,
           trust_score,
-          allergen_tags
+          allergen_tags,
+          children_profiles
         )
       `)
       .eq("topic_id", topicId)
@@ -188,7 +189,12 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
         avatar_url?: string;
         trust_score?: number;
         allergen_tags?: string[];
+        children_profiles?: any[];
       } | null;
+      
+      const childProf = prof?.children_profiles && prof.children_profiles.length > 0 ? prof.children_profiles[0] : null;
+      let author_age = "";
+      if (childProf && childProf.ageGroup) author_age = childProf.ageGroup;
       return {
         ...msg,
         has_thanked: thankedIds.includes(msg.id),
@@ -196,6 +202,7 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
         author_avatar: prof?.avatar_url || null,
         author_trust: prof?.trust_score || 0,
         author_allergens: prof?.allergen_tags || [],
+        author_age: author_age,
         profiles: undefined
       };
     });
@@ -294,7 +301,7 @@ export async function postTopicMessage(
         }
 
         const { generateTopicSummary } = await import("@/lib/ai/topic-summary-generator");
-        if (currentMsgCount >= 1) {
+        if (currentMsgCount >= 5) {
           await generateTopicSummary(topicId);
         }
       } catch (err) {

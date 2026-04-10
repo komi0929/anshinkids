@@ -13,7 +13,7 @@ import { SchemaType } from "@google/generative-ai";
 import { revalidateTag } from "next/cache";
 import { THEMES } from "@/lib/themes";
 
-const SUMMARY_THRESHOLD = 1; // 開発・テスト用にすぐに要約されるようしきい値を1に短縮
+const SUMMARY_THRESHOLD = 5; // 最低メッセージ数
 
 interface TopicForSummary {
   id: string;
@@ -41,10 +41,14 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
       return { success: false, error: `Not enough messages (${(topic as TopicForSummary).message_count}/${SUMMARY_THRESHOLD})` };
     }
 
-    // 2. メッセージ一覧を取得
     const { data: messages, error: msgsErr } = await supabase
       .from("messages")
-      .select("content, created_at, is_system_bot")
+      .select(`
+        content, created_at, is_system_bot, user_id,
+        profiles!messages_user_id_fkey (
+          children_profiles, allergen_tags
+        )
+      `)
       .eq("topic_id", topicId)
       .eq("is_system_bot", false)
       .order("created_at", { ascending: true })
@@ -66,9 +70,20 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
     const themeDef = THEMES.find(t => t.slug === themeSlug) || THEMES[0];
     const topicTitle = (topic as TopicForSummary).title;
 
-    // 4. メッセージを結合
+    // 4. メッセージを属性付きで結合
     const conversationText = messages
-      .map((m, i) => `[${i + 1}] ${m.content}`)
+      .map((m, i) => {
+        let profContext = "";
+        const profs = (m as any).profiles;
+        if (profs) {
+          const prof = Array.isArray(profs) ? profs[0] : profs;
+          const childProf = prof?.children_profiles && prof.children_profiles.length > 0 ? prof.children_profiles[0] : null;
+          const age = childProf?.ageGroup ? `(子供の年齢: ${childProf.ageGroup})` : "";
+          const allergens = prof?.allergen_tags && prof.allergen_tags.length > 0 ? `(アレルギー: ${prof.allergen_tags.join(",")})` : "";
+          if (age || allergens) profContext = ` ${age}${allergens}`;
+        }
+        return `[発言${i + 1}${profContext}] ${m.content}`;
+      })
       .join("\n");
 
     // 5. Gemini で要約生成

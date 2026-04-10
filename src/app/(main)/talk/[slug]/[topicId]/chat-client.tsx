@@ -43,6 +43,7 @@ export interface Message {
   author_avatar?: string | null;
   author_trust?: number;
   author_allergens?: string[];
+  author_age?: string;
 }
 
 interface RoomInfo {
@@ -198,6 +199,7 @@ export default function ChatClient({
       author_avatar: null,
       author_trust: 0,
       author_allergens: [],
+      author_age: "",
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
@@ -458,11 +460,30 @@ export default function ChatClient({
               >
                 {renderAvatar(msg.author_avatar || null, msg.user_id, getAnonymousName(msg.user_id, msg.author_name))}
               </div>
-              <div className="flex flex-col items-start">
-                <span className="text-[11px] font-bold text-[var(--color-primary)] ml-1 mb-0.5">
-                  {getAnonymousName(msg.user_id, msg.author_name)}
-                </span>
-                <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
+              <div className="flex flex-col items-start min-w-0 flex-1">
+                <div className="flex items-center flex-wrap gap-1 mb-1 ml-1">
+                  <span className="text-[11px] font-bold text-[var(--color-primary)]">
+                    {getAnonymousName(msg.user_id, msg.author_name)}
+                  </span>
+                  {msg.author_age && (
+                    <span className="text-[9px] font-bold bg-[var(--color-surface-warm)] text-[var(--color-subtle)] px-1.5 py-0.5 rounded-full">
+                      {msg.author_age.includes("歳") ? msg.author_age : msg.author_age + "歳"}
+                    </span>
+                  )}
+                  {msg.author_allergens && msg.author_allergens.length > 0 && (
+                    <div className="flex gap-0.5">
+                      {msg.author_allergens.slice(0,3).map(a => {
+                        const emoji = a.includes("卵") ? "🥚" : a.includes("乳") ? "🥛" : a.includes("小麦") ? "🌾" : "🌱";
+                        return (
+                          <span key={a} className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-100 flex items-center gap-0.5">
+                            {emoji}{a}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed max-w-full">
                   {msg.content}
                 </div>
                 <div className="flex gap-2 items-center mt-1 ml-1">
