@@ -36,8 +36,9 @@ self.addEventListener('fetch', (event) => {
   // Don't cache API/Supabase/auth requests
   const url = event.request.url;
   if (url.includes('supabase.co') || url.includes('/api/') || url.includes('/auth/')) return;
-  // Don't cache server actions
+  // Don't cache server actions or Next.js React Server Components payloads
   if (event.request.headers.get('next-action')) return;
+  if (url.includes('_rsc=') || url.includes('?_rsc') || event.request.headers.get('RSC') || event.request.headers.get('Next-Router-Prefetch')) return;
   
   event.respondWith(
     fetch(event.request).then((networkResponse) => {

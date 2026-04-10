@@ -6,6 +6,7 @@ import {
   Shield,
   Check,
 } from "@/components/icons";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -56,8 +57,8 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Brand */}
           <div className="text-center mb-8 fade-in">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success-deep)] flex items-center justify-center shadow-lg">
-              <span className="text-[32px]">🍀</span>
+            <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(32,201,151,0.2)] overflow-hidden">
+              <Image src="/logo.png" alt="あんしんキッズ ロゴ" width={64} height={64} className="w-full h-full object-cover" />
             </div>
             <h1
               className="text-[26px] font-black tracking-tight"

@@ -29,7 +29,7 @@ function renderAvatar(avatar_url: string | null, name: string) {
     return <div className="w-full h-full bg-gradient-to-br from-[#8B9EBF] to-[#6A7FA0] text-white font-extrabold flex items-center justify-center text-3xl rounded-2xl">👤</div>;
   }
   
-  const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const hash = name?.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) || 0;
   const bg = colors[hash % colors.length];
   return <div className={`w-full h-full bg-gradient-to-br ${bg} text-white font-extrabold flex items-center justify-center text-3xl rounded-2xl`}>{name?.[0] || "👤"}</div>;
 }

@@ -26,6 +26,8 @@ import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
 import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
 import { motion, AnimatePresence } from "framer-motion";
+import { ThemeDefinition, THEMES } from "@/lib/themes";
+import { ThemeSummaryRenderer } from "@/components/theme-summary-renderer";
 
 export interface Message {
   id: string;
@@ -80,6 +82,10 @@ export default function ChatClient({
     new Set(initialMessages.filter(m => m.has_thanked).map(m => m.id))
   );
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [errorId] = useState(() => crypto.randomUUID());
+
+  const themeInfo = THEMES.find(t => t.slug === slug) || THEMES[0];
+
   const [roomInfo] = useState<RoomInfo>(initialRoomInfo);
   const [topicInfo] = useState<TopicInfo>(initialTopicInfo);
   const [safetyWarning, setSafetyWarning] = useState<string | null>(null);
@@ -301,7 +307,7 @@ export default function ChatClient({
 
   function getAvatarBg(user_id: string | null) {
     if (!user_id || typeof user_id !== 'string') return AVATAR_COLORS[0];
-    const hash = user_id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const hash = user_id?.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) || 0;
     return AVATAR_COLORS[hash % AVATAR_COLORS.length];
   }
 
@@ -547,34 +553,12 @@ export default function ChatClient({
                     {topicSummary.summary_snippet}
                   </p>
                 )}
-                {/* Render structured full_summary safely */}
-                {topicSummary.full_summary && typeof topicSummary.full_summary === 'object' && !Array.isArray(topicSummary.full_summary) && (
-                  <div className="space-y-3">
-                    {Object.entries(topicSummary.full_summary as Record<string, unknown>).map(([key, val]) => {
-                      if (!val || key === 'title') return null;
-                      if (typeof val === 'string') {
-                        return (
-                          <div key={key}>
-                            <p className="text-[11px] font-black text-[var(--color-subtle)] mb-1 uppercase tracking-wider">{key}</p>
-                            <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">{val}</p>
-                          </div>
-                        );
-                      }
-                      if (Array.isArray(val)) {
-                        return (
-                          <div key={key}>
-                            <p className="text-[11px] font-black text-[var(--color-subtle)] mb-1 uppercase tracking-wider">{key}</p>
-                            <ul className="list-disc list-inside text-[13px] text-[var(--color-text-secondary)] leading-relaxed space-y-1">
-                              {val.map((item, i) => <li key={i}>{String(item)}</li>)}
-                            </ul>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })}
-                  </div>
-                )}
-                <p className="text-[10px] text-[var(--color-muted)] mt-4 pt-3 border-t border-[var(--color-border-light)]">
+                {/* Render structured full_summary beautifully */}
+                <div className="mt-4 border-t border-[var(--color-border-light)] pt-4">
+                  <ThemeSummaryRenderer theme={themeInfo} topicSummary={topicSummary} />
+                </div>
+                
+                <p className="text-[10px] text-[var(--color-muted)] mt-5 pt-3 border-t border-[var(--color-border-light)] font-medium">
                   ※会話の内容をもとにAIが自動生成した要約です
                 </p>
               </div>

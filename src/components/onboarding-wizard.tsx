@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Leaf, ChevronRight, Check, Sparkles, Plus, X } from "@/components/icons";
+import Image from "next/image";
 
 export const ALLERGENS_RAW_8 = [
   { id: "egg", label: "卵", emoji: "🥚" },
@@ -253,8 +254,8 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
         {(step === 0 || step === 1) && (
           <div className="mb-6 fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-sm">
-                <Leaf className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-[0_2px_8px_rgba(32,201,151,0.2)] overflow-hidden">
+                <Image src="/logo.png" alt="logo" width={40} height={40} className="w-full h-full object-cover" />
               </div>
               <div>
                 <h1 className="text-[18px] font-extrabold text-[var(--color-text)] break-keep text-balance">

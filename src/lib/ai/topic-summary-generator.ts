@@ -11,6 +11,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getGeminiFlash } from "@/lib/ai/gemini";
 import { SchemaType } from "@google/generative-ai";
 import { revalidateTag } from "next/cache";
+import { THEMES } from "@/lib/themes";
 
 const SUMMARY_THRESHOLD = 5; // 最低メッセージ数
 
@@ -61,6 +62,8 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
       .single();
 
     const themeName = room?.name || "不明";
+    const themeSlug = room?.slug || "";
+    const themeDef = THEMES.find(t => t.slug === themeSlug) || THEMES[0];
     const topicTitle = (topic as TopicForSummary).title;
 
     // 4. メッセージを結合
@@ -77,15 +80,58 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
 - 個人を特定できる情報は除去すること
 - 医療的断定は避け、「〜という体験が共有されています」のように記述
 - 具体的な商品名・店名・コツは積極的に残す
-- 短く、読みやすく、実用的にまとめる`
+- 指定されたフォーマット（スキーマ）に厳守すること
+
+テーマ専用の抽出ヒント:
+${themeDef.extractionHint}`
     );
 
     let result = null;
     let lastError = null;
+
+    // Build the dynamic schema based on the Theme
+    // We parse the string JSON from sectionSchema to create Gemini generic schema shape
+    const rootProperties: Record<string, any> = {
+      summary_snippet: {
+        type: SchemaType.STRING,
+        description: "2〜3行の会話要約テキスト（一覧表示用、80文字以内）",
+      },
+    };
+
+    // The sectionSchema defines "items" as an array of objects. We extract the keys of that object to ask the AI for it, but flatly for this Talk Room topic summary.
+    let parsedHintSchema: any = null;
+    try {
+      parsedHintSchema = JSON.parse(themeDef.sectionSchema);
+    } catch { }
+
+    if (parsedHintSchema && parsedHintSchema.items && parsedHintSchema.items[0]) {
+      const itemKeys = Object.keys(parsedHintSchema.items[0]);
+      for (const k of itemKeys) {
+        if (["mention_count", "heat_score", "source_topics", "is_recommended"].includes(k)) continue;
+        if (k === "content") {
+           rootProperties["key_points"] = { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "主要なポイント（3〜5個）" };
+        } else {
+           const val = parsedHintSchema.items[0][k];
+           if (Array.isArray(val)) {
+             rootProperties[k] = { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: `抽出する ${k}` };
+           } else if (typeof val === "string") {
+             rootProperties[k] = { type: SchemaType.STRING, description: `抽出する ${k}` };
+           } else if (typeof val === "boolean") {
+             rootProperties[k] = { type: SchemaType.BOOLEAN };
+           }
+        }
+      }
+    } else {
+       rootProperties["key_points"] = { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } };
+       rootProperties["tips"] = { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } };
+    }
+
+    const requiredKeys = Object.keys(rootProperties).filter(k => k === "summary_snippet" || k === "key_points" || k === "title");
+
     for (let retry = 0; retry < 3; retry++) {
       try {
         result = await model.generateContent({
-          contents: [{ role: "user", parts: [{ text: `以下の会話を要約してください。
+          contents: [{ role: "user", parts: [{ text: `以下の会話を要約・構造化してください。
 
 テーマ: ${themeName}
 話題: ${topicTitle}
@@ -95,38 +141,13 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
 ${conversationText}
 --- 会話ここまで ---
 
-以下のJSON形式で出力してください:` }] }],
+JSON形式で出力してください:` }] }],
           generationConfig: {
             responseMimeType: "application/json",
             responseSchema: {
               type: SchemaType.OBJECT,
-              properties: {
-                summary_snippet: {
-                  type: SchemaType.STRING,
-                  description: "2〜3行の要約テキスト（一覧表示用、80文字以内）",
-                },
-                key_points: {
-                  type: SchemaType.ARRAY,
-                  items: { type: SchemaType.STRING },
-                  description: "主要なポイント（3〜5個）",
-                },
-                recommended_products: {
-                  type: SchemaType.ARRAY,
-                  items: { type: SchemaType.STRING },
-                  description: "言及された商品・サービス（あれば）",
-                },
-                tips: {
-                  type: SchemaType.ARRAY,
-                  items: { type: SchemaType.STRING },
-                  description: "実践的なコツ・工夫（あれば）",
-                },
-                allergen_tags: {
-                  type: SchemaType.ARRAY,
-                  items: { type: SchemaType.STRING },
-                  description: "関連するアレルゲン（卵, 乳, 小麦, etc.）",
-                },
-              },
-              required: ["summary_snippet", "key_points", "allergen_tags"],
+              properties: rootProperties,
+              required: requiredKeys,
             },
             temperature: 0.3,
           },
@@ -177,19 +198,19 @@ ${conversationText}
     }
 
     // 6. topic_summaries テーブルに upsert
-    const safeKeyPoints = Array.isArray(parsed.key_points) ? parsed.key_points : (parsed.key_points ? [String(parsed.key_points)] : ["要約データを取得できませんでした"]);
-    const safeProducts = Array.isArray(parsed.recommended_products) ? parsed.recommended_products : [];
-    const safeTips = Array.isArray(parsed.tips) ? parsed.tips : [];
-    const safeAllergens = Array.isArray(parsed.allergen_tags) ? parsed.allergen_tags : (parsed.allergen_tags ? [String(parsed.allergen_tags)] : []);
+    // Extract everything except summary_snippet as the full_summary
+    const extractedData: any = { ...parsed };
+    const safeSnippet = extractedData.summary_snippet || "要約を生成しました。";
+    delete extractedData.summary_snippet;
+    
+    // Allergen Tags fall-back logic from the schema
+    const safeAllergens = Array.isArray(extractedData.allergen_free) ? extractedData.allergen_free : 
+                         Array.isArray((extractedData as any).allergen_tags) ? (extractedData as any).allergen_tags : [];
 
     const summaryData = {
       topic_id: topicId,
-      summary_snippet: parsed.summary_snippet || "要約を生成しました。",
-      full_summary: {
-        key_points: safeKeyPoints,
-        recommended_products: safeProducts,
-        tips: safeTips,
-      },
+      summary_snippet: safeSnippet,
+      full_summary: extractedData,
       allergen_tags: safeAllergens,
       source_count: messages.length,
       last_generated_at: new Date().toISOString(),
@@ -258,8 +279,7 @@ export async function generateAllPendingSummaries(): Promise<{ generated: number
 
   for (const topic of topics) {
     const existingCount = existingMap.get(topic.id) || 0;
-    // Skip if summary is already up-to-date
-    if (existingCount >= topic.message_count) continue;
+    // FORCE REGEN: if (existingCount >= topic.message_count) continue;
 
     const result = await generateTopicSummary(topic.id);
     if (result.success) {
