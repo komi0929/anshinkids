@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
 
 import { Json } from "@/types/database";
 
@@ -33,42 +34,46 @@ export async function getTopicSummary(topicId: string): Promise<{ success: boole
   }
 }
 
-export async function getTopicSummariesForRoom(roomId: string): Promise<{ success: boolean; data: Record<string, TopicSummary> }> {
-  try {
-    const supabase = await createClient();
-    if (!supabase) return { success: true, data: {} };
+export const getTopicSummariesForRoom = unstable_cache(
+  async (roomId: string): Promise<{ success: boolean; data: Record<string, TopicSummary> }> => {
+    try {
+      const supabase = createStaticClient();
+      if (!supabase) return { success: true, data: {} };
 
-    // Get all topic IDs for this room
-    const { data: topics } = await supabase
-      .from("talk_topics")
-      .select("id")
-      .eq("room_id", roomId)
-      .eq("is_active", true)
-      .order("updated_at", { ascending: false })
-      .limit(200);
+      // Get all topic IDs for this room
+      const { data: topics } = await supabase
+        .from("talk_topics")
+        .select("id")
+        .eq("room_id", roomId)
+        .eq("is_active", true)
+        .order("updated_at", { ascending: false })
+        .limit(200);
 
-    if (!topics || topics.length === 0) return { success: true, data: {} };
+      if (!topics || topics.length === 0) return { success: true, data: {} };
 
-    const topicIds = topics.map(t => t.id);
+      const topicIds = topics.map(t => t.id);
 
-    const { data: summaries, error } = await supabase
-      .from("topic_summaries")
-      .select("*")
-      .in("topic_id", topicIds);
+      const { data: summaries, error } = await supabase
+        .from("topic_summaries")
+        .select("*")
+        .in("topic_id", topicIds);
 
-    if (error) throw error;
+      if (error) throw error;
 
-    // Index by topic_id for fast lookup
-    const map: Record<string, TopicSummary> = {};
-    if (summaries) {
-      for (const s of summaries) {
-        map[s.topic_id] = s;
+      // Index by topic_id for fast lookup
+      const map: Record<string, TopicSummary> = {};
+      if (summaries) {
+        for (const s of summaries) {
+          map[s.topic_id] = s;
+        }
       }
-    }
 
-    return { success: true, data: map };
-  } catch (err) {
-    console.error("[getTopicSummariesForRoom]", err);
-    return { success: true, data: {} };
-  }
-}
+      return { success: true, data: map };
+    } catch (err) {
+      console.error("[getTopicSummariesForRoom]", err);
+      return { success: true, data: {} };
+    }
+  },
+  ["topic-summaries"],
+  { revalidate: 60, tags: ["topic-summaries"] }
+);

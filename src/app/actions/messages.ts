@@ -38,45 +38,47 @@ export const getTalkRooms = unstable_cache(
   { revalidate: 3600, tags: ["talk-rooms"] } // Cache for 1 hour or until invalidated
 );
 
-export async function getTalkTopics(roomId: string) {
-  try {
-    const supabase = await createClient();
-    if (!supabase) return { success: true, data: [] };
+export const getTalkTopics = unstable_cache(
+  async (roomId: string) => {
+    try {
+      const supabase = createStaticClient();
+      if (!supabase) return { success: true, data: [] };
 
-    // Removed mock logic that was overriding talk rooms
-    const { data, error } = await supabase
-      .from("talk_topics")
-      .select(`
-        *,
-        profiles!talk_topics_creator_id_fkey (
-          display_name,
-          avatar_url
-        )
-      `)
-      .eq("room_id", roomId)
-      .eq("is_active", true)
-      .order("updated_at", { ascending: false })
-      .limit(200);
-    if (error) throw error;
-    
-    const enhancedData = data?.map(t => {
-      const profs = t.profiles;
-      const prof = (Array.isArray(profs) ? profs[0] : profs) as { display_name?: string, avatar_url?: string } | null;
-      return {
-        ...t,
-        creator_name: prof?.display_name || "参加者",
-        creator_avatar: prof?.avatar_url || null,
-        profiles: undefined
-      };
-    }) || [];
-    
-    return { success: true, data: enhancedData };
-  } catch (err) {
-    console.error("[getTalkTopics]", err);
-    return { success: true, data: [] };
-  }
-}
-
+      const { data, error } = await supabase
+        .from("talk_topics")
+        .select(`
+          *,
+          profiles!talk_topics_creator_id_fkey (
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq("room_id", roomId)
+        .eq("is_active", true)
+        .order("updated_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      
+      const enhancedData = data?.map(t => {
+        const profs = t.profiles;
+        const prof = (Array.isArray(profs) ? profs[0] : profs) as { display_name?: string, avatar_url?: string } | null;
+        return {
+          ...t,
+          creator_name: prof?.display_name || "参加者",
+          creator_avatar: prof?.avatar_url || null,
+          profiles: undefined
+        };
+      }) || [];
+      
+      return { success: true, data: enhancedData };
+    } catch (err) {
+      console.error("[getTalkTopics]", err);
+      return { success: true, data: [] };
+    }
+  },
+  ["talk-topics"],
+  { revalidate: 60, tags: ["talk-topics"] }
+);
 export async function getTalkTopicById(topicId: string) {
   try {
     const supabase = await createClient();
@@ -604,28 +606,31 @@ export async function getActiveMessages(roomId: string) {
 
 // ─── Talk Room CRUD ────────────────────────────────────────
 
-export async function getTalkRoomBySlug(slug: string) {
-  try {
-
-    const supabase = await createClient();
-    if (!supabase) return { success: false, error: "DB未接続", data: null };
-    const { data, error } = await supabase
-      .from("talk_rooms")
-      .select("id, slug, name, description, icon_emoji")
-      .eq("slug", slug)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (!error && data) return { success: true, data };
-    const theme = THEME_BY_SLUG[slug];
-    if (theme) {
-      return { success: true, data: { ...theme, id: "temp-id" } };
+export const getTalkRoomBySlug = unstable_cache(
+  async (slug: string) => {
+    try {
+      const supabase = createStaticClient();
+      if (!supabase) return { success: false, error: "DB未接続", data: null };
+      const { data, error } = await supabase
+        .from("talk_rooms")
+        .select("id, slug, name, description, icon_emoji")
+        .eq("slug", slug)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!error && data) return { success: true, data };
+      const theme = THEME_BY_SLUG[slug];
+      if (theme) {
+        return { success: true, data: { ...theme, id: "temp-id" } };
+      }
+      return { success: false, error: "ルームが見つかりません", data: null };
+    } catch (err) {
+      console.error("[getTalkRoomBySlug]", err);
+      return { success: false, error: "ルームが見つかりません", data: null };
     }
-    return { success: false, error: "ルームが見つかりません", data: null };
-  } catch (err) {
-    console.error("[getTalkRoomBySlug]", err);
-    return { success: false, error: "ルームが見つかりません", data: null };
-  }
-}
+  },
+  ["talk-room-by-slug"],
+  { revalidate: 3600, tags: ["talk-rooms"] }
+);
 
 export async function getWikiCountForRoom(roomId: string) {
   try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { createTopic } from "@/app/actions/messages";
 import { TopicSummary } from "@/app/actions/topic-summary";
@@ -46,14 +46,12 @@ function timeAgo(dateStr: string): string {
 
 export default function ThemeHubClient({
   slug,
-  initialTopicFormVal,
   roomInfo,
   initialTopics,
   initialSummaries,
   suggestedPrompts,
 }: {
   slug: string;
-  initialTopicFormVal: string | null;
   roomInfo: RoomInfo;
   initialTopics: Topic[];
   initialSummaries: Record<string, TopicSummary>;
@@ -63,10 +61,19 @@ export default function ThemeHubClient({
   const [summaries] = useState<Record<string, TopicSummary>>(initialSummaries);
   const [isCreating, setIsCreating] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [newTopicTitle, setNewTopicTitle] = useState(initialTopicFormVal || "");
-  const [showCreateForm, setShowCreateForm] = useState(!!initialTopicFormVal);
+  const [newTopicTitle, setNewTopicTitle] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const topic = params.get("topic");
+    if (topic) {
+      setNewTopicTitle(topic);
+      setShowCreateForm(true);
+    }
+  }, []);
 
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault();

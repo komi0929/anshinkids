@@ -4,8 +4,7 @@ import { getTopicSummariesForRoom, TopicSummary } from "@/app/actions/topic-summ
 import { THEME_PROMPTS } from "@/lib/theme-prompts";
 import ThemeHubClient from "./theme-hub-client";
 
-export const dynamic = "force-dynamic";
-
+import { THEMES } from "@/lib/themes";
 interface Topic {
   id: string;
   title: string;
@@ -16,13 +15,16 @@ interface Topic {
   creator_avatar?: string | null;
 }
 
+export async function generateStaticParams() {
+  return THEMES.map((theme) => ({
+    slug: theme.slug,
+  }));
+}
+
 export default async function ThemeHubPage(props: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ topic?: string }>;
 }) {
   const { slug } = await props.params;
-  const resolvedSearchParams = await props.searchParams;
-  const initialTopic = resolvedSearchParams.topic || null;
 
   // Server-side fetching: NO network waterfall in the browser
   const roomRes = await getTalkRoomBySlug(slug);
@@ -48,7 +50,6 @@ export default async function ThemeHubPage(props: {
   return (
     <ThemeHubClient
       slug={slug}
-      initialTopicFormVal={initialTopic}
       roomInfo={roomInfo as { id: string; name: string; description: string; icon_emoji: string; slug: string; }}
       initialTopics={topics}
       initialSummaries={summaries}
