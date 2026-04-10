@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTalkRoomBySlug, getTalkTopics } from "@/app/actions/messages";
 import { getTopicSummariesForRoom, TopicSummary } from "@/app/actions/topic-summary";
 import { THEME_PROMPTS } from "@/lib/theme-prompts";
+import { createClient } from "@/lib/supabase/client";
 import ThemeHubClient from "./theme-hub-client";
 
 import { THEMES } from "@/lib/themes";
@@ -33,11 +34,26 @@ export default async function ThemeHubPage(props: {
   }
   const roomInfo = roomRes.data;
 
-  // Fetch topics and summaries in parallel
-  const [topicsRes, summariesRes] = await Promise.all([
+  // Fetch topics, summaries, and user profile in parallel
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  let userAllergens: string[] = [];
+  let userAgeGroups: string[] = [];
+
+  const [topicsRes, summariesRes, profileRes] = await Promise.all([
     getTalkTopics(roomInfo.id),
     getTopicSummariesForRoom(roomInfo.id),
+    user ? supabase.from("profiles").select("allergen_tags, children_profiles").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null })
   ]);
+
+  if (profileRes.data) {
+    userAllergens = profileRes.data.allergen_tags || [];
+    const childrenProfile = profileRes.data.children_profiles as any[];
+    if (childrenProfile && Array.isArray(childrenProfile)) {
+      userAgeGroups = Array.from(new Set(childrenProfile.map(c => c.ageGroup).filter(Boolean))) as string[];
+    }
+  }
 
   const topics = (topicsRes.success && topicsRes.data ? topicsRes.data : []) as Topic[];
   const summaries = (summariesRes.success && summariesRes.data ? summariesRes.data : {}) as Record<string, TopicSummary>;
@@ -54,6 +70,8 @@ export default async function ThemeHubPage(props: {
       initialTopics={topics}
       initialSummaries={summaries}
       suggestedPrompts={suggestedPrompts}
+      userAllergens={userAllergens}
+      userAgeGroups={userAgeGroups}
     />
   );
 }

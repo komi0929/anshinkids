@@ -9,6 +9,8 @@ import { ArrowLeft, MessageCircle, Plus, Search } from "@/components/icons";
 import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
 import { motion, AnimatePresence } from "framer-motion";
+import TopicBookmarkButton from "@/components/topic-bookmark-button";
+import { Filter, ArrowUpDown } from "@/components/icons";
 
 interface RoomInfo {
   id: string;
@@ -56,6 +58,8 @@ export default function ThemeHubClient({
   initialTopics: Topic[];
   initialSummaries: Record<string, TopicSummary>;
   suggestedPrompts: string[];
+  userAllergens?: string[];
+  userAgeGroups?: string[];
 }) {
   const [topics] = useState<Topic[]>(initialTopics);
   const [summaries] = useState<Record<string, TopicSummary>>(initialSummaries);
@@ -64,6 +68,9 @@ export default function ThemeHubClient({
   const [newTopicTitle, setNewTopicTitle] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortMode, setSortMode] = useState<"newest" | "active">("newest");
+  const [filterPersonalized, setFilterPersonalized] = useState(false);
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -92,17 +99,34 @@ export default function ThemeHubClient({
     });
   };
 
-  // Filter topics by search query
-  const filteredTopics = searchQuery
-    ? topics.filter(t => {
-        const snippet = summaries[t.id]?.summary_snippet || "";
-        return t.title.toLowerCase().includes(searchQuery.toLowerCase())
-          || snippet.toLowerCase().includes(searchQuery.toLowerCase());
-      })
-    : topics;
+  // Filter and Sort Phase
+  let displayTopics = [...topics];
 
-  const topicsWithSummary = filteredTopics.filter(t => summaries[t.id]);
-  const topicsWithoutSummary = filteredTopics.filter(t => !summaries[t.id]);
+  if (searchQuery) {
+    displayTopics = displayTopics.filter(t => {
+      const snippet = summaries[t.id]?.summary_snippet || "";
+      return t.title.toLowerCase().includes(searchQuery.toLowerCase())
+        || snippet.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }
+
+  if (filterPersonalized && userAllergens) {
+    displayTopics = displayTopics.filter(t => {
+      const summary = summaries[t.id];
+      if (!summary || !summary.allergen_tags) return false;
+      const tags = Array.isArray(summary.allergen_tags) ? summary.allergen_tags : [summary.allergen_tags];
+      return tags.some(tag => userAllergens.includes(tag as string));
+    });
+  }
+
+  if (sortMode === "active") {
+    displayTopics.sort((a, b) => b.message_count - a.message_count);
+  } else {
+    displayTopics.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  }
+
+  const topicsWithSummary = displayTopics.filter(t => summaries[t.id]);
+  const topicsWithoutSummary = displayTopics.filter(t => !summaries[t.id]);
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[var(--color-bg)]">
@@ -132,16 +156,45 @@ export default function ThemeHubClient({
       <div className="flex-1 overflow-y-auto pb-24">
         <div className="px-4 py-4 space-y-5 max-w-2xl mx-auto">
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-muted)]" />
-            <input
-              type="text"
-              placeholder="このテーマ内を検索..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-[var(--color-border-light)] text-[14px] font-medium text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
-            />
+          {/* Search, Filter, Sort Controls */}
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-muted)]" />
+              <input
+                type="text"
+                placeholder="このテーマ内を検索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-[var(--color-border-light)] text-[14px] font-medium text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all shadow-sm"
+              />
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <button
+                onClick={() => setSortMode(prev => prev === "newest" ? "active" : "newest")}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-bold transition-all ${
+                  sortMode === "active" 
+                    ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm" 
+                    : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border-light)] hover:bg-[var(--color-surface)]"
+                }`}
+              >
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                {sortMode === "newest" ? "最新順" : "注目順"}
+              </button>
+              
+              {userAllergens && userAllergens.length > 0 && (
+                <button
+                  onClick={() => setFilterPersonalized(!filterPersonalized)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-bold transition-all ${
+                    filterPersonalized 
+                      ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" 
+                      : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border-light)] hover:bg-[var(--color-surface)]"
+                  }`}
+                >
+                  <Filter className="w-3.5 h-3.5" />
+                  自分に関係のある話題
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Suggested Prompts */}
@@ -181,7 +234,7 @@ export default function ThemeHubClient({
           )}
 
           {/* Topic List */}
-          {filteredTopics.length === 0 ? (
+          {displayTopics.length === 0 ? (
             <div className="py-8 px-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-light)] text-center">
               {searchQuery ? (
                 <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
@@ -218,11 +271,16 @@ export default function ThemeHubClient({
                         layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                        className="p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group relative overflow-hidden"
                        >
-                        <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-2 break-keep text-balance leading-snug">
-                          {topic.title}
-                        </h3>
+                        <div className="flex items-start justify-between gap-4 mb-2">
+                          <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance leading-snug pr-2">
+                            {topic.title}
+                          </h3>
+                          <div className="relative z-20 flex-shrink-0">
+                            <TopicBookmarkButton summaryId={topic.id} snippetTitle={topic.title} snippetContent={summary?.summary_snippet || ""} />
+                          </div>
+                        </div>
                         {summary?.summary_snippet && (
                           <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed line-clamp-2 mb-3 bg-[var(--color-surface-warm)] rounded-xl px-3 py-2.5">
                             {summary.summary_snippet}
