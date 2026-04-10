@@ -13,7 +13,7 @@ import { SchemaType } from "@google/generative-ai";
 import { revalidateTag } from "next/cache";
 import { THEMES } from "@/lib/themes";
 
-const SUMMARY_THRESHOLD = 5; // 最低メッセージ数
+const SUMMARY_THRESHOLD = 1; // 開発・テスト用にすぐに要約されるようしきい値を1に短縮
 
 interface TopicForSummary {
   id: string;

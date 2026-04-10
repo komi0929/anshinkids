@@ -294,7 +294,7 @@ export async function postTopicMessage(
         }
 
         const { generateTopicSummary } = await import("@/lib/ai/topic-summary-generator");
-        if (currentMsgCount >= 5) {
+        if (currentMsgCount >= 1) {
           await generateTopicSummary(topicId);
         }
       } catch (err) {
