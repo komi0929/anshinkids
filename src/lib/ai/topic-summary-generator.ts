@@ -10,6 +10,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getGeminiFlash } from "@/lib/ai/gemini";
 import { SchemaType } from "@google/generative-ai";
+import { revalidateTag } from "next/cache";
 
 const SUMMARY_THRESHOLD = 5; // 最低メッセージ数
 
@@ -207,6 +208,12 @@ ${conversationText}
     }
 
     console.log(`[TopicSummary] Generated summary for topic "${topicTitle}" (${messages.length} messages)`);
+    try {
+      revalidateTag("talk-rooms", undefined as any);
+      revalidateTag("wiki-entries", undefined as any);
+    } catch {
+      // ignore
+    }
     return { success: true };
   } catch (err) {
     console.error("[generateTopicSummary] Error:", err);

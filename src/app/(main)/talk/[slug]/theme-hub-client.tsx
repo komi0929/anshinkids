@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { createTopic } from "@/app/actions/messages";
 import { TopicSummary } from "@/app/actions/topic-summary";
@@ -61,23 +61,26 @@ export default function ThemeHubClient({
   const [topics] = useState<Topic[]>(initialTopics);
   const [summaries] = useState<Record<string, TopicSummary>>(initialSummaries);
   const [isCreating, setIsCreating] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [newTopicTitle, setNewTopicTitle] = useState(initialTopicFormVal || "");
   const [showCreateForm, setShowCreateForm] = useState(!!initialTopicFormVal);
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTopicTitle.trim() || !roomInfo?.id || isCreating) return;
+    if (!newTopicTitle.trim() || !roomInfo?.id || isCreating || isPending) return;
     setIsCreating(true);
-    const res = await createTopic(roomInfo.id, newTopicTitle.trim());
-    if (res.success && res.topicId) {
-      Haptics.success();
-      AudioHaptics.playPop();
-      window.location.href = `/talk/${slug}/${res.topicId}`;
-    } else {
-      alert(!res.success && 'error' in res && res.error ? res.error : "トピックの作成に失敗しました");
-      setIsCreating(false);
-    }
+    startTransition(async () => {
+      const res = await createTopic(roomInfo.id, newTopicTitle.trim());
+      if (res.success && res.topicId) {
+        Haptics.success();
+        AudioHaptics.playPop();
+        window.location.href = `/talk/${slug}/${res.topicId}`;
+      } else {
+        alert(!res.success && 'error' in res && res.error ? res.error : "トピックの作成に失敗しました");
+        setIsCreating(false);
+      }
+    });
   };
 
   // Filter topics by search query

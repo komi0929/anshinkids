@@ -3,7 +3,7 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { after } from "next/server";
 import { THEME_BY_SLUG } from "@/lib/themes";
 
@@ -134,7 +134,7 @@ export async function createTopic(
       .select("id")
       .single();
     if (error) throw error;
-    revalidatePath("/", "layout");
+    revalidateTag("talk-rooms", undefined as any);
     return { success: true, topicId: data.id };
   } catch (err) {
     console.error("[createTopic]", err);
@@ -312,7 +312,7 @@ export async function postTopicMessage(
       );
     }
 
-    revalidatePath("/", "layout");
+    revalidateTag("talk-rooms", undefined as any);
     return { success: true };
   } catch (err) {
     console.error("[postTopicMessage]", err);
@@ -468,7 +468,7 @@ export async function deleteMessage(
          await adminClient.from("talk_topics").update({ message_count: count ?? 0 }).eq("id", msg.topic_id).select();
       }
     }
-    revalidatePath("/", "layout");
+    revalidateTag("talk-rooms", undefined as any);
     return { success: true };
   } catch (err) {
     console.error("[deleteMessage]", err);
@@ -520,7 +520,7 @@ export async function sendThanks(
         .select();
     }
 
-    revalidatePath("/", "layout");
+    revalidateTag("talk-rooms", undefined as any);
     return { success: true };
   } catch (err) {
     console.error("[sendThanks]", err);
@@ -554,7 +554,7 @@ export async function removeThanks(
 
     // Note: Decrements to messages.thanks_count are natively handled by PostgreSQL Trigger (on_thanks_delete).
     // The trigger intentionally skips decrementing profiles.total_thanks_received to protect user accumulated trust assets.
-    revalidatePath("/", "layout");
+    revalidateTag("talk-rooms", undefined as any);
     return { success: true };
   } catch (err) {
     console.error("[removeThanks]", err);

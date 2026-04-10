@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -73,6 +73,7 @@ export default function ChatClient({
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [newMessage, setNewMessage] = useState("");
+  const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false); // Rendered instantly via SSR
   const [isSending, setIsSending] = useState(false);
   const [thankedIds, setThankedIds] = useState<Set<string>>(
@@ -203,30 +204,33 @@ export default function ChatClient({
       20
     );
 
-    const result = await postTopicMessage(topicId, roomInfo.id, text);
-    if (result.success) {
-      Haptics.success();
-      AudioHaptics.playPop();
-      await loadMessages();
-    } else {
-      // Restore on failure
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
-      setNewMessage(text);
-      setSafetyWarning(result.error || "送信に失敗しました");
-    }
-    setIsSending(false);
+    startTransition(async () => {
+      const result = await postTopicMessage(topicId, roomInfo.id, text);
+      if (result.success) {
+        Haptics.success();
+        AudioHaptics.playPop();
+        await loadMessages();
+      } else {
+        // Restore on failure
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+        setNewMessage(text);
+        setSafetyWarning(result.error || "送信に失敗しました");
+      }
+      setIsSending(false);
+    });
   }
 
   async function handleDelete(messageId: string) {
     if (!confirm("本当にこの投稿を削除しますか？")) return;
     const backupMessages = [...messages];
     setMessages((prev) => prev.filter((m) => m.id !== messageId));
-    
-    const result = await deleteMessage(messageId);
-    if (!result.success) {
-      setMessages(backupMessages);
-      alert(result.error || "削除に失敗しました");
-    }
+    startTransition(async () => {
+      const result = await deleteMessage(messageId);
+      if (!result.success) {
+        setMessages(backupMessages);
+        alert(result.error || "削除に失敗しました");
+      }
+    });
   }
 
   const handleThanks = useCallback(async (messageId: string, event?: React.MouseEvent) => {

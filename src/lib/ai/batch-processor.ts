@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getGeminiFlash, SYSTEM_PROMPTS } from "@/lib/ai/gemini";
 import { getExtractionPrompt, mergeMegaWikiSections } from "@/lib/wiki/article-templates";
 import { THEME_BY_SLUG, MegaWikiSection } from "@/lib/themes";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 export async function runBatchExtraction() {
   const supabase = createAdminClient();
@@ -356,7 +356,7 @@ export async function runBatchExtraction() {
       // Invalidate Next.js cache so the Wiki updates instantly in the UI
       if (roomUpdated) {
         try {
-          revalidatePath("/", "layout");
+          revalidateTag("wiki-entries", undefined as any);
           console.log(`[Batch] Cache busted for ${megaWikiSlug}`);
         } catch (cacheErr) {
           console.error("[Batch] Cache invalidation failed", cacheErr);
