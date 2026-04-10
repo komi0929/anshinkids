@@ -160,7 +160,8 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          wiki_entry_id: string
+          wiki_entry_id: string | null
+          topic_summary_id: string | null
           snippet_title: string
           snippet_content: string | null
           created_at: string

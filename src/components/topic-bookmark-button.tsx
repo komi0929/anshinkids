@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "@/components/icons";
 import { toggleTopicSummaryBookmark, checkBookmarkedSnippets } from "@/app/actions/wiki";
 
 export default function TopicBookmarkButton({ 

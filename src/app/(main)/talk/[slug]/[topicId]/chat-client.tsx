@@ -565,11 +565,12 @@ export default function ChatClient({
                     {String(topicSummary.allergen_tags).slice(0, 10)}
                   </span>
                 )}
+              </div>
               <div className="flex items-center gap-2">
                 <ChevronDown className={`w-4 h-4 text-[var(--color-primary)] transition-transform ${showSummary ? 'rotate-180' : ''}`} />
               </div>
             </button>
-            <div className={`absolute top-2 right-4 transition-all z-10 block`}>
+            <div className={`absolute top-4 right-4 transition-all z-10 block`}>
                <TopicBookmarkButton summaryId={topicSummary.id} snippetTitle={topicInfo?.title || "お役立ち情報"} snippetContent={topicSummary.summary_snippet || ""} />
             </div>
             {showSummary && (

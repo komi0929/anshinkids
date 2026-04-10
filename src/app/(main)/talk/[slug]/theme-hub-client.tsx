@@ -52,6 +52,8 @@ export default function ThemeHubClient({
   initialTopics,
   initialSummaries,
   suggestedPrompts,
+  userAllergens,
+  userAgeGroups,
 }: {
   slug: string;
   roomInfo: RoomInfo;

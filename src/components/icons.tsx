@@ -45,6 +45,9 @@ export const ChevronRight = ({ className, style, size = 20 }: IconProps) => (
 export const ChevronDown = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><polyline points="6 9 12 15 18 9" /></svg>
 );
+export const ArrowUpDown = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
+);
 
 
 
@@ -68,6 +71,9 @@ export const Book = ({ className, style, size = 20 }: IconProps) => (
 );
 export const Bookmark = ({ className, style, size = 20 }: IconProps) => (
   <svg {...base(size)} className={className} style={style}><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+);
+export const BookmarkCheck = ({ className, style, size = 20 }: IconProps) => (
+  <svg {...base(size)} className={className} style={style}><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /><polyline points="9 10 11 12 15 8" /></svg>
 );
 
 // ── AI & Special ──

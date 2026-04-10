@@ -687,7 +687,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                    const isCurrentlyPublic = !profile.children_profiles?.some(c => (c as any).isPublic === false);
                    const newProfs = (profile.children_profiles || []).map(c => ({...c, isPublic: !isCurrentlyPublic}));
                    
-                   setProfile({ ...profile, children_profiles: newProfs as unknown[] });
+                   setProfile({ ...profile, children_profiles: newProfs as ChildProfile[] });
                    
                    const { updateMyProfile } = await import("@/app/actions/mypage");
                    await updateMyProfile({ children_profiles: newProfs as Record<string, unknown>[] });
