@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { getImpactFeedback, getContributionStreak } from "./discover";
+import { getImpactFeedback, getContributionStreak, getPersonalizedWikiEntries } from "./discover";
 import { getMyBookmarks } from "./wiki";
 
 export async function getFullMyPageData() {
@@ -10,11 +10,12 @@ export async function getFullMyPageData() {
   try {
 
     const profileRes = await getMyProfile().catch(() => ({ success: false as const, data: null, error: "プロフィール取得エラー" }));
-    const [contribRes, impactRes, bookmarksRes, streakRes] = await Promise.all([
+    const [contribRes, impactRes, bookmarksRes, streakRes, recommendedRes] = await Promise.all([
       getMyContributions().catch(() => ({ success: true, data: [] })),
       getImpactFeedback().catch(() => ({ success: false, data: null })),
       getMyBookmarks().catch(() => ({ success: false, data: [] })),
-      getContributionStreak().catch(() => ({ success: false, data: null }))
+      getContributionStreak().catch(() => ({ success: false, data: null })),
+      getPersonalizedWikiEntries().catch(() => ({ success: false, data: [] }))
     ]);
     const profileError = !profileRes.success ? ('error' in profileRes ? String(profileRes.error) : "不明なエラー") : null;
     if (profileError?.includes("ログイン")) {
@@ -30,7 +31,8 @@ export async function getFullMyPageData() {
         contributions: contribRes.success ? contribRes.data : [],
         impact: impactRes.success ? impactRes.data : null,
         bookmarks: bookmarksRes.success ? bookmarksRes.data : [],
-        streak: streakRes.success ? streakRes.data : null
+        streak: streakRes.success ? streakRes.data : null,
+        recommendedWikis: recommendedRes.success ? recommendedRes.data : []
       }
     }
   } catch {

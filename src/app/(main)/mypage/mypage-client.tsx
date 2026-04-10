@@ -78,12 +78,21 @@ interface BookmarkData {
   wiki_entries: { id: string; title: string; slug: string; category: string };
 }
 
+interface RecommendedWikiData {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  summary: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function MyPageClient({ initialData }: { initialData: any }) {
   const [profile, setProfile] = useState<Profile | null>(initialData?.data?.profile || null);
   const [contributions, setContributions] = useState<Contribution[]>(initialData?.data?.contributions || []);
   const [impact, setImpact] = useState<ImpactData | null>(initialData?.data?.impact || null);
   const [bookmarks, setBookmarks] = useState<BookmarkData[]>(initialData?.data?.bookmarks || []);
+  const [recommendedWikis, setRecommendedWikis] = useState<RecommendedWikiData[]>(initialData?.data?.recommendedWikis || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -523,6 +532,47 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                   </h4>
                   <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed bg-[var(--color-surface-warm)] p-2.5 rounded-xl">
                     {bm.snippet_content}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* === F10: Recommended Wiki Entries (Age/Allergen Context) === */}
+      {recommendedWikis.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, type: "spring" }}
+          className="px-4 mb-6"
+        >
+          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
+            <span className="text-xl">✨</span>
+            あなたへの特別なおすすめ
+          </h3>
+          <p className="text-[12px] text-[var(--color-text-secondary)] mb-3 font-medium">
+            設定されたお子様の年齢やアレルギー情報に基づき、いま役立つ知恵袋を厳選しました。
+          </p>
+          <div className="space-y-3">
+            {recommendedWikis.map((wiki) => (
+              <Link
+                key={wiki.id}
+                href={`/wiki/${wiki.slug}`}
+                className="block p-4 rounded-2xl bg-gradient-to-br from-[#FFFBF0] to-white border border-[#FBECC8] hover:border-[#F2D696] hover:shadow-md transition-all group relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#FFF3D6] to-transparent rounded-bl-[32px] opacity-50 pointer-events-none" />
+                <div className="flex-1 min-w-0 relative z-10">
+                  <p className="text-[10px] text-[#A67C00]/80 mb-1.5 flex items-center gap-1 font-bold">
+                    <BookOpen className="w-3 h-3" />
+                    {wiki.category}
+                  </p>
+                  <h4 className="text-[14px] font-bold text-[#805F00] mb-1.5 leading-tight break-keep text-balance group-hover:text-[#A67C00] transition-colors">
+                    {wiki.title.replace("【みんなの知恵袋】", "").trim()}
+                  </h4>
+                  <p className="text-[12px] text-[#A67C00]/70 line-clamp-2 leading-relaxed font-medium">
+                    {wiki.summary}
                   </p>
                 </div>
               </Link>
