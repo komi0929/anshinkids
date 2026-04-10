@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { getImpactFeedback, getContributionStreak, getPersonalizedWikiEntries } from "./discover";
 import { getMyBookmarks } from "./wiki";
@@ -45,7 +45,7 @@ export async function getMyProfile() {
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     const fullColumns = "id, display_name, avatar_url, trust_score, total_contributions, total_thanks_received, allergen_tags, child_age_months, children_profiles, interests";
@@ -148,7 +148,7 @@ export async function updateMyProfile(updates: {
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     const payload = { ...updates };
@@ -191,7 +191,7 @@ export async function getMyContributions() {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     // Get wiki sources where this user contributed
@@ -229,7 +229,7 @@ export async function getMyImpact() {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: null };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     // Count wiki entries the user contributed to
@@ -276,7 +276,7 @@ export async function deleteMyAccount() {
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     // Sever contributor links (anonymize wiki_sources)

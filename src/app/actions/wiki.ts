@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient, getCachedUser } from "@/lib/supabase/server";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_noStore as noStore, unstable_cache } from "next/cache";
 
@@ -160,7 +160,7 @@ export async function voteWikiHelpful(entryId: string): Promise<ActionResponse> 
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     const { error } = await supabase
@@ -195,7 +195,7 @@ export async function toggleSnippetBookmark(entryId: string, snippetTitle: strin
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     // Check if it already exists
@@ -235,7 +235,7 @@ export async function toggleTopicSummaryBookmark(summaryId: string, snippetTitle
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     // Check if it already exists
@@ -275,7 +275,7 @@ export async function checkBookmarkedSnippets(entryId: string): Promise<ActionRe
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: true, data: [] }; // Not logged in -> no bookmarks
 
     const { data, error } = await supabase
@@ -298,7 +298,7 @@ export async function getMyBookmarks() {
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, error: "ログインが必要です" };
 
     const { data, error } = await supabase

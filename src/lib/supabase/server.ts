@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Database } from "@/types/database";
+import { cache } from "react";
 
 const COOKIE_OPTIONS = {
   path: "/",
@@ -33,6 +34,16 @@ export async function createClient() {
     },
   });
 }
+
+/**
+ * Deduplicates the getUser() database/API call for the entire request lifecycle.
+ * Use this in server components or server actions when multiple components need the user.
+ */
+export const getCachedUser = cache(async () => {
+  const supabase = await createClient();
+  if (!supabase) return { data: { user: null }, error: new Error("No client") };
+  return supabase.auth.getUser();
+});
 
 
 /**

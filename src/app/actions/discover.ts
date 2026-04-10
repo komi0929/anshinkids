@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient, getCachedUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { unstable_cache } from "next/cache";
 
@@ -89,7 +89,7 @@ export async function getPersonalizedWikiEntries() {
     const supabase = await createClient();
     if (!supabase) return { success: false, data: [] };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
 
     let allergenTags: string[] = [];
     let ageGroups: string[] = [];
@@ -292,7 +292,7 @@ export async function getContributionStreak() {
     const supabase = await createClient();
     if (!supabase) return { success: false, data: null };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, data: null };
 
     // contribution_days テーブルから取得（永続データ）
@@ -445,7 +445,7 @@ export async function getImpactFeedback() {
     const supabase = await createClient();
     if (!supabase) return { success: false, data: null };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, data: null };
 
     // Count how many wiki articles reference this user's contributions
@@ -651,7 +651,7 @@ export async function getEngagementTier(): Promise<{ success: boolean; error?: s
     const supabase = await createClient();
     if (!supabase) return { success: false };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getCachedUser();
     if (!user) return { success: true, data: { tier: "guest", postCount: 0 } };
 
     const { data: profile } = await supabase
