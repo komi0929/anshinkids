@@ -161,19 +161,31 @@ export async function getPersonalizedWikiEntries() {
       sections?: Record<string, unknown>[]; // Mega-Wiki sections array
     }
 
-    let matched: WikiEntryData[] = [];
+    let matched: any[] = []; // Using any to deal with complex joined types easily
 
     // Stage 1: Try finding by allergens first (Primary axis)
     if (allergenTags.length > 0) {
       const { data: allergenMatched } = await supabase
-        .from("wiki_entries")
-        .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at, sections")
-        .eq("is_public", true)
+        .from("topic_summaries")
+        .select(`
+          id,
+          summary_snippet,
+          allergen_tags,
+          updated_at,
+          talk_topics!inner (
+            id,
+            title,
+            talk_rooms!inner (
+              name,
+              slug
+            )
+          )
+        `)
         .overlaps("allergen_tags", allergenTags as string[])
-        .order("avg_trust_score", { ascending: false })
+        .order("updated_at", { ascending: false })
         .limit(8);
       
-      if (allergenMatched) matched = allergenMatched as WikiEntryData[];
+      if (allergenMatched) matched = allergenMatched;
     }
 
     // Stage 2: Enhance with Age Keywords
@@ -182,88 +194,80 @@ export async function getPersonalizedWikiEntries() {
         // No allergens matches (or no allergens set), find purely by keywords
         const orConditions: string[] = [];
         keywords.forEach(kw => {
-          orConditions.push(`summary.ilike.%${kw}%`);
-          orConditions.push(`sections::text.ilike.%${kw}%`);
+          orConditions.push(`summary_snippet.ilike.%${kw}%`);
+          // Note: we can't easily search talk_topics.title via ilike in the same OR statement over foreign tables in simple supabase-js without RPC, so we stick to summary_snippet
         });
         
         const { data: kwMatched } = await supabase
-          .from("wiki_entries")
-          .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at, sections")
-          .eq("is_public", true)
+          .from("topic_summaries")
+          .select(`
+            id,
+            summary_snippet,
+            allergen_tags,
+            updated_at,
+            talk_topics!inner (
+              id,
+              title,
+              talk_rooms!inner (
+                name,
+                slug
+              )
+            )
+          `)
           .or(orConditions.join(","))
-          .order("avg_trust_score", { ascending: false })
+          .order("updated_at", { ascending: false })
           .limit(8);
           
-        if (kwMatched) matched = kwMatched as WikiEntryData[];
-      } else {
-        // We have matching allergens. Boost the ones that also match the age keywords.
-        matched.sort((a, b) => {
-          let aScore = a.avg_trust_score || 0;
-          let bScore = b.avg_trust_score || 0;
-          const aText = (a.title + " " + a.summary + " " + JSON.stringify(a.sections)).toLowerCase();
-          const bText = (b.title + " " + b.summary + " " + JSON.stringify(b.sections)).toLowerCase();
-          // Boost significantly if the age context matches anywhere in the article
-          if (keywords.some(kw => aText.includes(kw))) aScore += 1000;
-          if (keywords.some(kw => bText.includes(kw))) bScore += 1000;
-          return bScore - aScore; // Descending
-        });
+        if (kwMatched) matched = kwMatched;
       }
     }
+
+    const mapToWikiEntryData = (entries: any[]) => entries.map(entry => {
+      const topic = Array.isArray(entry.talk_topics) ? entry.talk_topics[0] : entry.talk_topics;
+      const room = topic ? (Array.isArray(topic.talk_rooms) ? topic.talk_rooms[0] : topic.talk_rooms) : null;
+      
+      return {
+        id: entry.id,
+        title: topic?.title || "お役立ち情報",
+        // Format slug specifically to link back to the talk room with New Notification support mapped in mypage
+        slug: room?.slug && topic?.id ? `/talk/${room.slug}/${topic.id}` : "",
+        category: room?.name || "コミュニティ",
+        summary: entry.summary_snippet || "この記事には有用な情報が含まれています",
+        allergen_tags: entry.allergen_tags || [],
+        avg_trust_score: 0,
+        source_count: 0,
+        updated_at: entry.updated_at
+      } as WikiEntryData;
+    });
 
     if (matched && matched.length > 0) {
       const isPersonalized = true;
       const finalLabel = personalizationLabel || "✨ あなたへの特別なおすすめ";
-      
-      // Feature: "Extract specific snippets instead of generic article summaries"
-      // Mega-Wikis are large (1 of 8). We should show the EXACT relevant sub-section.
-      const searchTerms = [...keywords, ...(allergenTags as string[])];
-      
-      const enhancedMatches = matched.slice(0, 5).map(entry => {
-        let bestSnippet = entry.summary;
-        // Search through the sections to find a hyper-relevant snippet
-        if (entry.sections && Array.isArray(entry.sections)) {
-          for (const section of entry.sections) {
-            const heading = (section.heading as string) || "";
-            const items = (section.items as Record<string, unknown>[]) || [];
-            
-            // Does this section heading or items contain our keywords?
-            const sectionText = (heading + " " + JSON.stringify(items)).toLowerCase();
-            if (searchTerms.some(term => sectionText.includes(term.toLowerCase()))) {
-              // Find the specific item that matched
-              const matchedItem = items.find((item: Record<string, unknown>) => {
-                const content = item.content as string | undefined;
-                return searchTerms.some(term => content && content.toLowerCase().includes(term.toLowerCase()));
-              });
-              
-              if (matchedItem) {
-                 bestSnippet = `💡 ${heading}: ${(matchedItem.content as string).substring(0, 50)}...`;
-              } else {
-                 bestSnippet = `💡 見出し: ${heading}`;
-              }
-              break; // Found the best snippet for this entry
-            }
-          }
-        }
-        
-        return {
-          ...entry,
-          summary: bestSnippet,
-          sections: undefined // do not send heavy json to client
-        };
-      });
-
+      const enhancedMatches = mapToWikiEntryData(matched.slice(0, 5));
       return { success: true, data: enhancedMatches, isPersonalized, personalizationLabel: finalLabel };
     }
 
-    // Fallback: top entries by trust
+    // Fallback: top recent topic_summaries
     const { data: top } = await supabase
-      .from("wiki_entries")
-      .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at")
-      .eq("is_public", true)
-      .order("avg_trust_score", { ascending: false })
+      .from("topic_summaries")
+      .select(`
+        id,
+        summary_snippet,
+        allergen_tags,
+        updated_at,
+        talk_topics!inner (
+          id,
+          title,
+          talk_rooms!inner (
+            name,
+            slug
+          )
+        )
+      `)
+      .order("updated_at", { ascending: false })
       .limit(5);
 
-    return { success: true, data: top || [], isPersonalized: false, personalizationLabel: "📖 人気のまとめ記事" };
+    return { success: true, data: top ? mapToWikiEntryData(top) : [], isPersonalized: false, personalizationLabel: "📖 最新のまとめ記事" };
   } catch (err) {
     console.error("[getPersonalizedWikiEntries]", err);
     return { success: false, data: [] };

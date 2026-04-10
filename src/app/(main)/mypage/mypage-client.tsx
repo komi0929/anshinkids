@@ -556,18 +556,26 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
             設定されたお子様の年齢やアレルギー情報に基づき、いま役立つ知恵袋を厳選しました。
           </p>
           <div className="space-y-3">
-            {recommendedWikis.map((wiki) => (
+            {recommendedWikis.map((wiki) => {
+              const url = wiki.slug.startsWith("/talk/") ? wiki.slug : `/wiki/${wiki.slug}`;
+              // For topic summaries, we append a notification badge indicator if it's recent
+              const isRecent = wiki.slug.startsWith("/talk/");
+              
+              return (
               <Link
                 key={wiki.id}
-                href={`/wiki/${wiki.slug}`}
+                href={url}
                 className="block p-4 rounded-2xl bg-gradient-to-br from-[#FFFBF0] to-white border border-[#FBECC8] hover:border-[#F2D696] hover:shadow-md transition-all group relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#FFF3D6] to-transparent rounded-bl-[32px] opacity-50 pointer-events-none" />
                 <div className="flex-1 min-w-0 relative z-10">
-                  <p className="text-[10px] text-[#A67C00]/80 mb-1.5 flex items-center gap-1 font-bold">
-                    <BookOpen className="w-3 h-3" />
-                    {wiki.category}
-                  </p>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-[10px] text-[#A67C00]/80 flex items-center gap-1 font-bold">
+                      <BookOpen className="w-3 h-3" />
+                      {wiki.category}
+                    </p>
+                    {isRecent && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold animate-pulse">NEW記事</span>}
+                  </div>
                   <h4 className="text-[14px] font-bold text-[#805F00] mb-1.5 leading-tight break-keep text-balance group-hover:text-[#A67C00] transition-colors">
                     {wiki.title.replace("【みんなの知恵袋】", "").trim()}
                   </h4>
@@ -576,7 +584,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                   </p>
                 </div>
               </Link>
-            ))}
+            )})}
           </div>
         </motion.div>
       )}
