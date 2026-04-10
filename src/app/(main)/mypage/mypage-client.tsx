@@ -179,7 +179,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     const result = await updateMyProfile({ display_name: editName.trim(), avatar_url: editAvatar });
     if (result.success) {
       setShowProfileEdit(false);
-      window.location.reload(); // Force full reload to reset Next.js layout cache
+      setIsSavingProfile(false);
+      if (profile) setProfile({ ...profile, display_name: editName.trim(), avatar_url: editAvatar });
     } else {
       setIsSavingProfile(false);
       alert(result.error || "設定の保存に失敗しました");
@@ -203,8 +204,10 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       localStorage.removeItem("anshin_post_count");
       localStorage.removeItem("anshin_guidelines_accepted");
       window.location.href = "/login";
+    } else {
+      setIsDeleting(false);
+      alert(result.error || "アカウントの削除に失敗しました。");
     }
-    setIsDeleting(false);
   }
 
   const handleShareImpact = async () => {
