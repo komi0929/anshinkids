@@ -227,6 +227,46 @@ export async function toggleSnippetBookmark(entryId: string, snippetTitle: strin
   }
 }
 
+export async function toggleTopicSummaryBookmark(summaryId: string, snippetTitle: string, snippetContent: string): Promise<ActionResponse<{ bookmarked: boolean }>> {
+  try {
+    const validEntry = CommonSchemas.UUID.safeParse(summaryId);
+    if (!validEntry.success || !snippetTitle) return { success: false, error: "不正なリクエストです" };
+
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "ログインが必要です" };
+
+    // Check if it already exists
+    const { data: existing } = await supabase
+      .from("user_bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("topic_summary_id", validEntry.data)
+      .eq("snippet_title", snippetTitle)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from("user_bookmarks").delete().eq("id", existing.id);
+      revalidatePath("/", "layout");
+      return { success: true, data: { bookmarked: false } };
+    } else {
+      await supabase.from("user_bookmarks").insert({
+        user_id: user.id,
+        topic_summary_id: validEntry.data,
+        snippet_title: snippetTitle,
+        snippet_content: snippetContent,
+      });
+      revalidatePath("/", "layout");
+      return { success: true, data: { bookmarked: true } };
+    }
+  } catch (err) {
+    console.error("[toggleTopicSummaryBookmark]", err);
+    return { success: false, error: "ブックマークの切り替えに失敗しました" };
+  }
+}
+
 export async function checkBookmarkedSnippets(entryId: string): Promise<ActionResponse<string[]>> {
   try {
     const validEntry = CommonSchemas.UUID.safeParse(entryId);
@@ -242,7 +282,7 @@ export async function checkBookmarkedSnippets(entryId: string): Promise<ActionRe
       .from("user_bookmarks")
       .select("snippet_title")
       .eq("user_id", user.id)
-      .eq("wiki_entry_id", validEntry.data);
+      .or(`wiki_entry_id.eq.${validEntry.data},topic_summary_id.eq.${validEntry.data}`);
 
     if (error) throw error;
     
@@ -268,11 +308,21 @@ export async function getMyBookmarks() {
         snippet_title,
         snippet_content,
         created_at,
-        wiki_entries!inner (
+        wiki_entries (
           id,
           title,
           slug,
           category
+        ),
+        topic_summaries (
+          talk_topics (
+            id,
+            title,
+            talk_rooms (
+              slug,
+              name
+            )
+          )
         )
       `)
       .eq("user_id", user.id)
@@ -280,7 +330,32 @@ export async function getMyBookmarks() {
       .limit(200);
 
     if (error) throw error;
-    return { success: true, data };
+    
+    // Normalize data so the client gets a uniform Interface 
+    const normalizedData = (data as any[]).map(bm => {
+      let mergedWikiEntries = bm.wiki_entries;
+      
+      if (!mergedWikiEntries && bm.topic_summaries) {
+        const topic = Array.isArray(bm.topic_summaries.talk_topics) ? bm.topic_summaries.talk_topics[0] : bm.topic_summaries.talk_topics;
+        const room = topic ? (Array.isArray(topic.talk_rooms) ? topic.talk_rooms[0] : topic.talk_rooms) : null;
+        if (topic && room) {
+          mergedWikiEntries = {
+            id: topic.id,
+            title: topic.title,
+            slug: `/talk/${room.slug}/${topic.id}`,
+            category: room.name
+          };
+        }
+      }
+      
+      return {
+        ...bm,
+        wiki_entries: mergedWikiEntries || { title: "不明", slug: "", category: "アーカイブ" },
+        topic_summaries: undefined
+      };
+    });
+
+    return { success: true, data: normalizedData };
   } catch (err) {
     console.error("[getMyBookmarks]", err);
     return { success: false, error: "ブックマーク一覧の取得に失敗しました" };

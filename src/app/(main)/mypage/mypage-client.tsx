@@ -9,6 +9,7 @@ import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
 import Image from "next/image";
 import OnboardingWizard, { UserPreferences, ChildProfile } from "@/components/onboarding-wizard";
+import TopicBookmarkButton from "@/components/topic-bookmark-button";
 
 function renderAvatar(avatar_url: string | null, name: string) {
   if (avatar_url && avatar_url.startsWith("http")) {
@@ -576,13 +577,18 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                     </p>
                     {isRecent && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold animate-pulse">NEW記事</span>}
                   </div>
-                  <h4 className="text-[14px] font-bold text-[#805F00] mb-1.5 leading-tight break-keep text-balance group-hover:text-[#A67C00] transition-colors">
+                  <h4 className="text-[14px] font-bold text-[#805F00] mb-1.5 leading-tight break-keep text-balance group-hover:text-[#A67C00] transition-colors pr-8">
                     {wiki.title.replace("【みんなの知恵袋】", "").trim()}
                   </h4>
                   <p className="text-[12px] text-[#A67C00]/70 line-clamp-2 leading-relaxed font-medium">
                     {wiki.summary}
                   </p>
                 </div>
+                {isRecent && (
+                  <div className="absolute top-1/2 -translate-y-1/2 right-3 z-20">
+                    <TopicBookmarkButton summaryId={wiki.id} snippetTitle={wiki.title} snippetContent={wiki.summary} />
+                  </div>
+                )}
               </Link>
             )})}
           </div>

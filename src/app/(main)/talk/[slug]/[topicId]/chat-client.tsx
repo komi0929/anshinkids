@@ -28,6 +28,7 @@ import { triggerSensoryBurst } from "@/components/ui/SensoryEffects";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeDefinition, THEMES } from "@/lib/themes";
 import { ThemeSummaryRenderer } from "@/components/theme-summary-renderer";
+import TopicBookmarkButton from "@/components/topic-bookmark-button";
 
 export interface Message {
   id: string;
@@ -564,9 +565,13 @@ export default function ChatClient({
                     {String(topicSummary.allergen_tags).slice(0, 10)}
                   </span>
                 )}
+              <div className="flex items-center gap-2">
+                <ChevronDown className={`w-4 h-4 text-[var(--color-primary)] transition-transform ${showSummary ? 'rotate-180' : ''}`} />
               </div>
-              <ChevronDown className={`w-4 h-4 text-[var(--color-primary)] transition-transform ${showSummary ? 'rotate-180' : ''}`} />
             </button>
+            <div className={`absolute top-2 right-4 transition-all z-10 block`}>
+               <TopicBookmarkButton summaryId={topicSummary.id} snippetTitle={topicInfo?.title || "お役立ち情報"} snippetContent={topicSummary.summary_snippet || ""} />
+            </div>
             {showSummary && (
               <div className="p-4 rounded-b-2xl bg-white border border-[var(--color-primary)]/15 border-t-0 slide-up">
                 {topicSummary.summary_snippet && (
