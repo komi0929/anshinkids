@@ -215,8 +215,8 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
   }
 
   const canProceed =
-    step === 0 ? children.every(c => c.allergens.length > 0 || c.customAllergens.length > 0) :
-    step === 1 ? children.every(c => c.ageGroup !== "") :
+    step === 0 ? children.some(c => c.allergens.length > 0 || c.customAllergens.length > 0) :
+    step === 1 ? children.some(c => c.ageGroup !== "") :
     selectedInterests.length > 0;
 
   if (showAnimation) {
