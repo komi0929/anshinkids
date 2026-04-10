@@ -658,7 +658,39 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed mb-3 font-medium">
             あんしんキッズは、プライバシー優先のシステム設計です。
           </p>
-          <div className="space-y-2">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+              <div>
+                <p className="text-[13px] font-bold text-[var(--color-text)] mb-1">トークルームでの年齢・アレルギー表示</p>
+                <p className="text-[11px] text-[var(--color-text-secondary)]">
+                  あなたの投稿の横にお子様の情報（年齢やアレルギー）を表示し、他の親御さんが参考にしやすくします。
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                   if (!profile) return;
+                   setIsSavingProfile(true);
+                   const isCurrentlyPublic = !profile.children_profiles?.some(c => (c as any).isPublic === false);
+                   const newProfs = (profile.children_profiles || []).map(c => ({...c, isPublic: !isCurrentlyPublic}));
+                   
+                   setProfile({ ...profile, children_profiles: newProfs as unknown[] });
+                   
+                   const { updateMyProfile } = await import("@/app/actions/mypage");
+                   await updateMyProfile({ children_profiles: newProfs as Record<string, unknown>[] });
+                   
+                   setIsSavingProfile(false);
+                }}
+                disabled={isSavingProfile}
+                className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 shadow-inner ${
+                  !profile?.children_profiles?.some(c => (c as any).isPublic === false) ? "bg-[var(--color-primary)]" : "bg-gray-300"
+                }`}
+              >
+                <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
+                  !profile?.children_profiles?.some(c => (c as any).isPublic === false) ? "translate-x-6" : "translate-x-0"
+                }`} />
+              </button>
+            </div>
+
             <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
               <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
               <span>トークルームの投稿は一定時間経過後に自動消去されます</span>

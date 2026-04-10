@@ -192,17 +192,30 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
         children_profiles?: any[];
       } | null;
       
-      const childProf = prof?.children_profiles && prof.children_profiles.length > 0 ? prof.children_profiles[0] : null;
+      const childProfs = prof?.children_profiles && Array.isArray(prof.children_profiles) ? prof.children_profiles : [];
       let author_age = "";
-      if (childProf && childProf.ageGroup) author_age = childProf.ageGroup;
+      if (childProfs.length > 0) {
+        // Collect age groups for all public children
+        const ages = childProfs
+          .filter((c: any) => c.isPublic !== false)
+          .map((c: any) => c.ageGroup)
+          .filter(Boolean);
+        if (ages.length > 0) {
+          author_age = ages.join(" / ");
+        }
+      }
+      
+      const author_allergens = (prof?.allergen_tags || []);
+      const shareInfo = childProfs.some((c: any) => c.isPublic !== false) || childProfs.length === 0;
+
       return {
         ...msg,
         has_thanked: thankedIds.includes(msg.id),
         author_name: prof?.display_name || "参加者",
         author_avatar: prof?.avatar_url || null,
         author_trust: prof?.trust_score || 0,
-        author_allergens: prof?.allergen_tags || [],
-        author_age: author_age,
+        author_allergens: shareInfo ? author_allergens : [],
+        author_age: shareInfo ? author_age : "",
         profiles: undefined
       };
     });

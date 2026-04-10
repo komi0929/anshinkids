@@ -77,9 +77,24 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
         const profs = (m as any).profiles;
         if (profs) {
           const prof = Array.isArray(profs) ? profs[0] : profs;
-          const childProf = prof?.children_profiles && prof.children_profiles.length > 0 ? prof.children_profiles[0] : null;
-          const age = childProf?.ageGroup ? `(子供の年齢: ${childProf.ageGroup})` : "";
-          const allergens = prof?.allergen_tags && prof.allergen_tags.length > 0 ? `(アレルギー: ${prof.allergen_tags.join(",")})` : "";
+          const childProfs = prof?.children_profiles && Array.isArray(prof.children_profiles) ? prof.children_profiles : [];
+          
+          let age = "";
+          let allergens = "";
+          
+          const shareInfo = childProfs.some((c: any) => c.isPublic !== false) || childProfs.length === 0;
+
+          if (shareInfo) {
+            const ages = childProfs
+              .filter((c: any) => c.isPublic !== false)
+              .map((c: any) => c.ageGroup)
+              .filter(Boolean);
+            if (ages.length > 0) age = `(子供の年齢: ${ages.join("/")}歳)`;
+            
+            if (prof?.allergen_tags && prof.allergen_tags.length > 0) {
+              allergens = `(アレルギー: ${prof.allergen_tags.join(",")})`;
+            }
+          }
           if (age || allergens) profContext = ` ${age}${allergens}`;
         }
         return `[発言${i + 1}${profContext}] ${m.content}`;
