@@ -163,9 +163,27 @@ export async function getPersonalizedWikiEntries() {
 
     let matched: any[] = []; // Using any to deal with complex joined types easily
 
+    // Fetch user bookmarks to exclude them from recommendations
+    let bookmarkedIds: string[] = [];
+    if (user) {
+      const { data: bms } = await supabase.from("user_bookmarks").select("topic_summary_id").eq("user_id", user.id);
+      if (bms) {
+        bookmarkedIds = Array.from(new Set(bms.map(b => b.topic_summary_id).filter(Boolean))) as string[];
+      }
+    }
+
+    // Prepare common query builder generator to avoid repetition
+    const applyCommonFilters = (query: any) => {
+      let q = query.eq("talk_topics.is_active", true);
+      if (bookmarkedIds.length > 0) {
+        q = q.not("id", "in", `(${bookmarkedIds.join(",")})`);
+      }
+      return q.order("updated_at", { ascending: false }).limit(20);
+    };
+
     // Stage 1: Try finding by allergens first (Primary axis)
     if (allergenTags.length > 0) {
-      const { data: allergenMatched } = await supabase
+      const req = supabase
         .from("topic_summaries")
         .select(`
           id,
@@ -181,11 +199,11 @@ export async function getPersonalizedWikiEntries() {
             )
           )
         `)
-        .overlaps("allergen_tags", allergenTags as string[])
-        .order("updated_at", { ascending: false })
-        .limit(8);
+        .overlaps("allergen_tags", allergenTags as string[]);
+
+      const { data: allergenMatched } = await applyCommonFilters(req);
       
-      if (allergenMatched) matched = allergenMatched;
+      if (allergenMatched && allergenMatched.length > 0) matched = allergenMatched;
     }
 
     // Stage 2: Enhance with Age Keywords
@@ -198,7 +216,7 @@ export async function getPersonalizedWikiEntries() {
           // Note: we can't easily search talk_topics.title via ilike in the same OR statement over foreign tables in simple supabase-js without RPC, so we stick to summary_snippet
         });
         
-        const { data: kwMatched } = await supabase
+        const req = supabase
           .from("topic_summaries")
           .select(`
             id,
@@ -214,11 +232,11 @@ export async function getPersonalizedWikiEntries() {
               )
             )
           `)
-          .or(orConditions.join(","))
-          .order("updated_at", { ascending: false })
-          .limit(8);
+          .or(orConditions.join(","));
           
-        if (kwMatched) matched = kwMatched;
+        const { data: kwMatched } = await applyCommonFilters(req);
+          
+        if (kwMatched && kwMatched.length > 0) matched = kwMatched;
       }
     }
 
@@ -248,7 +266,7 @@ export async function getPersonalizedWikiEntries() {
     }
 
     // Fallback: top recent topic_summaries
-    const { data: top } = await supabase
+    const req = supabase
       .from("topic_summaries")
       .select(`
         id,
@@ -263,11 +281,11 @@ export async function getPersonalizedWikiEntries() {
             slug
           )
         )
-      `)
-      .order("updated_at", { ascending: false })
-      .limit(5);
+      `);
+      
+    const { data: top } = await applyCommonFilters(req);
 
-    return { success: true, data: top ? mapToWikiEntryData(top) : [], isPersonalized: false, personalizationLabel: "📖 最新のまとめ記事" };
+    return { success: true, data: top ? mapToWikiEntryData(top).slice(0, 5) : [], isPersonalized: false, personalizationLabel: "📖 最新のまとめ記事" };
   } catch (err) {
     console.error("[getPersonalizedWikiEntries]", err);
     return { success: false, data: [] };

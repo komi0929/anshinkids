@@ -570,25 +570,27 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
               >
                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#FFF3D6] to-transparent rounded-bl-[32px] opacity-50 pointer-events-none" />
                 <div className="flex-1 min-w-0 relative z-10">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-[10px] text-[#A67C00]/80 flex items-center gap-1 font-bold">
-                      <BookOpen className="w-3 h-3" />
-                      {wiki.category}
-                    </p>
-                    {isRecent && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold animate-pulse">NEW記事</span>}
+                  <div className="flex justify-between items-start mb-1.5 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-[#A67C00]/80 flex items-center gap-1 font-bold mb-1">
+                        <BookOpen className="w-3 h-3" />
+                        {wiki.category}
+                      </p>
+                      <h4 className="text-[14px] font-bold text-[#805F00] leading-tight break-keep text-balance group-hover:text-[#A67C00] transition-colors">
+                        {wiki.title.replace("【みんなの知恵袋】", "").trim()}
+                      </h4>
+                    </div>
+                    {isRecent && (
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0 relative z-20" onClick={(e) => e.preventDefault()}>
+                        <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold shadow-sm">NEW記事</span>
+                        <TopicBookmarkButton summaryId={wiki.id} snippetTitle={wiki.title} snippetContent={wiki.summary} />
+                      </div>
+                    )}
                   </div>
-                  <h4 className="text-[14px] font-bold text-[#805F00] mb-1.5 leading-tight break-keep text-balance group-hover:text-[#A67C00] transition-colors pr-8">
-                    {wiki.title.replace("【みんなの知恵袋】", "").trim()}
-                  </h4>
-                  <p className="text-[12px] text-[#A67C00]/70 line-clamp-2 leading-relaxed font-medium">
+                  <p className="text-[12px] text-[#A67C00]/70 line-clamp-2 leading-relaxed font-medium mt-1">
                     {wiki.summary}
                   </p>
                 </div>
-                {isRecent && (
-                  <div className="absolute top-1/2 -translate-y-1/2 right-3 z-20">
-                    <TopicBookmarkButton summaryId={wiki.id} snippetTitle={wiki.title} snippetContent={wiki.summary} />
-                  </div>
-                )}
               </Link>
             )})}
           </div>
