@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { createTopic } from "@/app/actions/messages";
 import { TopicSummary } from "@/app/actions/topic-summary";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, MessageCircle, Plus, Search } from "@/components/icons";
 import { Haptics } from "@/lib/haptics";
 import { AudioHaptics } from "@/lib/audio-haptics";
@@ -65,6 +66,7 @@ export default function ThemeHubClient({
   const [newTopicTitle, setNewTopicTitle] = useState(initialTopicFormVal || "");
   const [showCreateForm, setShowCreateForm] = useState(!!initialTopicFormVal);
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +77,7 @@ export default function ThemeHubClient({
       if (res.success && res.topicId) {
         Haptics.success();
         AudioHaptics.playPop();
-        window.location.href = `/talk/${slug}/${res.topicId}`;
+        router.push(`/talk/${slug}/${res.topicId}`);
       } else {
         alert(!res.success && 'error' in res && res.error ? res.error : "トピックの作成に失敗しました");
         setIsCreating(false);
@@ -202,6 +204,7 @@ export default function ThemeHubClient({
                       <Link
                         key={topic.id}
                         href={`/talk/${slug}/${topic.id}`}
+                        prefetch={true}
                         className="block"
                       >
                        <motion.div
@@ -258,6 +261,7 @@ export default function ThemeHubClient({
                     <Link
                       key={topic.id}
                       href={`/talk/${slug}/${topic.id}`}
+                      prefetch={true}
                       className="block"
                     >
                      <motion.div

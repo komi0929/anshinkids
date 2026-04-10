@@ -47,6 +47,7 @@ async function TalkContent() {
           <Link
             key={room.id || index}
             href={`/talk/${room.slug}`}
+            prefetch={true}
             className="card card-tilt card-active block p-4 stagger-item group"
             id={`talk-room-${room.slug}`}
           >

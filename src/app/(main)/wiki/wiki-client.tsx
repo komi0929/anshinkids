@@ -247,7 +247,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
             <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed mb-6 max-w-[260px] mx-auto">
               このカテゴリにはまだまとめ記事が存在しません。トークルームで実体験を持ち寄りましょう。
             </p>
-            <Link href="/talk" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[var(--color-border-light)] shadow-sm text-[13px] font-bold text-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all">
+            <Link href="/talk" prefetch={true} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[var(--color-border-light)] shadow-sm text-[13px] font-bold text-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all">
                <MessageCircle className="w-4 h-4" />
                トークルームで体験を共有する
             </Link>
@@ -261,6 +261,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
               <Link
                 key={entry.id}
                 href={`/wiki/${entry.slug}`}
+                prefetch={true}
                 className="block relative bg-white rounded-[28px] p-6 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-transparent hover:border-[var(--color-primary)]/20 hover:shadow-[0_8px_32px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="flex justify-between items-start mb-3">
