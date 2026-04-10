@@ -134,10 +134,15 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     setIsLoading(false);
   }
 
-  // Save function is now handled purely inside OnboardingWizard, we just need to reload
-  async function handleWizardComplete() {
+  // Save function is now handled purely inside OnboardingWizard. Update UI optimistically to prevent 5-second reload wait.
+  function handleWizardComplete(prefs: UserPreferences) {
     setIsEditing(false);
-    await loadData();
+    if (profile) {
+      setProfile({
+        ...profile,
+        children_profiles: prefs.children as unknown as ChildProfile[]
+      });
+    }
   }
 
   function getMigratedInitialPrefs(): UserPreferences {

@@ -283,7 +283,7 @@ export default function ChatClient({
   }, [messages]);
 
   function getAnonymousName(user_id: string, original_name: string | undefined): string {
-    if (original_name && original_name !== "あんしんユーザー") return original_name;
+    if (original_name && !["あんしんユーザー", "ゲスト", "参加者"].includes(original_name)) return original_name;
     const letter = anonymousLabels.get(user_id) || "?";
     return `ゲスト${letter}`;
   }
@@ -306,7 +306,7 @@ export default function ChatClient({
   }
 
   function getAvatarInitial(user_id: string | null, name: string): string {
-    if (name && name !== "あんしんユーザー" && name !== "参加者") return name[0];
+    if (name && !["あんしんユーザー", "ゲスト", "参加者"].includes(name) && !name.startsWith("ゲスト")) return name[0];
     if (!user_id) return "?";
     return anonymousLabels.get(user_id) || "?";
   }

@@ -201,10 +201,9 @@ export default function OnboardingWizard({ onComplete, onSkip, initialPrefs }: O
 
       setShowAnimation(true);
       
-      await Promise.all([
-        syncPreferencesToProfile(prefs).catch(() => { /* skip */ }),
-        new Promise(resolve => setTimeout(resolve, 1200))
-      ]);
+      // Optimistic/Fire-and-forget logic to prevent 5-second UI thread blocking
+      syncPreferencesToProfile(prefs).catch(() => { /* skip */ });
+      await new Promise(resolve => setTimeout(resolve, 600));
 
       onComplete(prefs);
     }

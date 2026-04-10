@@ -3,7 +3,7 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ActionResponse, CommonSchemas } from "@/types/actions";
-import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache, unstable_noStore } from "next/cache";
 import { after } from "next/server";
 import { THEME_BY_SLUG } from "@/lib/themes";
 
@@ -145,6 +145,7 @@ export async function createTopic(
 // ─── Topic Messages ───────────────────────────────────────
 
 export async function getTopicMessages(topicId: string, offset: number = 0) {
+  unstable_noStore(); // Prevents Next.js fetch cache from returning stale profile display_names
   try {
     const supabase = await createClient();
     if (!supabase) return { success: true, data: [] };
