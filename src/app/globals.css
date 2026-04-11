@@ -127,6 +127,7 @@
     font-weight: 450;
     line-height: 1.75;
     overflow-x: hidden;
+    overscroll-behavior-y: none; /* iOS app-like rubber-band prevention */
     position: relative;
 
     /* 250-point Organic Ambient Background */
@@ -199,6 +200,7 @@
   [role="button"] {
     min-height: 44px;
     min-width: 44px;
+    touch-action: manipulation;
   }
   p a,
   span a,

@@ -228,6 +228,8 @@ export default function ChatClient({
     setSelectedImagePreview(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
+      // Keep keyboard open for rapid-fire chat (LINE-like UX)
+      textareaRef.current.focus();
     }
     setTimeout(
       () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
@@ -441,16 +443,46 @@ export default function ChatClient({
       );
     }
 
-    return messages.map((msg) => {
+    return messages.map((msg, index) => {
       const isThanked = msg.has_thanked || thankedIds.has(msg.id);
       const isMyMessage = msg.user_id === currentUserId;
       const opacityClass = msg.is_optimistic
         ? "opacity-60"
         : "opacity-100 transition-opacity duration-300";
 
+      // Date Divider Logic
+      const msgDate = new Date(msg.created_at);
+      const isToday = msgDate.toDateString() === new Date().toDateString();
+      
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const isYesterday = msgDate.toDateString() === yesterday.toDateString();
+      
+      const dateStr = isToday ? "今日" : isYesterday ? "昨日" : `${msgDate.getFullYear()}/${msgDate.getMonth() + 1}/${msgDate.getDate()}`;
+      
+      let showDateDivider = false;
+      if (index === 0) {
+        showDateDivider = true;
+      } else {
+        const prevDate = new Date(messages[index - 1].created_at);
+        if (msgDate.toDateString() !== prevDate.toDateString()) {
+          showDateDivider = true;
+        }
+      }
+
+      const dateDivider = showDateDivider ? (
+        <div className="flex justify-center my-5 slide-up" key={`date-${msg.id}`}>
+          <span className="text-[11px] font-bold text-[var(--color-text-secondary)] bg-[var(--color-surface-soft)] px-3 py-1 rounded-full border border-[var(--color-border)] shadow-sm">
+            {dateStr}
+          </span>
+        </div>
+      ) : null;
+
       if (isMyMessage) {
         return (
-          <motion.div
+          <div key={msg.id}>
+            {dateDivider}
+            <motion.div
             layout
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -501,16 +533,18 @@ export default function ChatClient({
               </div>
             </div>
           </motion.div>
+          </div>
         );
       } else {
         return (
-          <motion.div
-            layout
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            key={msg.id}
-            className={`flex flex-col items-start px-4 mb-4 ${opacityClass}`}
+          <div key={msg.id}>
+            {dateDivider}
+            <motion.div
+              layout
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className={`flex flex-col items-start px-4 mb-4 ${opacityClass}`}
           >
             <div className="flex gap-2 max-w-[85%]">
               <div
@@ -577,6 +611,7 @@ export default function ChatClient({
               </div>
             </div>
           </motion.div>
+          </div>
         );
       }
     });
