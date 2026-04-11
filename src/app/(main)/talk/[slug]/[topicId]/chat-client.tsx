@@ -135,6 +135,13 @@ export default function ChatClient({
       });
   }, []);
 
+  // Initial scroll to bottom on mount
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+    }
+  }, []);
+
   // Listen for real-time messages instead of polling (DDoS Fix)
   useEffect(() => {
     const supabase = createClient();
@@ -465,7 +472,7 @@ export default function ChatClient({
                   {msg.image_url && (
                     <div className="mb-2 -mx-1 -mt-1 rounded-t-[14px] overflow-hidden relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={msg.image_url} alt="attached" className="w-[200px] h-auto object-cover max-h-[300px] bg-black/10" />
+                      <img src={msg.image_url} alt="attached" className="w-[200px] aspect-square object-cover bg-black/10" />
                     </div>
                   )}
                   {msg.content}
@@ -538,7 +545,7 @@ export default function ChatClient({
                   {msg.image_url && (
                     <div className="mb-2 -mx-1 -mt-1 rounded-t-[14px] overflow-hidden relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={msg.image_url} alt="attached" className="w-[200px] h-auto object-cover max-h-[300px] bg-[var(--color-surface-warm)]" />
+                      <img src={msg.image_url} alt="attached" className="w-[200px] aspect-square object-cover bg-[var(--color-surface-warm)]" />
                     </div>
                   )}
                   {msg.content}
@@ -725,9 +732,10 @@ export default function ChatClient({
               value={newMessage}
               onChange={handleTextareaChange}
               placeholder="メッセージを入力"
-              className="w-full bg-transparent border-none outline-none resize-none text-[15px] p-0 text-[var(--color-text)] placeholder-[var(--color-muted)] placeholder:font-medium leading-[1.5] max-h-[120px]"
+              className="w-full bg-transparent border-none outline-none resize-none text-[16px] p-0 text-[var(--color-text)] placeholder-[var(--color-muted)] placeholder:font-medium leading-[1.5] max-h-[120px]"
               rows={1}
               onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return; // Prevent sending during Japanese IME conversion
                 if ((e.key === "Enter" && !e.shiftKey) || (e.key === "Enter" && (e.metaKey || e.ctrlKey))) {
                   e.preventDefault();
                   handleSend();
