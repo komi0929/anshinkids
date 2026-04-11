@@ -152,6 +152,46 @@ export async function updateMyProfile(updates: {
     if (!user) return { success: false, error: "ログインが必要です" };
 
     const payload = { ...updates };
+
+    // Handle avatar upload: if avatar_url is a data URI, upload to Storage
+    if (payload.avatar_url && payload.avatar_url.startsWith("data:image/")) {
+      try {
+        // Extract base64 content
+        const matches = payload.avatar_url.match(/^data:image\/(\w+);base64,(.+)$/);
+        if (matches) {
+          const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
+          const base64Data = matches[2];
+          const buffer = Buffer.from(base64Data, "base64");
+          const filePath = `${user.id}/avatar.${ext}`;
+
+          // Upload to Supabase Storage (avatars bucket)
+          const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, buffer, {
+              contentType: `image/${matches[1]}`,
+              upsert: true, // Overwrite existing avatar
+            });
+
+          if (uploadError) {
+            console.error("[updateMyProfile] Avatar upload error:", uploadError.message);
+            // If bucket doesn't exist, fall back to storing short emoji or null
+            // Don't block the rest of the profile update
+            delete payload.avatar_url;
+          } else {
+            // Get public URL
+            const { data: urlData } = supabase.storage
+              .from("avatars")
+              .getPublicUrl(filePath);
+            // Add cache-buster to force browser to reload
+            payload.avatar_url = `${urlData.publicUrl}?t=${Date.now()}`;
+          }
+        }
+      } catch (uploadErr) {
+        console.error("[updateMyProfile] Avatar processing error:", uploadErr);
+        delete payload.avatar_url; // Don't block the profile update
+      }
+    }
+
     if (payload.children_profiles) {
       // Collect all allergens from children into the parent allergen_tags
       const flatAllergens = new Set<string>();
@@ -179,7 +219,7 @@ export async function updateMyProfile(updates: {
     
     revalidatePath("/", "layout");
     revalidatePath("/talk/[slug]/[topicId]", "page");
-    return { success: true };
+    return { success: true, data: updatedData[0] };
   } catch (err) {
     console.error("[updateMyProfile]", err);
     return { success: false, error: "プロフィール更新に失敗しました" };
