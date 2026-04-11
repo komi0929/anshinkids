@@ -239,12 +239,20 @@ export async function postTopicMessage(
     const validTopic = CommonSchemas.UUID.safeParse(topicId);
     if (!validTopic.success)
       return { success: false, error: "不正なトピック指定です" };
-    const validContent = CommonSchemas.ChatMessage.safeParse(content);
-    if (!validContent.success)
-      return {
-        success: false,
-        error: validContent.error.issues[0]?.message || "不正なメッセージです",
-      };
+      
+    // Allow empty content if there's an image attached
+    if (!content.trim() && !imageUrl) {
+      return { success: false, error: "メッセージを入力してください" };
+    }
+    
+    if (content.trim()) {
+      const validContent = CommonSchemas.ChatMessage.safeParse(content);
+      if (!validContent.success)
+        return {
+          success: false,
+          error: validContent.error.issues[0]?.message || "不正なメッセージです",
+        };
+    }
 
     const supabase = await createClient();
     if (!supabase) return { success: false, error: "DB未接続" };
