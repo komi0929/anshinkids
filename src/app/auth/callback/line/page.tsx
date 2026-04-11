@@ -78,7 +78,7 @@ export default function LineCallbackPage() {
         // (router.push uses soft navigation which skips the proxy)
         await new Promise((resolve) => setTimeout(resolve, 500));
 
-        window.location.href = "/talk";
+        window.location.href = "/mypage";
       } catch (err) {
         console.error("LINE callback error:", err);
         const message = err instanceof Error ? err.message : "認証に失敗しました";

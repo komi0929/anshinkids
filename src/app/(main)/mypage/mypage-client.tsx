@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Heart, BookOpen, TrendingUp, LogOut, Check, Loader2, Sparkles, Settings, X, Share } from "@/components/icons";
+import { useState, useEffect } from "react";
+import { Heart, BookOpen, TrendingUp, LogOut, Check, Loader2, Sparkles, Settings, X, Share, ChevronRight } from "@/components/icons";
 import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
@@ -87,8 +88,200 @@ interface RecommendedWikiData {
   summary: string;
 }
 
+// ─── Onboarding Step: Welcome & Profile Setup ────────────────────────
+function OnboardingWelcome({ profile, onNext, onSkipAll }: {
+  profile: Profile;
+  onNext: (name: string, avatar: string | null) => void;
+  onSkipAll: () => void;
+}) {
+  const [editName, setEditName] = useState(profile.display_name || "");
+  const [editAvatar, setEditAvatar] = useState<string | null>(profile.avatar_url || null);
+
+  const isFromLine = profile.avatar_url?.includes("profile.line-scdn.net") || 
+                     profile.avatar_url?.includes("obs.line-scdn.net");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="px-5 py-6"
+    >
+      <div className="text-center mb-6">
+        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <span className="text-3xl">🌿</span>
+        </div>
+        <h1 className="text-[22px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">
+          ようこそ、あんしんキッズへ！
+        </h1>
+        <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed font-medium break-keep text-balance">
+          まずは簡単な初期設定をしましょう。<br/>
+          2ステップですぐに完了します。
+        </p>
+      </div>
+
+      {/* Profile Card */}
+      <div className="bg-white rounded-[28px] p-5 border border-[var(--color-border-light)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] mb-5">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-16 h-16 relative shrink-0 rounded-2xl overflow-hidden">
+            {renderAvatar(editAvatar, editName || profile.display_name)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[16px] font-extrabold text-[var(--color-text)] truncate">{editName || profile.display_name}</p>
+            {isFromLine && (
+              <p className="text-[11px] text-[var(--color-primary)] font-bold mt-0.5">
+                LINEのアカウント情報で登録されました
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isFromLine && (
+          <div className="p-3.5 rounded-2xl bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/15 mb-4">
+            <p className="text-[12px] text-[var(--color-text)] leading-relaxed font-medium break-keep text-balance">
+              💡 <strong>アイコンやお名前はLINEのものがそのまま使われています。</strong>
+              他のユーザーにも表示されるため、気になる方はここで変更できます。
+            </p>
+          </div>
+        )}
+        
+        {/* Name Edit */}
+        <div className="mb-4">
+          <label className="block text-[12px] font-bold text-[var(--color-subtle)] mb-1.5">表示名</label>
+          <input
+            type="text"
+            value={editName}
+            onChange={e => setEditName(e.target.value)}
+            maxLength={20}
+            className="w-full text-[14px] px-4 py-3 rounded-xl border border-[var(--color-border-light)] focus:border-[var(--color-primary)] focus:outline-none transition-colors bg-[var(--color-surface-warm)]"
+            placeholder="表示名（例：ゆいママ）"
+          />
+        </div>
+
+        {/* Avatar Edit */}
+        <div>
+          <label className="block text-[12px] font-bold text-[var(--color-subtle)] mb-1.5">アイコン</label>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] transition-colors rounded-xl text-[12px] font-bold text-[var(--color-text-secondary)] border border-[var(--color-border)] cursor-pointer">
+              <span className="text-sm">📸</span> 写真を選択
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const img = new window.Image();
+                    img.onload = () => {
+                      const canvas = document.createElement("canvas");
+                      const maxSize = 200;
+                      let { width, height } = img;
+                      if (width > height) { if (width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; } }
+                      else { if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; } }
+                      canvas.width = width; canvas.height = height;
+                      const ctx = canvas.getContext("2d");
+                      if (ctx) { ctx.drawImage(img, 0, 0, width, height); setEditAvatar(canvas.toDataURL("image/jpeg", 0.7)); }
+                    };
+                    img.src = ev.target?.result as string;
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }} />
+            </label>
+            {editAvatar && editAvatar !== profile.avatar_url && (
+              <button onClick={() => setEditAvatar(profile.avatar_url)} className="text-[11px] text-[var(--color-muted)] underline">元に戻す</button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {["👦", "👧", "👨", "👩", "🐻", "🐶", "🐱", "🐰", "🐼", "🐨", "🦊", "🦁"].map(emoji => (
+              <button key={emoji} onClick={() => setEditAvatar(emoji)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${editAvatar === emoji ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 scale-110" : "border-[var(--color-border-light)] bg-white hover:bg-[var(--color-surface-warm)]"}`}>
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={() => onNext(editName.trim() || profile.display_name, editAvatar)}
+        className="w-full py-4 rounded-2xl bg-[var(--color-text)] text-white text-[15px] font-black flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform mb-3"
+      >
+        次へ：お子さまの情報を登録
+        <ChevronRight className="w-5 h-5" />
+      </button>
+      <button
+        onClick={onSkipAll}
+        className="w-full py-3 text-[13px] text-[var(--color-muted)] font-medium hover:text-[var(--color-text-secondary)] transition-colors"
+      >
+        あとで設定する
+      </button>
+    </motion.div>
+  );
+}
+
+// ─── Onboarding Step 2: Child Info (using existing wizard) ───────────
+function OnboardingChildSetup({ initialPrefs, onComplete, onSkip }: {
+  initialPrefs: UserPreferences;
+  onComplete: (prefs: UserPreferences) => void;
+  onSkip: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+    >
+      {/* Benefits banner */}
+      <div className="px-5 pt-5 pb-2">
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-[var(--color-surface-warm)] border border-emerald-100">
+          <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">
+            🌟 お子さまの情報を登録すると…
+          </h3>
+          <ul className="space-y-1.5">
+            <li className="flex items-start gap-2 text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
+              <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+              <span className="break-keep text-balance"><strong>同じアレルギーの先輩ママ・パパの知恵</strong>が自動で届きます</span>
+            </li>
+            <li className="flex items-start gap-2 text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
+              <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+              <span className="break-keep text-balance"><strong>年齢に合わせた情報</strong>（離乳食、給食、外食…）をおすすめ</span>
+            </li>
+            <li className="flex items-start gap-2 text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
+              <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+              <span className="break-keep text-balance">トークルームであなたの投稿に<strong>アレルギー情報を自動表示</strong>し、同じ悩みの方と繋がりやすく</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <OnboardingWizard
+        initialPrefs={initialPrefs}
+        onSkip={onSkip}
+        onComplete={onComplete}
+      />
+    </motion.div>
+  );
+}
+
+// ─── Onboarding Complete Animation ───────────────────────────────────
+function OnboardingComplete() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-[var(--color-bg)]"
+    >
+      <div className="text-center fade-in">
+        <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-lg scale-in">
+          <Sparkles className="w-10 h-10 text-white" />
+        </div>
+        <h2 className="text-[20px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">準備完了！</h2>
+        <p className="text-[14px] text-[var(--color-subtle)] break-keep text-balance">トークルームへご案内します 🌿</p>
+      </div>
+    </motion.div>
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function MyPageClient({ initialData }: { initialData: any }) {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(initialData?.data?.profile || null);
   const [contributions, setContributions] = useState<Contribution[]>(initialData?.data?.contributions || []);
   const [impact, setImpact] = useState<ImpactData | null>(initialData?.data?.impact || null);
@@ -104,7 +297,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
   const initErrText = initialData?.error || "";
   const initIsAuthErr = initErrText.includes("ログイン") || initErrText.includes("認証") || initErrText.includes("DB未接続");
   const [hasError, setHasError] = useState(initialData?.success === false && !initIsAuthErr);
-  const [errorMsg, setErrorMsg] = useState(initIsAuthErr ? "" : "接続エラーが発生しました。ページを再読み込みしてください。");
+  const [errorMsg] = useState(initIsAuthErr ? "" : "接続エラーが発生しました。ページを再読み込みしてください。");
 
   // Profile Basic Info Edit Modal
   const [showProfileEdit, setShowProfileEdit] = useState(false);
@@ -114,34 +307,43 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
   const [editAvatar, setEditAvatar] = useState<string | null>((initialData?.data?.profile as any)?.avatar_url || null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  async function loadData() {
-    setIsLoading(true);
-    const { getFullMyPageData } = await import("@/app/actions/mypage");
-    const result = await getFullMyPageData();
-    if (result.success && result.data) {
-      const d = result.data;
-      if (d.profile) {
-        setProfile(d.profile as unknown as Profile);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setEditName((d.profile as any).display_name || "");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setEditAvatar((d.profile as any).avatar_url);
-      }
-      setBookmarks(d.bookmarks as unknown as BookmarkData[]);
-      setStreakData(d.streak as { currentStreak: number; longestStreak: number; totalDays: number } | null);
-      if (d.contributions) setContributions(d.contributions as unknown as Contribution[]);
-      if (d.impact) setImpact(d.impact as unknown as ImpactData);
-    } else {
-      const errText = result.error || "";
-      // Auth-related errors → show login prompt (profile stays null)
-      if (errText.includes("ログイン") || errText.includes("認証") || errText.includes("DB未接続")) {
-        setHasError(false); // Let the !profile fallback handle it
-      } else {
-        setHasError(true);
-        setErrorMsg("接続エラーが発生しました。ページを再読み込みしてください。");
-      }
+  // ─── Onboarding State ─────────────────────────────────────────────
+  // "welcome" | "child-setup" | "complete" | null
+  const [onboardingStep, setOnboardingStep] = useState<string | null>(() => {
+    if (!initialData?.data?.profile) return null; // Not logged in, no onboarding
+    const p = initialData.data.profile;
+    const hasChildData = (p.children_profiles && Array.isArray(p.children_profiles) && p.children_profiles.length > 0) ||
+                         (p.allergen_tags && Array.isArray(p.allergen_tags) && p.allergen_tags.length > 0);
+    // Check localStorage flag
+    if (typeof window !== "undefined" && localStorage.getItem("anshin_onboarding_done") === "true") {
+      return null;
     }
-    setIsLoading(false);
+    return hasChildData ? null : "welcome";
+  });
+
+  // Handle the profile edit in welcome step
+  async function handleWelcomeNext(name: string, avatar: string | null) {
+    // Save profile changes
+    if (profile && (name !== profile.display_name || avatar !== profile.avatar_url)) {
+      setIsSavingProfile(true);
+      const result = await updateMyProfile({ display_name: name, avatar_url: avatar });
+      if (result.success && profile) {
+        setProfile({ ...profile, display_name: name, avatar_url: avatar });
+        setEditName(name);
+        setEditAvatar(avatar);
+      }
+      setIsSavingProfile(false);
+    }
+    setOnboardingStep("child-setup");
+  }
+
+  // Skip all onboarding
+  function handleSkipOnboarding() {
+    localStorage.setItem("anshin_onboarding_done", "true");
+    setOnboardingStep("complete");
+    setTimeout(() => {
+      router.push("/talk");
+    }, 1200);
   }
 
   // Save function is now handled purely inside OnboardingWizard. Update UI optimistically to prevent 5-second reload wait.
@@ -152,6 +354,14 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         ...profile,
         children_profiles: prefs.children as unknown as ChildProfile[]
       });
+    }
+    // If coming from onboarding flow, redirect to talk
+    if (onboardingStep === "child-setup") {
+      localStorage.setItem("anshin_onboarding_done", "true");
+      setOnboardingStep("complete");
+      setTimeout(() => {
+        router.push("/talk");
+      }, 1200);
     }
   }
 
@@ -213,6 +423,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     if (result.success) {
       localStorage.removeItem("anshin_post_count");
       localStorage.removeItem("anshin_guidelines_accepted");
+      localStorage.removeItem("anshin_onboarding_done");
       window.location.href = "/login";
     } else {
       setIsDeleting(false);
@@ -239,6 +450,39 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       alert("実績をコピーしました！SNSでシェアしましょう。");
     }
   };
+
+  // ─── Onboarding Screens ───────────────────────────────────────────
+  if (onboardingStep === "complete") {
+    return <OnboardingComplete />;
+  }
+
+  if (onboardingStep === "welcome" && profile) {
+    return (
+      <AnimatePresence mode="wait">
+        <OnboardingWelcome
+          key="welcome"
+          profile={profile}
+          onNext={handleWelcomeNext}
+          onSkipAll={handleSkipOnboarding}
+        />
+      </AnimatePresence>
+    );
+  }
+
+  if (onboardingStep === "child-setup" && profile) {
+    return (
+      <AnimatePresence mode="wait">
+        <OnboardingChildSetup
+          key="child-setup"
+          initialPrefs={getMigratedInitialPrefs()}
+          onComplete={handleWizardComplete}
+          onSkip={handleSkipOnboarding}
+        />
+      </AnimatePresence>
+    );
+  }
+
+  // ─── Normal MyPage Rendering ──────────────────────────────────────
 
   if (isLoading) {
     return (
@@ -297,6 +541,10 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       </div>
     );
   }
+
+  // Check if profile is effectively empty (no child data set)
+  const hasProfileData = (profile.children_profiles && profile.children_profiles.length > 0) ||
+                         (profile.allergen_tags && profile.allergen_tags.length > 0);
 
   return (
     <div className="fade-in pb-4">
@@ -396,7 +644,15 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                 </div>
                 <div className="space-y-2">
                   {getMigratedInitialPrefs().children.length === 0 ? (
-                    <p className="text-[12px] font-bold text-[var(--color-muted)] bg-[var(--color-surface-warm)] p-3 rounded-2xl">未設定</p>
+                    <div className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-dashed border-[var(--color-border)]">
+                      <p className="text-[12px] font-bold text-[var(--color-muted)] mb-2 break-keep text-balance">まだお子さまの情報が登録されていません</p>
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="text-[12px] font-bold text-[var(--color-primary)] underline"
+                      >
+                        登録して、おすすめ情報を受け取る →
+                      </button>
+                    </div>
                   ) : (
                     getMigratedInitialPrefs().children.map((child, idx) => (
                       <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-2xl p-3 flex flex-col gap-2 relative overflow-hidden group">
@@ -541,8 +797,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         </motion.div>
       )}
 
-      {/* === F10: Recommended Wiki Entries (Age/Allergen Context) === */}
-      {recommendedWikis.length > 0 && (
+      {/* === F10: Recommended Wiki Entries (ONLY when profile is configured) === */}
+      {hasProfileData && recommendedWikis.length > 0 && (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -596,6 +852,13 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           </div>
         </motion.div>
       )}
+
+      {/* CTA to talk rooms */}
+      <div className="px-4 pb-4">
+        <Link href="/talk" className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform">
+          <span className="text-lg">💬</span> トークルームへ行く
+        </Link>
+      </div>
 
       {/* Contributions Fallback list (Historical data not in top 3 Bento UI) */}
       {contributions.length > 0 && !(impact && impact.recentImpacts && impact.recentImpacts.length > 0) && (
@@ -686,22 +949,26 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                 onClick={async () => {
                    if (!profile) return;
                    setIsSavingProfile(true);
+                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                    const isCurrentlyPublic = !profile.children_profiles?.some(c => (c as any).isPublic === false);
                    const newProfs = (profile.children_profiles || []).map(c => ({...c, isPublic: !isCurrentlyPublic}));
                    
                    setProfile({ ...profile, children_profiles: newProfs as ChildProfile[] });
                    
-                   const { updateMyProfile } = await import("@/app/actions/mypage");
-                   await updateMyProfile({ children_profiles: newProfs as Record<string, unknown>[] });
+                   const { updateMyProfile: updateProfileAction } = await import("@/app/actions/mypage");
+                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                   await updateProfileAction({ children_profiles: newProfs as any[] });
                    
                    setIsSavingProfile(false);
                 }}
                 disabled={isSavingProfile}
                 className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 shadow-inner ${
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   !profile?.children_profiles?.some(c => (c as any).isPublic === false) ? "bg-[var(--color-primary)]" : "bg-gray-300"
                 }`}
               >
                 <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   !profile?.children_profiles?.some(c => (c as any).isPublic === false) ? "translate-x-6" : "translate-x-0"
                 }`} />
               </button>
@@ -731,7 +998,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           </p>
           {showDeleteConfirm ? (
             <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-[var(--color-danger-light)]0 border border-[var(--color-danger)]/30">
+              <div className="p-3 rounded-xl bg-red-50 border border-[var(--color-danger)]/30">
                 <p className="text-[12px] text-red-700 font-bold mb-1">本当に削除しますか？</p>
                 <p className="text-[10px] text-[var(--color-danger)]">この操作は取り消せません。</p>
               </div>
@@ -756,7 +1023,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           ) : (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full p-2.5 rounded-xl border border-[var(--color-danger)]/30 text-[12px] text-[var(--color-danger)] hover:bg-[var(--color-danger-light)]0 transition-all"
+              className="w-full p-2.5 rounded-xl border border-[var(--color-danger)]/30 text-[12px] text-[var(--color-danger)] hover:bg-red-50 transition-all"
               id="show-delete"
             >
               アカウントを削除する

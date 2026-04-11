@@ -283,7 +283,12 @@ export async function getPersonalizedWikiEntries() {
       return { success: true, data: enhancedMatches, isPersonalized, personalizationLabel: finalLabel };
     }
 
-    // Fallback: top recent topic_summaries
+    // If user has NO profile data at all, don't pretend to recommend anything
+    if (allergenTags.length === 0 && ageGroups.length === 0 && interests.length === 0) {
+      return { success: true, data: [], isPersonalized: false, personalizationLabel: "" };
+    }
+
+    // Fallback: top recent topic_summaries (only if user HAS some profile data but no matches found)
     const req = supabase
       .from("topic_summaries")
       .select(`
