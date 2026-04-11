@@ -54,6 +54,7 @@ export default function ThemeHubClient({
   suggestedPrompts,
   userAllergens,
   userAgeGroups,
+  userInterests,
 }: {
   slug: string;
   roomInfo: RoomInfo;
@@ -62,6 +63,7 @@ export default function ThemeHubClient({
   suggestedPrompts: string[];
   userAllergens?: string[];
   userAgeGroups?: string[];
+  userInterests?: string[];
 }) {
   const [topics] = useState<Topic[]>(initialTopics);
   const [summaries] = useState<Record<string, TopicSummary>>(initialSummaries);
@@ -112,12 +114,42 @@ export default function ThemeHubClient({
     });
   }
 
-  if (filterPersonalized && userAllergens) {
+  if (filterPersonalized && (userAllergens?.length || userAgeGroups?.length || userInterests?.length)) {
+    // Decode age and interest contextual keywords
+    const keywords: string[] = [];
+    if (userAgeGroups && userAgeGroups.length > 0) {
+      if (userAgeGroups.includes("0-1")) keywords.push("離乳食", "赤ちゃん", "ベビー", "ミルク", "初めて", "授乳");
+      if (userAgeGroups.includes("1-3")) keywords.push("幼児", "保育園", "1歳", "2歳", "3歳", "おやつ", "イヤイヤ");
+      if (userAgeGroups.includes("3-6")) keywords.push("幼稚園", "こども園", "給食", "お弁当", "先生", "遠足");
+      if (userAgeGroups.includes("6-12")) keywords.push("小学生", "学童", "入学", "学校", "宿泊", "ランドセル");
+    }
+    if (userInterests && userInterests.length > 0) {
+      if (userInterests.includes("shopping")) keywords.push("市販品", "スーパー", "商品", "おやつ");
+      if (userInterests.includes("eating-out")) keywords.push("外食", "レストラン", "チェーン", "メニュー");
+      if (userInterests.includes("medical")) keywords.push("病院", "治療", "負荷試験", "血液検査", "主治医");
+      if (userInterests.includes("daily-food")) keywords.push("献立", "レシピ", "代替", "代用", "ごはん");
+      if (userInterests.includes("school-life")) keywords.push("保育園", "幼稚園", "学校", "給食", "先生", "面談");
+      if (userInterests.includes("concern")) keywords.push("悩み", "相談", "共感", "不安");
+    }
+
     displayTopics = displayTopics.filter(t => {
       const summary = summaries[t.id];
-      if (!summary || !summary.allergen_tags) return false;
-      const tags = Array.isArray(summary.allergen_tags) ? summary.allergen_tags : [summary.allergen_tags];
-      return tags.some(tag => userAllergens.includes(tag as string));
+      if (!summary) return false;
+      
+      // 1. Check allergens first
+      const hasAllergenMatch = userAllergens && userAllergens.length > 0 && summary.allergen_tags && 
+        (Array.isArray(summary.allergen_tags) ? summary.allergen_tags : [summary.allergen_tags])
+        .some(tag => userAllergens.includes(tag as string));
+        
+      if (hasAllergenMatch) return true;
+      
+      // 2. Check keywords against summary_snippet if no allergen match
+      if (keywords.length > 0) {
+         const snippet = summary.summary_snippet || "";
+         return keywords.some(kw => snippet.includes(kw));
+      }
+      
+      return false;
     });
   }
 
@@ -183,7 +215,7 @@ export default function ThemeHubClient({
                 {sortMode === "newest" ? "最新順" : "注目順"}
               </button>
               
-              {userAllergens && userAllergens.length > 0 && (
+              {(userAllergens?.length || userAgeGroups?.length || userInterests?.length) ? (
                 <button
                   onClick={() => setFilterPersonalized(!filterPersonalized)}
                   className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-bold transition-all ${
@@ -195,7 +227,7 @@ export default function ThemeHubClient({
                   <Filter className="w-3.5 h-3.5" />
                   自分に関係のある話題
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
 

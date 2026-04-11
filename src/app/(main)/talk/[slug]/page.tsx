@@ -44,14 +44,19 @@ export default async function ThemeHubPage(props: {
   const [topicsRes, summariesRes, profileRes] = await Promise.all([
     getTalkTopics(roomInfo.id),
     getTopicSummariesForRoom(roomInfo.id),
-    user ? supabase.from("profiles").select("allergen_tags, children_profiles").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null })
+    user ? supabase.from("profiles").select("allergen_tags, children_profiles, interests").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null })
   ]);
+
+  let userInterests: string[] = [];
 
   if (profileRes.data) {
     userAllergens = profileRes.data.allergen_tags || [];
     const childrenProfile = profileRes.data.children_profiles as any[];
     if (childrenProfile && Array.isArray(childrenProfile)) {
       userAgeGroups = Array.from(new Set(childrenProfile.map(c => c.ageGroup).filter(Boolean))) as string[];
+    }
+    if (profileRes.data.interests && Array.isArray(profileRes.data.interests)) {
+      userInterests = profileRes.data.interests;
     }
   }
 
@@ -72,6 +77,7 @@ export default async function ThemeHubPage(props: {
       suggestedPrompts={suggestedPrompts}
       userAllergens={userAllergens}
       userAgeGroups={userAgeGroups}
+      userInterests={userInterests}
     />
   );
 }
