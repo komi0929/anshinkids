@@ -40,6 +40,7 @@ export const THEMES: ThemeDefinition[] = [
     "heat_score": 0,
     "tips": ["工夫やコツ"],
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
@@ -65,6 +66,7 @@ export const THEMES: ThemeDefinition[] = [
     "heat_score": 0,
     "reviews": [{"rating": 4, "comment": "コメント"}],
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
@@ -89,6 +91,7 @@ export const THEMES: ThemeDefinition[] = [
     "heat_score": 0,
     "reviews": [{"rating": 4, "comment": "体験"}],
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
@@ -112,6 +115,7 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
@@ -137,6 +141,7 @@ export const THEMES: ThemeDefinition[] = [
     "heat_score": 0,
     "tips": ["準備のコツ"],
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
@@ -161,6 +166,7 @@ export const THEMES: ThemeDefinition[] = [
     "heat_score": 0,
     "reviews": [{"rating": 4, "duration": "使用期間", "comment": "コメント"}],
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
@@ -184,6 +190,7 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,
@@ -208,6 +215,7 @@ export const THEMES: ThemeDefinition[] = [
     "mention_count": 1,
     "heat_score": 0,
     "is_recommended": false,
+    "source_message_ids": ["発言ID"],
     "source_topics": [{"id": "話題ID", "title": "話題"}]
   }]
 }`,

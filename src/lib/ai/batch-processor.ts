@@ -101,6 +101,7 @@ export async function runBatchExtraction() {
       room_id: String(m.room_id),
       topic_id: m.topic_id ? String(m.topic_id) : null,
       trust_score: (m.profiles as Record<string, unknown>)?.trust_score || 0,
+      image_url: m.image_url ? String(m.image_url) : null,
     }));
 
     const roomIds = [...new Set(messageTexts.map(m => m.room_id))];
@@ -152,7 +153,7 @@ export async function runBatchExtraction() {
       
       const { data: existingEntry } = await supabase
         .from("wiki_entries")
-        .select("id, sections, source_count")
+        .select("id, sections, source_count, image_gallery")
         .eq("slug", megaWikiSlug)
         .maybeSingle();
         
@@ -165,6 +166,7 @@ export async function runBatchExtraction() {
       const entryId = existingEntry.id;
       let roomUpdated = false;
       let processedMessagesCount = 0;
+      let newImagesForRoom: string[] = [];
 
       for (let i = 0; i < roomMessages.length; i += chunkSize) {
         // Rate limit mitigation: sleep briefly between chunks if not first
@@ -177,7 +179,8 @@ export async function runBatchExtraction() {
         // RAG Limit: strictly limit message bounds (Gemini flash supports 1M, but keep it tight for RAG coherence)
         let messagesText = chunk.map(m => {
           const topicLabel = m.topic_id && topicTitles[m.topic_id] ? `[話題ID:${m.topic_id}][話題:${topicTitles[m.topic_id]}]` : '';
-          return `[発言ID:${m.id}] ${topicLabel} ${m.content}`;
+          const imageLabel = m.image_url ? `[添付画像:${m.image_url}]` : '';
+          return `[発言ID:${m.id}] ${topicLabel} ${imageLabel} ${m.content}`;
         }).join("\n");
         if (messagesText.length > 50000) messagesText = messagesText.slice(0, 50000) + "\n...[TRUNCATED]";
 
@@ -269,6 +272,11 @@ export async function runBatchExtraction() {
             roomUpdated = true;
             extractionSuccess = true;
             processedMessagesCount += chunk.length;
+            
+            const chunkImageUrls = chunk.filter(m => m.image_url).map(m => m.image_url!);
+            if (chunkImageUrls.length > 0) {
+              newImagesForRoom.push(...chunkImageUrls);
+            }
           }
 
           if (extractionSuccess) {
@@ -343,10 +351,12 @@ export async function runBatchExtraction() {
       const actualSourcesAdded = processedMessagesCount;
       totalProcessedAcrossRooms += processedMessagesCount;
       if (roomUpdated) {
+        const updatedImageGallery = [...new Set([...(existingEntry.image_gallery || []), ...newImagesForRoom])];
         await supabase
           .from("wiki_entries")
           .update({
             sections: currentSections,
+            image_gallery: updatedImageGallery,
             last_updated_from_batch: new Date().toISOString(),
             source_count: (existingEntry.source_count || 0) + actualSourcesAdded,
           })

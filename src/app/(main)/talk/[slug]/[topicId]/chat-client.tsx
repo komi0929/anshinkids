@@ -10,6 +10,8 @@ import {
   Trash2,
   ChevronDown,
   BookOpen,
+  Camera,
+  X,
 } from "@/components/icons";
 import {
   getTopicMessages,
@@ -45,6 +47,7 @@ export interface Message {
   author_trust?: number;
   author_allergens?: string[];
   author_age?: string;
+  image_url?: string | null;
 }
 
 interface RoomInfo {
@@ -94,8 +97,12 @@ export default function ChatClient({
   const [topicSummary] = useState<TopicSummary | null>(initialSummary);
   const [showSummary, setShowSummary] = useState(true);
 
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadMessages = useCallback(async () => {
     const result = await getTopicMessages(topicId);
@@ -168,20 +175,22 @@ export default function ChatClient({
   async function handleSend(e?: React.FormEvent) {
     if (e) e.preventDefault();
     const text = newMessage;
-    if (!text.trim() || isSending || !topicInfo || !roomInfo) return;
+    if ((!text.trim() && !selectedImage) || isSending || !topicInfo || !roomInfo) return;
 
-    // Safety check
-    const safety = checkContentSafety(text);
-    if (!safety.isSafe) {
-      const reason = safety.hasDangerousAdvice
-        ? "医療アドバイスに関する表現が含まれています。体験談として共有してください。"
-        : "攻撃的な表現が検出されました。やさしい言葉で書き直してみてください。";
-      setSafetyWarning(reason);
-      Haptics.error();
-      return;
-    }
-    if (safety.isEmergency) {
-      setSafetyWarning("⚠️ 緊急時は迷わず119番へ。エピペンをお持ちの方は使用してください。");
+    // Safety check (only if text exists)
+    if (text.trim()) {
+      const safety = checkContentSafety(text);
+      if (!safety.isSafe) {
+        const reason = safety.hasDangerousAdvice
+          ? "医療アドバイスに関する表現が含まれています。体験談として共有してください。"
+          : "攻撃的な表現が検出されました。やさしい言葉で書き直してみてください。";
+        setSafetyWarning(reason);
+        Haptics.error();
+        return;
+      }
+      if (safety.isEmergency) {
+        setSafetyWarning("⚠️ 緊急時は迷わず119番へ。エピペンをお持ちの方は使用してください。");
+      }
     }
 
     setIsSending(true);
@@ -201,10 +210,15 @@ export default function ChatClient({
       author_trust: 0,
       author_allergens: [],
       author_age: "",
+      image_url: selectedImagePreview,
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
     setNewMessage("");
+    // Clear preview locally
+    const imageToUpload = selectedImage;
+    setSelectedImage(null);
+    setSelectedImagePreview(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
@@ -214,7 +228,33 @@ export default function ChatClient({
     );
 
     startTransition(async () => {
-      const result = await postTopicMessage(topicId, roomInfo.id, text);
+      let finalImageUrl: string | undefined = undefined;
+      
+      // Upload image first if exists
+      if (imageToUpload) {
+        const supabase = createClient();
+        const fileExt = imageToUpload.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${roomInfo.id}/${topicId}/${fileName}`;
+        
+        const { error: uploadError, data } = await supabase.storage.from('chat_images').upload(filePath, imageToUpload);
+        if (uploadError) {
+           setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+           setNewMessage(text);
+           setSelectedImage(imageToUpload);
+           setSelectedImagePreview(URL.createObjectURL(imageToUpload));
+           setSafetyWarning("画像のアップロードに失敗しました");
+           setIsSending(false);
+           return;
+        }
+        
+        if (data) {
+          const { data: publicUrlData } = supabase.storage.from('chat_images').getPublicUrl(filePath);
+          finalImageUrl = publicUrlData.publicUrl;
+        }
+      }
+
+      const result = await postTopicMessage(topicId, roomInfo.id, text, finalImageUrl);
       if (result.success) {
         Haptics.success();
         AudioHaptics.playPop();
@@ -223,6 +263,10 @@ export default function ChatClient({
         // Restore on failure
         setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
         setNewMessage(text);
+        if (imageToUpload) {
+           setSelectedImage(imageToUpload);
+           setSelectedImagePreview(URL.createObjectURL(imageToUpload));
+        }
         setSafetyWarning(result.error || "送信に失敗しました");
       }
       setIsSending(false);
@@ -418,6 +462,12 @@ export default function ChatClient({
                   {getAnonymousName(msg.user_id, msg.author_name)}
                 </span>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-br-[4px] bg-[var(--color-primary)] text-white shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
+                  {msg.image_url && (
+                    <div className="mb-2 -mx-1 -mt-1 rounded-t-[14px] overflow-hidden relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={msg.image_url} alt="attached" className="w-[200px] h-auto object-cover max-h-[300px] bg-black/10" />
+                    </div>
+                  )}
                   {msg.content}
                 </div>
                 <div className="flex gap-2 items-center mt-1 mr-1 flex-row-reverse">
@@ -485,6 +535,12 @@ export default function ChatClient({
                   )}
                 </div>
                 <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed max-w-full">
+                  {msg.image_url && (
+                    <div className="mb-2 -mx-1 -mt-1 rounded-t-[14px] overflow-hidden relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={msg.image_url} alt="attached" className="w-[200px] h-auto object-cover max-h-[300px] bg-[var(--color-surface-warm)]" />
+                    </div>
+                  )}
                   {msg.content}
                 </div>
                 <div className="flex gap-2 items-center mt-1 ml-1">
@@ -582,7 +638,7 @@ export default function ChatClient({
                 )}
                 {/* Render structured full_summary beautifully */}
                 <div className="mt-4 border-t border-[var(--color-border-light)] pt-4">
-                  <ThemeSummaryRenderer theme={themeInfo} topicSummary={topicSummary} />
+                  <ThemeSummaryRenderer theme={themeInfo} topicSummary={topicSummary} roomSlug={slug} topicId={topicId} />
                 </div>
                 
                 <p className="text-[10px] text-[var(--color-muted)] mt-5 pt-3 border-t border-[var(--color-border-light)] font-medium">
@@ -616,10 +672,53 @@ export default function ChatClient({
         className="p-3 bg-white border-t border-[var(--color-border-light)] shadow-[0_-4px_15px_-10px_rgba(0,0,0,0.1)] relative z-20"
         style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
       >
+        {selectedImagePreview && (
+          <div className="max-w-3xl mx-auto mb-3">
+            <div className="relative w-24 h-24 rounded-xl overflow-hidden shadow-sm border border-[var(--color-border-light)] inline-block">
+              <Image src={selectedImagePreview} alt="preview" fill className="object-cover" unoptimized />
+              <button
+                 onClick={() => {
+                   setSelectedImage(null);
+                   setSelectedImagePreview(null);
+                 }}
+                 className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white backdrop-blur-sm hover:scale-105 active:scale-95 transition-all"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
         <form
           onSubmit={handleSend}
           className="max-w-3xl mx-auto flex gap-2 items-end"
         >
+          <input 
+            type="file" 
+            accept="image/jpeg, image/png, image/webp" 
+            className="hidden" 
+            ref={fileInputRef} 
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                 if (file.size > 5 * 1024 * 1024) {
+                   setSafetyWarning("画像は5MB以下にしてください");
+                   return;
+                 }
+                 setSelectedImage(file);
+                 setSelectedImagePreview(URL.createObjectURL(file));
+              }
+              // reset input
+              if (fileInputRef.current) fileInputRef.current.value = '';
+            }} 
+          />
+          <button
+            type="button"
+            disabled={isSending}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-[var(--color-primary)] bg-[var(--color-surface-warm)] hover:bg-[var(--color-primary)]/10 active:scale-95 transition-all border border-[var(--color-primary)]/20 shadow-sm"
+          >
+            <Camera className="w-[22px] h-[22px]" />
+          </button>
           <div className="flex-1 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] focus-within:border-[var(--color-primary)] focus-within:ring-1 focus-within:ring-[var(--color-primary)] transition-all overflow-hidden flex items-end min-h-[44px] px-3 py-2">
             <textarea
               ref={textareaRef}
@@ -638,9 +737,9 @@ export default function ChatClient({
           </div>
           <button
             type="submit"
-            disabled={!newMessage.trim() || isSending}
+            disabled={(!newMessage.trim() && !selectedImage) || isSending}
             className={`flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-full transition-all ${
-              newMessage.trim() && !isSending
+              (newMessage.trim() || selectedImage) && !isSending
                 ? "bg-[var(--color-primary)] text-white shadow-md active:scale-90"
                 : "bg-[var(--color-surface-warm)] text-[var(--color-muted)]"
             }`}

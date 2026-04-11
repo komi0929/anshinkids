@@ -11,9 +11,11 @@ interface TopicSummaryData {
 interface ThemeSummaryRendererProps {
   theme: ThemeDefinition;
   topicSummary: TopicSummaryData;
+  roomSlug: string;
+  topicId: string;
 }
 
-export function ThemeSummaryRenderer({ theme, topicSummary }: ThemeSummaryRendererProps) {
+export function ThemeSummaryRenderer({ theme, topicSummary, roomSlug, topicId }: ThemeSummaryRendererProps) {
   const data = topicSummary.full_summary;
 
   if (!data || typeof data !== "object" || Array.isArray(data)) {
@@ -50,10 +52,12 @@ export function ThemeSummaryRenderer({ theme, topicSummary }: ThemeSummaryRender
 
   const getLabel = (key: string) => keyLabelMap[key] || { label: key, icon: "📌" };
 
+  const sourceIds = data.source_message_ids as string[] | undefined;
+
   return (
-    <div className="space-y-4 pt-1">
+    <div className="space-y-4 pt-1 relative pb-2">
       {Object.entries(data).map(([key, val]) => {
-        if (!val || key === "title") return null;
+        if (!val || key === "title" || key === "source_message_ids") return null;
         const config = getLabel(key);
 
         if (typeof val === "string" || typeof val === "boolean" || typeof val === "number") {
@@ -89,6 +93,27 @@ export function ThemeSummaryRenderer({ theme, topicSummary }: ThemeSummaryRender
 
         return null;
       })}
+
+      {sourceIds && sourceIds.length > 0 && (
+        <div className="mt-5 pt-3 border-t border-[var(--color-border-light)] flex flex-wrap gap-2 items-center">
+          <span className="text-[11px] font-bold text-[var(--color-muted)] flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            情報元へジャンプ
+          </span>
+          {sourceIds.slice(0, 3).map((id, idx) => (
+             <a
+               key={idx}
+               href={`/talk/${roomSlug}/${topicId}#msg-${id}`}
+               className="inline-flex items-center justify-center bg-[var(--color-surface-warm)] hover:bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[11px] font-bold px-2 py-1 rounded border border-[var(--color-primary)]/20 transition-colors"
+             >
+               発言 {idx + 1}
+             </a>
+          ))}
+          {sourceIds.length > 3 && (
+            <span className="text-[11px] font-bold text-[var(--color-muted)]">他 {sourceIds.length - 3} 件</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

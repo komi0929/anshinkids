@@ -73,6 +73,7 @@ export interface Database {
           topic_id: string | null
           user_id: string | null
           content: string
+          image_url: string | null
           is_system_bot: boolean
           thanks_count: number
           ai_extracted: boolean
@@ -104,6 +105,7 @@ export interface Database {
           sections: Json
           summary: string | null
           allergen_tags: string[]
+          image_gallery: string[]
           theme_slug: string | null
           is_mega_wiki: boolean
           source_count: number

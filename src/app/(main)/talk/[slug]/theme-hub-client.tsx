@@ -12,6 +12,8 @@ import { AudioHaptics } from "@/lib/audio-haptics";
 import { motion, AnimatePresence } from "framer-motion";
 import TopicBookmarkButton from "@/components/topic-bookmark-button";
 import { Filter, ArrowUpDown } from "@/components/icons";
+import { ThemeSummaryRenderer } from "@/components/theme-summary-renderer";
+import { THEMES } from "@/lib/themes";
 
 interface RoomInfo {
   id: string;
@@ -56,6 +58,7 @@ export default function ThemeHubClient({
   userAllergens,
   userAgeGroups,
   userInterests,
+  imageGallery = [],
 }: {
   slug: string;
   roomInfo: RoomInfo;
@@ -65,6 +68,7 @@ export default function ThemeHubClient({
   userAllergens?: string[];
   userAgeGroups?: string[];
   userInterests?: string[];
+  imageGallery?: string[];
 }) {
   const [topics] = useState<Topic[]>(initialTopics);
   const [summaries] = useState<Record<string, TopicSummary>>(initialSummaries);
@@ -201,6 +205,24 @@ export default function ThemeHubClient({
         </div>
       </div>
 
+      {/* Image Gallery (Bento Style) */}
+      {imageGallery && imageGallery.length > 0 && (
+        <div className="px-4 pt-3 pb-2">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm bg-[var(--color-surface-warm)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">📸</span>
+            <h2 className="text-[15px] font-extrabold text-[var(--color-text)]">みんなのおすすめ</h2>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 snap-x -mx-4 px-4 scrollbar-hide">
+             {imageGallery.map((img, idx) => (
+                <div key={idx} className="relative w-28 h-28 flex-shrink-0 rounded-2xl overflow-hidden shadow-sm border border-[var(--color-border-light)] snap-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`gallery-${idx}`} className="w-full h-full object-cover bg-[var(--color-surface-warm)]" />
+                </div>
+             ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto pb-24">
         <div className="px-4 py-4 space-y-5 max-w-2xl mx-auto">
 
@@ -330,11 +352,22 @@ export default function ThemeHubClient({
                           </div>
                         </div>
                         {summary?.summary_snippet && (
-                          <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed line-clamp-2 mb-3 bg-[var(--color-surface-warm)] rounded-xl px-3 py-2.5">
+                          <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mt-2 mb-3 bg-[var(--color-surface-warm)] rounded-xl px-3 py-2.5 shadow-inner">
                             {summary.summary_snippet}
                           </p>
                         )}
-                        <div className="flex items-center gap-3 text-[11px] font-medium text-[var(--color-muted)]">
+                        
+                        {/* ThemeSummaryRenderer passing roomSlug and topicId */}
+                        {summary && summary.full_summary && (
+                          <div className="mt-3 relative z-10" onClick={(e) => {
+                            // Prevent navigation if clicking on badge
+                            if ((e.target as HTMLElement).closest('a')) e.stopPropagation();
+                          }}>
+                             <ThemeSummaryRenderer theme={THEMES.find(t => t.slug === slug) || THEMES[0]} topicSummary={summary} roomSlug={slug} topicId={topic.id} />
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--color-muted)] mt-2">
                           <span className="flex items-center gap-1 bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
                             <MessageCircle className="w-3 h-3" />
                             {topic.message_count}件

@@ -44,7 +44,7 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
     const { data: messages, error: msgsErr } = await supabase
       .from("messages")
       .select(`
-        content, created_at, is_system_bot, user_id,
+        id, content, created_at, is_system_bot, user_id,
         profiles!messages_user_id_fkey (
           children_profiles, allergen_tags
         )
@@ -97,7 +97,7 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
           }
           if (age || allergens) profContext = ` ${age}${allergens}`;
         }
-        return `[発言${i + 1}${profContext}] ${m.content}`;
+        return `[発言ID:${m.id}${profContext}] ${m.content}`;
       })
       .join("\n");
 
@@ -111,6 +111,7 @@ export async function generateTopicSummary(topicId: string): Promise<{ success: 
 - 医療的断定は避け、「〜という体験が共有されています」のように記述
 - 具体的な商品名・店名・コツは積極的に残す
 - 指定されたフォーマット（スキーマ）に厳守すること
+- 【出典リンク】抽出した情報のそれぞれについて、必ず情報元となった「発言ID」の配列を \`source_message_ids: ["発言ID"]\` として追加して返してください。
 
 テーマ専用の抽出ヒント:
 ${themeDef.extractionHint}`
@@ -151,6 +152,8 @@ ${themeDef.extractionHint}`
            }
         }
       }
+      // Add source_message_ids to the schema explicitly
+      rootProperties["source_message_ids"] = { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "情報元となった発言IDの配列（必須）" };
     } else {
        rootProperties["key_points"] = { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } };
        rootProperties["tips"] = { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } };

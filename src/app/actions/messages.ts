@@ -229,7 +229,8 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
 export async function postTopicMessage(
   topicId: string,
   roomId: string,
-  content: string
+  content: string,
+  imageUrl?: string
 ): Promise<ActionResponse> {
   try {
     // Validation
@@ -271,6 +272,7 @@ export async function postTopicMessage(
       topic_id: topicId,
       user_id: user.id,
       content: content.trim(),
+      image_url: imageUrl || null,
     });
     if (error) throw error;
 

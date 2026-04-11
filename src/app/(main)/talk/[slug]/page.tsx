@@ -41,10 +41,11 @@ export default async function ThemeHubPage(props: {
   let userAllergens: string[] = [];
   let userAgeGroups: string[] = [];
 
-  const [topicsRes, summariesRes, profileRes] = await Promise.all([
+  const [topicsRes, summariesRes, profileRes, wikiEntryRes] = await Promise.all([
     getTalkTopics(roomInfo.id),
     getTopicSummariesForRoom(roomInfo.id),
-    user ? supabase.from("profiles").select("allergen_tags, children_profiles, interests").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null })
+    user ? supabase.from("profiles").select("allergen_tags, children_profiles, interests").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null }),
+    supabase.from("wiki_entries").select("image_gallery").eq("slug", `mega-${slug}`).maybeSingle()
   ]);
 
   let userInterests: string[] = [];
@@ -62,6 +63,7 @@ export default async function ThemeHubPage(props: {
 
   const topics = (topicsRes.success && topicsRes.data ? topicsRes.data : []) as Topic[];
   const summaries = (summariesRes.success && summariesRes.data ? summariesRes.data : {}) as Record<string, TopicSummary>;
+  const imageGallery = (wikiEntryRes.data?.image_gallery || []) as string[];
 
   // Generate suggested prompts on the server
   const themePrompts = THEME_PROMPTS[slug] || [];
@@ -78,6 +80,7 @@ export default async function ThemeHubPage(props: {
       userAllergens={userAllergens}
       userAgeGroups={userAgeGroups}
       userInterests={userInterests}
+      imageGallery={imageGallery}
     />
   );
 }

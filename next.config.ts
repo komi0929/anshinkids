@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "obs.line-scdn.net", // Sometimes LINE uses this alternate domain
+      },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
       }
     ],
   },
