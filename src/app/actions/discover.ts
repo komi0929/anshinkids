@@ -484,11 +484,20 @@ export async function getImpactFeedback() {
     const { data: { user } } = await getCachedUser();
     if (!user) return { success: false, data: null };
 
-    // Count how many wiki articles reference this user's contributions
-    const { data: allSources } = await supabase
-      .from("wiki_sources")
-      .select("wiki_entry_id")
-      .eq("contributor_id", user.id);
+    // Parallelize getting sources and profile stats
+    const [sourcesRes, profileRes] = await Promise.all([
+      supabase
+        .from("wiki_sources")
+        .select("wiki_entry_id")
+        .eq("contributor_id", user.id),
+      supabase
+        .from("profiles")
+        .select("total_thanks_received, trust_score")
+        .eq("id", user.id)
+        .maybeSingle()
+    ]);
+
+    const allSources = sourcesRes.data;
 
     let uniqueArticles = 0;
     let totalSourcesInArticles = 0;
@@ -552,13 +561,7 @@ export async function getImpactFeedback() {
       }
     }
 
-    // Get the user's profile stats
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("total_thanks_received, trust_score")
-      .eq("id", user.id)
-      .maybeSingle();
-
+    const profile = profileRes.data;
     const thanks = profile?.total_thanks_received || 0;
     const trustScore = profile?.trust_score || 0;
 

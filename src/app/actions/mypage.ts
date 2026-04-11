@@ -9,8 +9,8 @@ export async function getFullMyPageData() {
   noStore();
   try {
 
-    const profileRes = await getMyProfile().catch(() => ({ success: false as const, data: null, error: "プロフィール取得エラー" }));
-    const [contribRes, impactRes, bookmarksRes, streakRes, recommendedRes] = await Promise.all([
+    const [profileRes, contribRes, impactRes, bookmarksRes, streakRes, recommendedRes] = await Promise.all([
+      getMyProfile().catch(() => ({ success: false as const, data: null, error: "プロフィール取得エラー" })),
       getMyContributions().catch(() => ({ success: true, data: [] })),
       getImpactFeedback().catch(() => ({ success: false, data: null })),
       getMyBookmarks().catch(() => ({ success: false, data: [] })),

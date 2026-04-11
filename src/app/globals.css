@@ -194,20 +194,13 @@
     border-radius: var(--radius-sm);
   }
 
-  /* Touch targets */
+  /* Touch targets and zoom prevention */
   button,
   a,
   [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
     touch-action: manipulation;
   }
-  p a,
-  span a,
-  li a {
-    min-height: unset;
-    min-width: unset;
-  }
+
 
   /* Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
