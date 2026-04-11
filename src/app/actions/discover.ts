@@ -93,11 +93,12 @@ export async function getPersonalizedWikiEntries() {
 
     let allergenTags: string[] = [];
     let ageGroups: string[] = [];
+    let interests: string[] = [];
 
     if (user) {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("allergen_tags, children_profiles")
+        .select("allergen_tags, children_profiles, interests")
         .eq("id", user.id)
         .maybeSingle();
         
@@ -107,10 +108,13 @@ export async function getPersonalizedWikiEntries() {
         if (cProfile && Array.isArray(cProfile)) {
            ageGroups = Array.from(new Set(cProfile.map(c => c.ageGroup).filter(Boolean))) as string[];
         }
+        if (profile.interests && Array.isArray(profile.interests)) {
+           interests = profile.interests;
+        }
       }
     }
 
-    // Decode age contextual keywords
+    // Decode age and interest contextual keywords
     const keywords: string[] = [];
     let ageLabel = "";
 
@@ -133,6 +137,18 @@ export async function getPersonalizedWikiEntries() {
       }
     }
 
+    // Decode interest contextual keywords
+    let hasInterest = false;
+    if (interests.length > 0) {
+      hasInterest = true;
+      if (interests.includes("shopping")) keywords.push("市販品", "スーパー", "商品", "おやつ");
+      if (interests.includes("eating-out")) keywords.push("外食", "レストラン", "チェーン", "メニュー");
+      if (interests.includes("medical")) keywords.push("病院", "治療", "負荷試験", "血液検査", "主治医");
+      if (interests.includes("daily-food")) keywords.push("献立", "レシピ", "代替", "代用", "ごはん");
+      if (interests.includes("school-life")) keywords.push("保育園", "幼稚園", "学校", "給食", "先生", "面談");
+      if (interests.includes("concern")) keywords.push("悩み", "相談", "共感", "不安");
+    }
+
     // Build personalization label
     let personalizationLabel = "";
     const tagLabel = allergenTags.length > 0 
@@ -145,6 +161,8 @@ export async function getPersonalizedWikiEntries() {
       personalizationLabel = `✨ ${tagLabel} をもつ方へ`;
     } else if (ageLabel) {
       personalizationLabel = `✨ ${ageLabel} のヒント（一部抜粋）`;
+    } else if (hasInterest) {
+      personalizationLabel = `✨ あなたの関心に基づくおすすめ`;
     }
 
     // Type for our queried data
