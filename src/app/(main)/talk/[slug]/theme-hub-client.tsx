@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { createTopic } from "@/app/actions/messages";
+import { checkSimilarTopicWithAI, SimilarTopicResult } from "@/app/actions/topic-similarity";
 import { TopicSummary } from "@/app/actions/topic-summary";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, MessageCircle, Plus, Search } from "@/components/icons";
@@ -74,6 +75,7 @@ export default function ThemeHubClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [sortMode, setSortMode] = useState<"newest" | "active">("newest");
   const [filterPersonalized, setFilterPersonalized] = useState(false);
+  const [similarTopicResult, setSimilarTopicResult] = useState<SimilarTopicResult | null>(null);
   
   const router = useRouter();
 
@@ -86,10 +88,22 @@ export default function ThemeHubClient({
     }
   }, []);
 
-  const handleCreateTopic = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateTopic = async (e?: React.FormEvent, forceCreate: boolean = false) => {
+    if (e) e.preventDefault();
     if (!newTopicTitle.trim() || !roomInfo?.id || isCreating || isPending) return;
     setIsCreating(true);
+
+    if (!forceCreate) {
+      const aiResult = await checkSimilarTopicWithAI(roomInfo.id, newTopicTitle.trim());
+      if (aiResult.similarFound) {
+        setSimilarTopicResult(aiResult);
+        setIsCreating(false);
+        Haptics.error();
+        return; // Halt and show modal
+      }
+    }
+
+    setSimilarTopicResult(null);
     startTransition(async () => {
       const res = await createTopic(roomInfo.id, newTopicTitle.trim());
       if (res.success && res.topicId) {
@@ -451,6 +465,71 @@ export default function ThemeHubClient({
 
         </div>
       </div>
+
+      {/* AI Similarity Feedback Modal */}
+      <AnimatePresence>
+        {similarTopicResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col justify-end bg-[var(--color-text)]/40 backdrop-blur-[2px]"
+          >
+            <div className="absolute inset-0" onClick={() => setSimilarTopicResult(null)} />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white rounded-t-[32px] p-6 pb-safe flex flex-col gap-5 relative z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] max-w-2xl mx-auto w-full"
+              style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
+            >
+              <div className="w-12 h-1.5 bg-[var(--color-border)] rounded-full mx-auto self-center mb-1" />
+              
+              <div className="text-center space-y-2">
+                <span className="text-[36px] drop-shadow-sm block mb-1">💡</span>
+                <h3 className="text-[18px] font-black text-[var(--color-text)] tracking-tight">似たニュアンスの話題があります</h3>
+                <p className="text-[13px] text-[var(--color-text-secondary)] font-medium leading-relaxed max-w-[90%] mx-auto whitespace-pre-wrap">
+                  {similarTopicResult.reason}
+                </p>
+              </div>
+
+              <div className="bg-[var(--color-surface-warm)] border border-[var(--color-primary)]/15 p-4 rounded-2xl relative overflow-hidden mt-2">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[var(--color-primary)]/10 to-transparent rounded-full -mr-10 -mt-10 blur-xl" />
+                <p className="text-[11px] font-bold text-[var(--color-primary)] mb-1.5">見つかった既存の募集部屋</p>
+                <div className="text-[15px] font-bold text-[var(--color-text)] leading-snug drop-shadow-sm min-h-[1.5em]">
+                  {similarTopicResult.topicTitle}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 mt-1">
+                <Link
+                  href={`/talk/${slug}/${similarTopicResult.topicId}`}
+                  onClick={() => {
+                    Haptics.success();
+                    AudioHaptics.playPop();
+                  }}
+                  className="w-full h-14 flex items-center justify-center rounded-full bg-[var(--color-primary)] text-white font-bold text-[15px] shadow-[0_8px_20px_-8px_var(--color-primary)] active:scale-95 transition-transform"
+                >
+                  そちらの話題に参加する
+                </Link>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    AudioHaptics.playTink();
+                    handleCreateTopic(undefined, true);
+                  }}
+                  className="w-full h-[48px] flex items-center justify-center rounded-full bg-[var(--color-surface)] hover:bg-[var(--color-border-light)] text-[var(--color-text-secondary)] font-bold text-[14px] active:scale-[0.98] transition-transform"
+                >
+                  構わず新しく話題をつくる
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
