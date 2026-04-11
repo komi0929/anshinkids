@@ -309,17 +309,21 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
 
   // ─── Onboarding State ─────────────────────────────────────────────
   // "welcome" | "child-setup" | "complete" | null
-  const [onboardingStep, setOnboardingStep] = useState<string | null>(() => {
-    if (!initialData?.data?.profile) return null; // Not logged in, no onboarding
+  // Initialize to null (safe for SSR), then check localStorage in useEffect
+  const [onboardingStep, setOnboardingStep] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialData?.data?.profile) return; // Not logged in
     const p = initialData.data.profile;
     const hasChildData = (p.children_profiles && Array.isArray(p.children_profiles) && p.children_profiles.length > 0) ||
                          (p.allergen_tags && Array.isArray(p.allergen_tags) && p.allergen_tags.length > 0);
-    // Check localStorage flag
-    if (typeof window !== "undefined" && localStorage.getItem("anshin_onboarding_done") === "true") {
-      return null;
+    if (localStorage.getItem("anshin_onboarding_done") === "true") {
+      return; // Already completed onboarding
     }
-    return hasChildData ? null : "welcome";
-  });
+    if (!hasChildData) {
+      setOnboardingStep("welcome");
+    }
+  }, [initialData]);
 
   // Handle the profile edit in welcome step
   async function handleWelcomeNext(name: string, avatar: string | null) {
@@ -939,19 +943,21 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           </p>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
-              <div>
+              <div className="flex-1 min-w-0 mr-3">
                 <p className="text-[13px] font-bold text-[var(--color-text)] mb-1">トークルームでの年齢・アレルギー表示</p>
                 <p className="text-[11px] text-[var(--color-text-secondary)]">
-                  あなたの投稿の横にお子様の情報（年齢やアレルギー）を表示し、他の親御さんが参考にしやすくします。
+                  {(!profile?.children_profiles || profile.children_profiles.length === 0)
+                    ? "お子さま情報を登録すると、この設定が有効になります。"
+                    : "あなたの投稿の横にお子様の情報（年齢やアレルギー）を表示し、他の親御さんが参考にしやすくします。"}
                 </p>
               </div>
               <button
                 onClick={async () => {
-                   if (!profile) return;
+                   if (!profile || !profile.children_profiles || profile.children_profiles.length === 0) return;
                    setIsSavingProfile(true);
                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                   const isCurrentlyPublic = !profile.children_profiles?.some(c => (c as any).isPublic === false);
-                   const newProfs = (profile.children_profiles || []).map(c => ({...c, isPublic: !isCurrentlyPublic}));
+                   const isCurrentlyPublic = !profile.children_profiles.some(c => (c as any).isPublic === false);
+                   const newProfs = profile.children_profiles.map(c => ({...c, isPublic: !isCurrentlyPublic}));
                    
                    setProfile({ ...profile, children_profiles: newProfs as ChildProfile[] });
                    
@@ -961,15 +967,15 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                    
                    setIsSavingProfile(false);
                 }}
-                disabled={isSavingProfile}
+                disabled={isSavingProfile || !profile?.children_profiles || profile.children_profiles.length === 0}
                 className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 shadow-inner ${
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  !profile?.children_profiles?.some(c => (c as any).isPublic === false) ? "bg-[var(--color-primary)]" : "bg-gray-300"
+                  (profile?.children_profiles && profile.children_profiles.length > 0 && !profile.children_profiles.some(c => (c as any).isPublic === false)) ? "bg-[var(--color-primary)]" : "bg-gray-300"
                 }`}
               >
                 <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  !profile?.children_profiles?.some(c => (c as any).isPublic === false) ? "translate-x-6" : "translate-x-0"
+                  (profile?.children_profiles && profile.children_profiles.length > 0 && !profile.children_profiles.some(c => (c as any).isPublic === false)) ? "translate-x-6" : "translate-x-0"
                 }`} />
               </button>
             </div>
