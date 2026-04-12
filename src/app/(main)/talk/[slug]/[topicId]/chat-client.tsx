@@ -423,20 +423,26 @@ export default function ChatClient({
         <div className="flex flex-col items-center px-4 pt-8 pb-4">
           <div className="w-full max-w-sm">
             <div className="relative rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/10 p-5">
-              <div className="flex items-start gap-3 mb-4">
+              <div className="flex items-start gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[20px] flex-shrink-0">
-                  {roomInfo?.icon_emoji || "💬"}
+                  {topicSummary ? "📝" : (roomInfo?.icon_emoji || "💬")}
                 </div>
                 <div className="flex-1 pt-0.5">
                   <p className="text-[14px] font-bold text-[var(--color-text)] leading-snug mb-1">
-                    この話題にまだ声がありません
+                    {topicSummary ? "過去の声はまとめ記事に反映されました" : "この話題にまだ声がありません"}
                   </p>
                   <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
-                    あなたの体験やヒントが、同じ悩みを持つ誰かの助けになります
+                    {topicSummary
+                      ? "プライバシー保護のためトーク内容は一定期間で自動削除されますが、知恵はまとめ記事として残ります"
+                      : "あなたの体験やヒントが、同じ悩みを持つ誰かの助けになります"}
                   </p>
                 </div>
               </div>
-
+              {topicSummary && (
+                <p className="text-[12px] text-[var(--color-primary)] font-medium mt-2">
+                  💡 上部の「まとめ」をタップして記事を読めます。新しい体験談もぜひ共有してください！
+                </p>
+              )}
             </div>
           </div>
         </div>

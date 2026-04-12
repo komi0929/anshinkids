@@ -370,7 +370,7 @@ export default function ThemeHubClient({
                         <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--color-muted)] mt-2">
                           <span className="flex items-center gap-1 bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
                             <MessageCircle className="w-3 h-3" />
-                            {topic.message_count}件
+                            {topic.message_count}声
                           </span>
                           {summary?.allergen_tags && Array.isArray(summary.allergen_tags) && summary.allergen_tags.length > 0 && (
                             <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100">
@@ -429,7 +429,7 @@ export default function ThemeHubClient({
                           <div className="flex items-center gap-3 text-[11px] font-medium text-[var(--color-muted)]">
                             <span className="flex items-center gap-1 bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
                               <MessageCircle className="w-3 h-3" />
-                              {topic.message_count}件
+                              {topic.message_count}声
                             </span>
                             <span>{timeAgo(topic.updated_at)}</span>
                           </div>
