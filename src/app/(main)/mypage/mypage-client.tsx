@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Heart, BookOpen, TrendingUp, LogOut, Check, Loader2, Sparkles, Settings, X, Share, ChevronRight } from "@/components/icons";
 import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
+import { getImpactFeedback, getPersonalizedWikiEntries } from "@/app/actions/discover";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
@@ -288,6 +289,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
   const [bookmarks, setBookmarks] = useState<BookmarkData[]>(initialData?.data?.bookmarks || []);
   const [recommendedWikis, setRecommendedWikis] = useState<RecommendedWikiData[]>(initialData?.data?.recommendedWikis || []);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingImpact, setIsFetchingImpact] = useState(!initialData?.data?.impact);
+  const [isFetchingRecommended, setIsFetchingRecommended] = useState(!initialData?.data?.recommendedWikis || initialData?.data?.recommendedWikis?.length === 0);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   // === F6: Privacy controls ===
@@ -298,6 +301,27 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
   const initIsAuthErr = initErrText.includes("ログイン") || initErrText.includes("認証") || initErrText.includes("DB未接続");
   const [hasError, setHasError] = useState(initialData?.success === false && !initIsAuthErr);
   const [errorMsg] = useState(initIsAuthErr ? "" : "接続エラーが発生しました。ページを再読み込みしてください。");
+
+  // Deferred non-critical fetching for blazing fast TTFB
+  useEffect(() => {
+    if (initIsAuthErr || !profile) return;
+    
+    // Fetch impact if missing
+    if (!impact) {
+      getImpactFeedback().then(res => {
+        if (res.success && res.data) setImpact(res.data);
+        setIsFetchingImpact(false);
+      }).catch(() => setIsFetchingImpact(false));
+    }
+    
+    // Fetch personalized recommendations if missing
+    if (recommendedWikis.length === 0) {
+      getPersonalizedWikiEntries().then(res => {
+         if (res.success && res.data) setRecommendedWikis(res.data);
+         setIsFetchingRecommended(false);
+      }).catch(() => setIsFetchingRecommended(false));
+    }
+  }, [profile, initIsAuthErr]); // Empty dependency ensures it only runs once per mount after profile exists
 
   // Profile Basic Info Edit Modal
   const [showProfileEdit, setShowProfileEdit] = useState(false);
@@ -686,7 +710,15 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       </motion.div>
 
       {/* === F8: Visual Impact Dashboard (Bento UI) === */}
-      {impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0)) && (
+      {isFetchingImpact ? (
+        <div className="px-4 mb-6 fade-in">
+           <div className="shimmer h-6 w-32 rounded-lg mb-4" />
+           <div className="grid grid-cols-2 gap-3 mb-4">
+             <div className="shimmer h-28 rounded-3xl" />
+             <div className="shimmer h-28 rounded-3xl" />
+           </div>
+        </div>
+      ) : (impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0)) && (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -802,7 +834,15 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       )}
 
       {/* === F10: Recommended Wiki Entries (ONLY when profile is configured) === */}
-      {hasProfileData && recommendedWikis.length > 0 && (
+      {isFetchingRecommended ? (
+        <div className="px-4 mb-6 fade-in">
+           <div className="shimmer h-6 w-48 rounded-lg mb-4" />
+           <div className="space-y-3">
+             <div className="shimmer h-24 rounded-2xl" />
+             <div className="shimmer h-24 rounded-2xl" />
+           </div>
+        </div>
+      ) : (hasProfileData && recommendedWikis.length > 0 && (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

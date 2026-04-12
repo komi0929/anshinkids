@@ -9,13 +9,13 @@ export async function getFullMyPageData() {
   noStore();
   try {
 
-    const [profileRes, contribRes, impactRes, bookmarksRes, streakRes, recommendedRes] = await Promise.all([
+    // Only fetch lightweight, critical data on the server to ensure < 100ms TTFB.
+    // Heavy personalized queries (Impact, Recommendations) are deferred to the client.
+    const [profileRes, contribRes, bookmarksRes, streakRes] = await Promise.all([
       getMyProfile().catch(() => ({ success: false as const, data: null, error: "プロフィール取得エラー" })),
       getMyContributions().catch(() => ({ success: true, data: [] })),
-      getImpactFeedback().catch(() => ({ success: false, data: null })),
       getMyBookmarks().catch(() => ({ success: false, data: [] })),
-      getContributionStreak().catch(() => ({ success: false, data: null })),
-      getPersonalizedWikiEntries().catch(() => ({ success: false, data: [] }))
+      getContributionStreak().catch(() => ({ success: false, data: null }))
     ]);
     const profileError = !profileRes.success ? ('error' in profileRes ? String(profileRes.error) : "不明なエラー") : null;
     if (profileError?.includes("ログイン")) {
@@ -29,10 +29,10 @@ export async function getFullMyPageData() {
       data: {
         profile: profileRes.success ? profileRes.data : null,
         contributions: contribRes.success ? contribRes.data : [],
-        impact: impactRes.success ? impactRes.data : null,
         bookmarks: bookmarksRes.success ? bookmarksRes.data : [],
         streak: streakRes.success ? streakRes.data : null,
-        recommendedWikis: recommendedRes.success ? recommendedRes.data : []
+        impact: null, // Deferred to client
+        recommendedWikis: [] // Deferred to client
       }
     }
   } catch {
