@@ -1,6 +1,7 @@
 import { BackButton } from "@/components/ui/back-button";
 import Link from "next/link";
-import { Check, Shield, ChevronRight, Sparkles, BookOpen, Heart, TrendingUp } from "@/components/icons";
+import Image from "next/image";
+import { Check, Shield, ChevronRight, BookOpen, TrendingUp } from "@/components/icons";
 
 const STEPS = [
   {
@@ -39,11 +40,23 @@ const STEPS = [
 ];
 
 const SAFETY_POINTS = [
-  { title: "全自動の匿名化", desc: "本名やLINEアイコンは出ません。システムが安全に匿名（ゲストAなど）であつかいます。" },
+  { title: "全自動の匿名化", desc: "本名やLINEアイコンは出ません。システムが安全に匿名であつかいます。" },
   { title: "自律クリーンナップ", desc: "古い会話は自動で消去され、いつでもタイムラインは最新で綺麗に保たれます。" },
-  { title: "透明なAIハルシネーション対策", desc: "AIのアドバイスには、必ず「保護者の一次情報」のソース数を表示して信頼度を明かします。" },
-  { title: "SOSリップル・緊急アラート", desc: "どうしても困ったときはSNSへ拡散して助けを呼んだり、緊急時にはAIが119番の案内を行います。" },
+  { title: "透明なAI情報管理", desc: "AIのアドバイスには、必ず「保護者の一次情報」のソース数を表示して信頼度を明かします。" },
+  { title: "プライバシー最優先設計", desc: "LINEの友だち情報はシステムが取得しません。いつでも1タップで退会可能です。" },
 ];
+
+/* LINE official SVG icon */
+function LineIcon({ className }: { className?: string }) {
+  return (
+    <svg role="img" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path
+        d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.348 0 .63.285.63.63v3.51h1.753c.348 0 .628.283.628.63 0 .344-.28.629-.628.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 export default function AboutPage() {
   return (
@@ -59,14 +72,14 @@ export default function AboutPage() {
 
       {/* Hero Section */}
       <div className="px-6 pt-12 pb-10 text-center">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-[28px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success-deep)] flex items-center justify-center shadow-xl transform transition-transform hover:scale-105">
-          <Sparkles className="w-10 h-10 text-white" />
+        <div className="w-20 h-20 mx-auto mb-6 rounded-[28px] bg-white flex items-center justify-center shadow-xl overflow-hidden border border-[var(--color-border-light)] transform transition-transform hover:scale-105">
+          <Image src="/logo.png" alt="あんしんキッズ ロゴ" width={80} height={80} className="w-full h-full object-cover" />
         </div>
-        <h2 className="text-[26px] font-black leading-tight tracking-tight text-[var(--color-text)] mb-4">
+        <h2 className="text-[24px] font-extrabold leading-tight tracking-tight text-[var(--color-text)] mb-4">
           みんなの日常が、<br />
           やさしい知識になる。
         </h2>
-        <p className="text-[15px] font-medium leading-[1.9] text-[var(--color-text-secondary)] max-w-sm mx-auto">
+        <p className="text-[14px] font-medium leading-[1.9] text-[var(--color-text-secondary)] max-w-sm mx-auto">
           「あんしんキッズ」は、食物アレルギーっ子をもつママ・パパの<strong>リアルな体験と知恵をAIで結晶化</strong>する、新しい『知識のコミュニティ』です。
         </p>
       </div>
@@ -100,7 +113,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <div className="text-[11px] font-extrabold text-[var(--color-primary)] mb-0.5">STEP {step.num}</div>
-                  <h4 className="text-[17px] font-black text-[var(--color-text)]">
+                  <h4 className="text-[17px] font-extrabold text-[var(--color-text)]">
                     {step.title}
                   </h4>
                 </div>
@@ -157,12 +170,12 @@ export default function AboutPage() {
       {/* CTA Section */}
       <div className="px-5 pb-8 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--color-primary)]/10 blur-[60px] rounded-full point-events-none -z-10" />
-        <h3 className="text-[20px] font-black text-center mb-6 text-[var(--color-text)]">
+        <h3 className="text-[20px] font-extrabold text-center mb-6 text-[var(--color-text)]">
           さっそく始めましょう！
         </h3>
         
         <div className="space-y-3 max-w-[320px] mx-auto">
-          <Link href="/wiki" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
+          <Link href="/talk" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
             <BookOpen className="w-5 h-5 text-[var(--color-primary)] group-hover:scale-110 transition-transform" /> 
             みんなのまとめ記事を読む
           </Link>
@@ -173,9 +186,9 @@ export default function AboutPage() {
           
           <div className="h-4" />
           
-          <Link href="/login" className="btn-primary w-full text-center flex items-center justify-center gap-2 py-4 shadow-lg active:scale-95 transition-all text-[15px]">
-            <Heart className="w-5 h-5" />
-            LINEで参加する (無料)
+          <Link href="/login" className="w-full text-center flex items-center justify-center gap-3 py-4 rounded-3xl font-bold text-[15px] text-white shadow-lg active:scale-95 transition-all hover:opacity-90" style={{ backgroundColor: '#06C755' }}>
+            <LineIcon className="text-white" />
+            LINEで参加する（無料）
           </Link>
           <p className="text-[11px] font-bold text-center mt-3 text-[var(--color-muted)]">
             ※ ログインしなくてもまとめ記事の閲覧はご利用いただけます
@@ -188,7 +201,7 @@ export default function AboutPage() {
         <div className="absolute top-0 left-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[var(--color-border)] to-transparent -translate-x-1/2" />
         <div className="text-center">
             <span className="inline-block px-3 py-1 mb-3 rounded-full bg-[var(--color-surface-warm)] text-[10px] font-black tracking-wider text-[var(--color-subtle)] uppercase">Open Source Project</span>
-            <h3 className="text-[15px] font-black text-[var(--color-text)] mb-2">
+            <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-2">
               開発者・協力者の方へ
             </h3>
             <p className="text-[12px] font-bold text-[var(--color-subtle)] mb-5 leading-relaxed">
@@ -210,8 +223,7 @@ export default function AboutPage() {
           <Link href="/privacy" className="hover:text-[var(--color-text)] transition-colors">プライバシー</Link>
         </div>
         <div className="flex flex-col items-center gap-2 mt-2">
-          <a href="mailto:support@anshin-kids.app?subject=お問い合わせ" className="hover:text-[var(--color-text)] transition-colors">運営・フィードバック</a>
-          <a href="mailto:partner@anshin-kids.app?subject=活動へのご協賛・サポートについて" className="hover:text-[var(--color-text)] transition-colors">医療提携・NPO/企業スポンサーシップ</a>
+          <Link href="/support" className="hover:text-[var(--color-text)] transition-colors">お問い合わせ・サポート</Link>
         </div>
       </div>
     </div>

@@ -67,7 +67,7 @@ export default function GuidePage() {
             <Leaf className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-[22px] font-extrabold text-[var(--color-text)] tracking-tight break-keep text-balance">
+            <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight break-keep text-balance">
               使い方ガイド
             </h1>
             <p className="text-[12px] text-[var(--color-subtle)]">

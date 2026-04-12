@@ -50,8 +50,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-[100dvh] flex flex-col"
-      style={{ background: "var(--color-bg)" }}
+      className="min-h-[100dvh] flex flex-col bg-[var(--color-bg)]"
     >
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm">
@@ -61,17 +60,12 @@ export default function LoginPage() {
               <Image src="/logo.png" alt="あんしんキッズ ロゴ" width={64} height={64} className="w-full h-full object-cover" />
             </div>
             <h1
-              className="text-[26px] font-black tracking-tight"
-              style={{
-                color: "var(--color-text)",
-                fontFamily: "var(--font-display)",
-              }}
+              className="text-[24px] font-extrabold tracking-tight text-[var(--color-text)]"
             >
               あんしんキッズ
             </h1>
             <p
-              className="text-[14px] font-medium mt-1.5 leading-relaxed"
-              style={{ color: "var(--color-text-secondary)" }}
+              className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed"
             >
               食物アレルギーのヒントを、みんなでつくる
             </p>
@@ -148,8 +142,7 @@ export default function LoginPage() {
             <Link
               href="/talk"
               id="browse-without-login"
-              className="block w-full text-center py-2.5 text-[14px] font-bold transition-colors"
-              style={{ color: "var(--color-primary)" }}
+              className="block w-full text-center py-2.5 text-[14px] font-bold text-[var(--color-primary)] transition-colors"
             >
               ログインせずに見てみる →
             </Link>
@@ -157,20 +150,14 @@ export default function LoginPage() {
 
           {/* Safety Points */}
           <div
-            className="mt-6 p-4 rounded-2xl fade-in"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-              animationDelay: "300ms",
-            }}
+            className="mt-6 p-4 rounded-2xl fade-in bg-[var(--color-surface)] border border-[var(--color-border)]"
+            style={{ animationDelay: "300ms" }}
           >
             <h3
-              className="text-[13px] font-extrabold mb-3 flex items-center gap-2"
-              style={{ color: "var(--color-text)" }}
+              className="text-[13px] font-extrabold mb-3 flex items-center gap-2 text-[var(--color-text)]"
             >
               <Shield
-                className="w-4 h-4"
-                style={{ color: "var(--color-primary)" }}
+                className="w-4 h-4 text-[var(--color-primary)]"
               />
               安心してご利用ください
             </h3>
@@ -187,12 +174,10 @@ export default function LoginPage() {
                 >
                   <Check
                     size={13}
-                    className="flex-shrink-0"
-                    style={{ color: "var(--color-primary)" }}
+                    className="flex-shrink-0 text-[var(--color-primary)]"
                   />
                   <span
-                    className="text-[12px] font-medium"
-                    style={{ color: "var(--color-text-secondary)" }}
+                    className="text-[12px] font-medium text-[var(--color-text-secondary)]"
                   >
                     {text}
                   </span>
@@ -203,8 +188,7 @@ export default function LoginPage() {
 
           {/* Legal & About */}
           <div
-            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] font-bold"
-            style={{ color: "var(--color-subtle)" }}
+            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] font-bold text-[var(--color-subtle)]"
           >
             <Link
               href="/about"
@@ -226,8 +210,7 @@ export default function LoginPage() {
             </Link>
           </div>
           <p
-            className="mt-2 text-center text-[11px] font-medium pb-4"
-            style={{ color: "var(--color-muted)" }}
+            className="mt-2 text-center text-[11px] font-medium pb-4 text-[var(--color-muted)]"
           >
             ログインすることで利用規約・プライバシーポリシーに同意したものとみなします
           </p>

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getTalkRoomBySlug, getTalkTopics } from "@/app/actions/messages";
 import { getTopicSummariesForRoom, TopicSummary } from "@/app/actions/topic-summary";
 import { THEME_PROMPTS } from "@/lib/theme-prompts";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import ThemeHubClient from "./theme-hub-client";
 
 import { THEMES } from "@/lib/themes";
@@ -36,7 +36,7 @@ export default async function ThemeHubPage(props: {
 
   // Fetch topics, summaries, and user profile in parallel
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await getCachedUser();
   
   let userAllergens: string[] = [];
   let userAgeGroups: string[] = [];
@@ -44,8 +44,8 @@ export default async function ThemeHubPage(props: {
   const [topicsRes, summariesRes, profileRes, wikiEntryRes] = await Promise.all([
     getTalkTopics(roomInfo.id),
     getTopicSummariesForRoom(roomInfo.id),
-    user ? supabase.from("profiles").select("allergen_tags, children_profiles, interests").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null }),
-    supabase.from("wiki_entries").select("image_gallery").eq("slug", `mega-${slug}`).maybeSingle()
+    user && supabase ? supabase.from("profiles").select("allergen_tags, children_profiles, interests").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null }),
+    supabase ? supabase.from("wiki_entries").select("image_gallery").eq("slug", `mega-${slug}`).maybeSingle() : Promise.resolve({ data: null })
   ]);
 
   let userInterests: string[] = [];

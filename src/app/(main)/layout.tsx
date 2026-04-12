@@ -71,8 +71,7 @@ export default function MainLayout({
             {isLoggedIn === false && (
               <Link
                 href="/login"
-                className="nav-item"
-                style={{ color: "var(--color-primary)" }}
+                className="nav-item text-[var(--color-primary)]"
                 id="nav-login"
                 aria-label="ログイン"
               >
