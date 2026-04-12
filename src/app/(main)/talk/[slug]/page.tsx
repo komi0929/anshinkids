@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getTalkRoomBySlug, getTalkTopics } from "@/app/actions/messages";
 import { getTopicSummariesForRoom, TopicSummary } from "@/app/actions/topic-summary";
@@ -22,7 +23,25 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function ThemeHubPage(props: {
+export default function ThemeHubPage(props: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full fade-in z-50">
+        <div className="w-16 h-16 bg-white rounded-3xl shadow-sm border border-[var(--color-border-light)] flex items-center justify-center mb-6 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)]/5 to-transparent" />
+          <svg className="w-7 h-7 text-[var(--color-primary)] animate-spin relative z-10" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        </div>
+        <p className="text-[13px] font-bold text-[var(--color-text-secondary)] tracking-widest animate-pulse">Now Loading...</p>
+      </div>
+    }>
+      <ThemeHubFetcher params={props.params} />
+    </Suspense>
+  );
+}
+
+async function ThemeHubFetcher(props: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await props.params;
