@@ -31,11 +31,11 @@ async function TalkContent() {
   return (
     <div className="fade-in w-full max-w-2xl mx-auto pb-12">
       {/* Header */}
-      <div className="px-5 pt-8 pb-5">
-        <h1 className="text-[26px] font-black tracking-tight leading-tight break-keep text-balance" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
+      <div className="px-5 pt-6 pb-2">
+        <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight break-keep text-balance">
           テーマ一覧
         </h1>
-        <p className="text-[14px] font-medium mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
           気になるテーマを選んで、知恵を読む・会話に参加する
         </p>
       </div>
@@ -55,10 +55,10 @@ async function TalkContent() {
                 {room.icon_emoji}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-[15px] group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance" style={{ color: 'var(--color-text)' }}>
+                <h3 className="font-bold text-[15px] text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">
                   {room.name}
                 </h3>
-                <p className="text-[13px] font-medium mt-0.5 truncate leading-relaxed" style={{ color: 'var(--color-subtle)' }}>
+                <p className="text-[13px] text-[var(--color-subtle)] font-medium mt-0.5 truncate leading-relaxed">
                   {room.description}
                 </p>
               </div>
