@@ -718,7 +718,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
              <div className="shimmer h-28 rounded-3xl" />
            </div>
         </div>
-      ) : (impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0)) && (
+      ) : (impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0))) ? (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -791,7 +791,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
              </button>
           </div>
         </motion.div>
-      )}
+      ) : null}
 
       {/* === F9: Bookmarked Snippets (Micro-Bookmarking) === */}
       {bookmarks.length > 0 && (
@@ -842,7 +842,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
              <div className="shimmer h-24 rounded-2xl" />
            </div>
         </div>
-      ) : (hasProfileData && recommendedWikis.length > 0 && (
+      ) : (hasProfileData && recommendedWikis.length > 0) ? (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -895,7 +895,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
             )})}
           </div>
         </motion.div>
-      )}
+      ) : null}
 
       {/* CTA to talk rooms */}
       <div className="px-4 pb-4">
