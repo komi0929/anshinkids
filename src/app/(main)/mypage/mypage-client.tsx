@@ -614,6 +614,9 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     );
   }
 
+  // Satisfy TypeScript type checker (handled by loading/bootstrapping above)
+  if (!profile) return null;
+
   // Check if profile is effectively empty (no child data set)
   const hasProfileData = (profile.children_profiles && profile.children_profiles.length > 0) ||
                          (profile.allergen_tags && profile.allergen_tags.length > 0);
