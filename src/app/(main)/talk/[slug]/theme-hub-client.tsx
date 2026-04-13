@@ -81,7 +81,31 @@ export default function ThemeHubClient({
   const [filterPersonalized, setFilterPersonalized] = useState(false);
   const [similarTopicResult, setSimilarTopicResult] = useState<SimilarTopicResult | null>(null);
   
+  // Hydrated personalization state
+  const [hydratedAllergens, setHydratedAllergens] = useState<string[]>(userAllergens || []);
+  const [hydratedAgeGroups, setHydratedAgeGroups] = useState<string[]>(userAgeGroups || []);
+  const [hydratedInterests, setHydratedInterests] = useState<string[]>(userInterests || []);
+  
   const router = useRouter();
+
+  // Asynchronous User Profile Hydration for 0ms transitions
+  useEffect(() => {
+    if (!userAllergens?.length && !userAgeGroups?.length) {
+      import("@/app/actions/mypage").then(m => m.getMyProfile()).then(res => {
+         if (res.success && res.data) {
+           const profile = res.data;
+           setHydratedAllergens(profile.allergen_tags || []);
+           const childrenProfile = profile.children_profiles as any[];
+           if (childrenProfile && Array.isArray(childrenProfile)) {
+             setHydratedAgeGroups(Array.from(new Set(childrenProfile.map(c => c.ageGroup).filter(Boolean))) as string[]);
+           }
+           if (profile.interests && Array.isArray(profile.interests)) {
+             setHydratedInterests(profile.interests);
+           }
+         }
+      });
+    }
+  }, [userAllergens, userAgeGroups]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -132,22 +156,22 @@ export default function ThemeHubClient({
     });
   }
 
-  if (filterPersonalized && (userAllergens?.length || userAgeGroups?.length || userInterests?.length)) {
+  if (filterPersonalized && (hydratedAllergens.length || hydratedAgeGroups.length || hydratedInterests.length)) {
     // Decode age and interest contextual keywords
     const keywords: string[] = [];
-    if (userAgeGroups && userAgeGroups.length > 0) {
-      if (userAgeGroups.includes("0-1")) keywords.push("離乳食", "赤ちゃん", "ベビー", "ミルク", "初めて", "授乳");
-      if (userAgeGroups.includes("1-3")) keywords.push("幼児", "保育園", "1歳", "2歳", "3歳", "おやつ", "イヤイヤ");
-      if (userAgeGroups.includes("3-6")) keywords.push("幼稚園", "こども園", "給食", "お弁当", "先生", "遠足");
-      if (userAgeGroups.includes("6-12")) keywords.push("小学生", "学童", "入学", "学校", "宿泊", "ランドセル");
+    if (hydratedAgeGroups.length > 0) {
+      if (hydratedAgeGroups.includes("0-1")) keywords.push("離乳食", "赤ちゃん", "ベビー", "ミルク", "初めて", "授乳");
+      if (hydratedAgeGroups.includes("1-3")) keywords.push("幼児", "保育園", "1歳", "2歳", "3歳", "おやつ", "イヤイヤ");
+      if (hydratedAgeGroups.includes("3-6")) keywords.push("幼稚園", "こども園", "給食", "お弁当", "先生", "遠足");
+      if (hydratedAgeGroups.includes("6-12")) keywords.push("小学生", "学童", "入学", "学校", "宿泊", "ランドセル");
     }
-    if (userInterests && userInterests.length > 0) {
-      if (userInterests.includes("shopping")) keywords.push("市販品", "スーパー", "商品", "おやつ");
-      if (userInterests.includes("eating-out")) keywords.push("外食", "レストラン", "チェーン", "メニュー");
-      if (userInterests.includes("medical")) keywords.push("病院", "治療", "負荷試験", "血液検査", "主治医");
-      if (userInterests.includes("daily-food")) keywords.push("献立", "レシピ", "代替", "代用", "ごはん");
-      if (userInterests.includes("school-life")) keywords.push("保育園", "幼稚園", "学校", "給食", "先生", "面談");
-      if (userInterests.includes("concern")) keywords.push("悩み", "相談", "共感", "不安");
+    if (hydratedInterests.length > 0) {
+      if (hydratedInterests.includes("shopping")) keywords.push("市販品", "スーパー", "商品", "おやつ");
+      if (hydratedInterests.includes("eating-out")) keywords.push("外食", "レストラン", "チェーン", "メニュー");
+      if (hydratedInterests.includes("medical")) keywords.push("病院", "治療", "負荷試験", "血液検査", "主治医");
+      if (hydratedInterests.includes("daily-food")) keywords.push("献立", "レシピ", "代替", "代用", "ごはん");
+      if (hydratedInterests.includes("school-life")) keywords.push("保育園", "幼稚園", "学校", "給食", "先生", "面談");
+      if (hydratedInterests.includes("concern")) keywords.push("悩み", "相談", "共感", "不安");
     }
 
     displayTopics = displayTopics.filter(t => {
@@ -155,9 +179,9 @@ export default function ThemeHubClient({
       if (!summary) return false;
       
       // 1. Check allergens first
-      const hasAllergenMatch = userAllergens && userAllergens.length > 0 && summary.allergen_tags && 
+      const hasAllergenMatch = hydratedAllergens.length > 0 && summary.allergen_tags && 
         (Array.isArray(summary.allergen_tags) ? summary.allergen_tags : [summary.allergen_tags])
-        .some(tag => userAllergens.includes(tag as string));
+        .some(tag => hydratedAllergens.includes(tag as string));
         
       if (hasAllergenMatch) return true;
       
@@ -251,7 +275,7 @@ export default function ThemeHubClient({
                 {sortMode === "newest" ? "最新順" : "注目順"}
               </button>
               
-              {(userAllergens?.length || userAgeGroups?.length || userInterests?.length) ? (
+              {(hydratedAllergens.length || hydratedAgeGroups.length || hydratedInterests.length) ? (
                 <button
                   onClick={() => setFilterPersonalized(!filterPersonalized)}
                   className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-bold transition-all ${

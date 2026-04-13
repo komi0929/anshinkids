@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getTalkRoomBySlug, getTalkTopics } from "@/app/actions/messages";
 import { getTopicSummariesForRoom, TopicSummary } from "@/app/actions/topic-summary";
 import { THEME_PROMPTS } from "@/lib/theme-prompts";
-import { createClient, getCachedUser } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import ThemeHubClient from "./theme-hub-client";
 
 import { THEMES } from "@/lib/themes";
@@ -53,32 +53,14 @@ async function ThemeHubFetcher(props: {
   }
   const roomInfo = roomRes.data;
 
-  // Fetch topics, summaries, and user profile in parallel
-  const supabase = await createClient();
-  const { data: { user } } = await getCachedUser();
+  // Fetch topics, summaries, and static image gallery in parallel. No user cookies read here to ensure 100% SSG static rendering for 0ms transitions.
+  const supabase = createStaticClient();
   
-  let userAllergens: string[] = [];
-  let userAgeGroups: string[] = [];
-
-  const [topicsRes, summariesRes, profileRes, wikiEntryRes] = await Promise.all([
+  const [topicsRes, summariesRes, wikiEntryRes] = await Promise.all([
     getTalkTopics(roomInfo.id),
     getTopicSummariesForRoom(roomInfo.id),
-    user && supabase ? supabase.from("profiles").select("allergen_tags, children_profiles, interests").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null }),
     supabase ? supabase.from("wiki_entries").select("image_gallery").eq("slug", `mega-${slug}`).maybeSingle() : Promise.resolve({ data: null })
   ]);
-
-  let userInterests: string[] = [];
-
-  if (profileRes.data) {
-    userAllergens = profileRes.data.allergen_tags || [];
-    const childrenProfile = profileRes.data.children_profiles as any[];
-    if (childrenProfile && Array.isArray(childrenProfile)) {
-      userAgeGroups = Array.from(new Set(childrenProfile.map(c => c.ageGroup).filter(Boolean))) as string[];
-    }
-    if (profileRes.data.interests && Array.isArray(profileRes.data.interests)) {
-      userInterests = profileRes.data.interests;
-    }
-  }
 
   const topics = (topicsRes.success && topicsRes.data ? topicsRes.data : []) as Topic[];
   const summaries = (summariesRes.success && summariesRes.data ? summariesRes.data : {}) as Record<string, TopicSummary>;
@@ -96,9 +78,9 @@ async function ThemeHubFetcher(props: {
       initialTopics={topics}
       initialSummaries={summaries}
       suggestedPrompts={suggestedPrompts}
-      userAllergens={userAllergens}
-      userAgeGroups={userAgeGroups}
-      userInterests={userInterests}
+      userAllergens={[]} // Client-hydrated via context/fetch
+      userAgeGroups={[]} // Client-hydrated
+      userInterests={[]} // Client-hydrated
       imageGallery={imageGallery}
     />
   );

@@ -300,11 +300,48 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
   const initErrText = initialData?.error || "";
   const initIsAuthErr = initErrText.includes("ログイン") || initErrText.includes("認証") || initErrText.includes("DB未接続");
   const [hasError, setHasError] = useState(initialData?.success === false && !initIsAuthErr);
-  const [errorMsg] = useState(initIsAuthErr ? "" : "接続エラーが発生しました。ページを再読み込みしてください。");
+  const [errorMsg, setErrorMsg] = useState(initIsAuthErr ? "" : "接続エラーが発生しました。ページを再読み込みしてください。");
+  const [isBootstrapping, setIsBootstrapping] = useState(!initialData);
 
-  // Deferred non-critical fetching for blazing fast TTFB
+  // Instant Navigation Bootstrapper
   useEffect(() => {
-    if (initIsAuthErr || !profile) return;
+    if (!initialData) {
+      import("@/app/actions/mypage").then(m => m.getFullMyPageData()).then((res: any) => {
+        if (res.success && res.data) {
+          setProfile(res.data.profile);
+          setContributions(res.data.contributions);
+          setBookmarks(res.data.bookmarks);
+          setStreakData(res.data.streak);
+          if (res.data.profile) {
+            // Initiate parallel deferred fetches now that we have profile
+            getImpactFeedback().then((impRes: any) => {
+              if (impRes.success && impRes.data) setImpact(impRes.data);
+              setIsFetchingImpact(false);
+            }).catch(() => setIsFetchingImpact(false));
+            
+            getPersonalizedWikiEntries().then((recRes: any) => {
+              if (recRes.success && recRes.data) setRecommendedWikis(recRes.data);
+              setIsFetchingRecommended(false);
+            }).catch(() => setIsFetchingRecommended(false));
+          }
+        } else {
+          if (res.error?.includes("ログイン")) {
+             // Let it silently pass so the "Login required" screen catches it
+          } else {
+             setHasError(true);
+             setErrorMsg(res.error || "データ取得に失敗しました");
+          }
+           setIsFetchingImpact(false);
+           setIsFetchingRecommended(false);
+        }
+        setIsBootstrapping(false);
+      });
+    }
+  }, [initialData]);
+
+  // Deferred non-critical fetching for blazing fast TTFB (Fallback for non-bootstrap route)
+  useEffect(() => {
+    if (initIsAuthErr || !profile || isBootstrapping) return;
     
     // Fetch impact if missing
     if (!impact) {
@@ -321,7 +358,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
          setIsFetchingRecommended(false);
       }).catch(() => setIsFetchingRecommended(false));
     }
-  }, [profile, initIsAuthErr]); // Empty dependency ensures it only runs once per mount after profile exists
+  }, [profile, initIsAuthErr, isBootstrapping]); // Ensures it doesn't collide with the bootstrapper
 
   // Profile Basic Info Edit Modal
   const [showProfileEdit, setShowProfileEdit] = useState(false);
@@ -512,23 +549,30 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
 
   // ─── Normal MyPage Rendering ──────────────────────────────────────
 
-  if (isLoading) {
+  if (isLoading || isBootstrapping) {
     return (
-      <div className="fade-in">
-        <div className="px-5 pt-7 pb-5">
-          <div className="shimmer h-8 w-40 rounded-xl mb-2" />
-          <div className="shimmer h-4 w-64 rounded-lg" />
-        </div>
-        <div className="px-4">
-          <div className="shimmer h-56 rounded-2xl mb-4" />
-          <div className="shimmer h-28 rounded-2xl mb-3" />
-          <div className="shimmer h-28 rounded-2xl" />
-        </div>
+      <div className="w-full min-h-[100dvh] bg-[var(--color-background)] pb-24 fade-in">
+         {/* Profile Skeleton */}
+         <div className="bg-[var(--color-surface)] pb-8 pt-10 rounded-b-[40px] shadow-sm mb-6 flex flex-col items-center">
+            <div className="shimmer w-[72px] h-[72px] rounded-3xl mx-auto mb-3" />
+            <div className="shimmer w-32 h-6 rounded-md mb-2" />
+            <div className="shimmer w-16 h-5 rounded-full" />
+         </div>
+         {/* Stats Skeleton */}
+         <div className="px-4 mb-8">
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="shimmer h-24 rounded-[32px]" />
+              <div className="shimmer h-24 rounded-[32px]" />
+            </div>
+            {/* Bento blocks Skeleton */}
+            <div className="shimmer h-[140px] w-full rounded-[32px] mb-4" />
+            <div className="shimmer h-[160px] w-full rounded-[32px]" />
+         </div>
       </div>
     );
   }
 
-  if (hasError && errorMsg) {
+  if (hasError && errorMsg && !isBootstrapping) {
     return (
       <div className="fade-in">
         <div className="empty-state mt-16">
@@ -548,7 +592,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     );
   }
 
-  if (!profile) {
+  if (!profile && !isBootstrapping) {
     return (
       <div className="fade-in">
         <div className="empty-state mt-16">
