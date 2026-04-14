@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, User, LogIn, Bell } from "@/components/icons";
+import { MessageCircle, User, LogIn, Bell, Settings } from "@/components/icons";
 
 const navItems = [
   { href: "/talk", label: "テーマ一覧", Icon: MessageCircle },
   { href: "/notifications", label: "通知", Icon: Bell },
+  { href: "/support", label: "サポート", Icon: Settings },
   { href: "/mypage", label: "マイページ", Icon: User },
 ];
 
