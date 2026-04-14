@@ -14,14 +14,14 @@ interface Room {
 }
 
 function TalkSkeleton() {
- return (
- <div className="fade-in px-5 pt-8 w-full max-w-2xl mx-auto">
- <div className="shimmer h-10 w-48 rounded-xl mb-6"></div>
- <div className="shimmer h-[80px] w-full rounded-2xl mb-3"></div>
- <div className="shimmer h-[80px] w-full rounded-2xl mb-3"></div>
- <div className="shimmer h-[80px] w-full rounded-2xl mb-3"></div>
- </div>
- );
+  return (
+    <div className="fade-in px-5 pt-8 w-full max-w-2xl mx-auto">
+      <div className="shimmer-nani h-10 w-48 rounded-xl mb-6"></div>
+      <div className="shimmer-nani h-[100px] w-full rounded-2xl mb-3 border border-[var(--color-border)]"></div>
+      <div className="shimmer-nani h-[100px] w-full rounded-2xl mb-3 border border-[var(--color-border)]"></div>
+      <div className="shimmer-nani h-[100px] w-full rounded-2xl mb-3 border border-[var(--color-border)]"></div>
+    </div>
+  );
 }
 
 async function TalkContent() {
@@ -47,7 +47,7 @@ async function TalkContent() {
  key={room.id || index}
  href={`/talk/${room.slug}`}
  prefetch={true}
- className="block p-5 rounded-2xl bg-white border-[1.5px] border-[var(--color-border)] transition-all hover: active:scale-95 duration-200 stagger-item group"
+ className="block p-5 rounded-2xl bg-white border-[1.5px] border-[var(--color-border)] transition-all hover:border-[var(--color-primary-light)] hover:shadow-md btn-nani stagger-item group"
  id={`talk-room-${room.slug}`}
  >
  <div className="flex items-center gap-4">
