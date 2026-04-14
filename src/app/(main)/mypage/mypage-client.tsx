@@ -14,7 +14,7 @@ import OnboardingWizard, { UserPreferences, ChildProfile } from "@/components/on
 import TopicBookmarkButton from "@/components/topic-bookmark-button";
 
 function renderAvatar(avatar_url: string | null, name: string) {
-  if (avatar_url && avatar_url.startsWith("http")) {
+  if (avatar_url && (avatar_url.startsWith("http") || avatar_url.startsWith("data:image"))) {
     return (
       <Image 
         src={avatar_url} 
@@ -25,7 +25,7 @@ function renderAvatar(avatar_url: string | null, name: string) {
       />
     );
   }
-  if (avatar_url && avatar_url.length <= 4) return <span className="text-3xl">{avatar_url}</span>;
+  if (avatar_url && avatar_url.length <= 4) return <div className="w-full h-full bg-gradient-to-br from-[#E8D5C4] to-[#C9D6C8] flex items-center justify-center text-3xl rounded-2xl">{avatar_url}</div>;
   const colors = ["from-[#7FA77A] to-[#5C8B56]", "from-[#B8956A] to-[#9A7A52]", "from-[#8B9EBF] to-[#6A7FA0]", "from-[#C2917A] to-[#A87060]", "from-[#9BB88F] to-[#7A9E6E]", "from-[#B8A07A] to-[#9A8560]"];
   
   if (!name || typeof name !== "string") {

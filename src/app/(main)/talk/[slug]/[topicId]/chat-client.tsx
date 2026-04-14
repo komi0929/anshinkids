@@ -91,6 +91,7 @@ export default function ChatClient({
     new Set(initialMessages.filter(m => m.has_thanked).map(m => m.id))
   );
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<{display_name: string; avatar_url: string | null} | null>(null);
   const [errorId] = useState(() => crypto.randomUUID());
 
   const themeInfo = THEMES.find(t => t.slug === slug) || THEMES[0];
@@ -131,13 +132,16 @@ export default function ChatClient({
   }, [topicId]);
 
   useEffect(() => {
-    createClient()
-      .auth.getUser()
-      .then(({ data }) => {
-        if (data.user) {
-          setCurrentUserId(data.user.id);
-        }
-      });
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setCurrentUserId(data.user.id);
+        supabase.from("profiles").select("display_name, avatar_url").eq("id", data.user.id).single()
+          .then(({ data: profile }) => {
+            if (profile) setCurrentUserProfile(profile);
+          });
+      }
+    });
   }, []);
 
   // Initial scroll to bottom on mount
@@ -222,8 +226,8 @@ export default function ChatClient({
       created_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 72 * 3600 * 1000).toISOString(),
       is_optimistic: true,
-      author_name: "あなた",
-      author_avatar: null,
+      author_name: currentUserProfile?.display_name || "あなた",
+      author_avatar: currentUserProfile?.avatar_url || null,
       author_trust: 0,
       author_allergens: [],
       author_age: "",
@@ -414,7 +418,7 @@ export default function ChatClient({
 
   function renderAvatar(avatar_url: string | null, user_id: string, name: string) {
     // LINEなどのURL画像
-    if (avatar_url && avatar_url.startsWith("http")) {
+    if (avatar_url && (avatar_url.startsWith("http") || avatar_url.startsWith("data:image"))) {
       return (
         <Image
           src={avatar_url}
