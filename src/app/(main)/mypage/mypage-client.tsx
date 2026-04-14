@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, BookOpen, TrendingUp, LogOut, Check, Loader2, Sparkles, Settings, X, Share, ChevronRight } from "@/components/icons";
+import { BookOpen, LogOut, Check, Loader2, Sparkles, Settings, X, ChevronRight, ChevronDown, Bell, Bookmark } from "@/components/icons";
 import { deleteMyAccount, updateMyProfile } from "@/app/actions/mypage";
-import { getImpactFeedback, getPersonalizedWikiEntries } from "@/app/actions/discover";
+import { getPersonalizedWikiEntries } from "@/app/actions/discover";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +13,7 @@ import Image from "next/image";
 import OnboardingWizard, { UserPreferences, ChildProfile } from "@/components/onboarding-wizard";
 import TopicBookmarkButton from "@/components/topic-bookmark-button";
 
-function renderAvatar(avatar_url: string | null, name: string) {
+function renderAvatar(avatar_url: string | null, name: string, rounded = "rounded-full") {
   if (avatar_url && (avatar_url.startsWith("http") || avatar_url.startsWith("data:image"))) {
     return (
       <Image 
@@ -21,20 +21,20 @@ function renderAvatar(avatar_url: string | null, name: string) {
         alt={name || ""} 
         fill 
         unoptimized 
-        className="object-cover rounded-2xl" 
+        className={`object-cover ${rounded}`} 
       />
     );
   }
-  if (avatar_url && avatar_url.length <= 4) return <div className="w-full h-full bg-gradient-to-br from-[#E8D5C4] to-[#C9D6C8] flex items-center justify-center text-3xl rounded-2xl">{avatar_url}</div>;
+  if (avatar_url && avatar_url.length <= 4) return <div className={`w-full h-full bg-gradient-to-br from-[#E8D5C4] to-[#C9D6C8] flex items-center justify-center text-2xl ${rounded}`}>{avatar_url}</div>;
   const colors = ["from-[#7FA77A] to-[#5C8B56]", "from-[#B8956A] to-[#9A7A52]", "from-[#8B9EBF] to-[#6A7FA0]", "from-[#C2917A] to-[#A87060]", "from-[#9BB88F] to-[#7A9E6E]", "from-[#B8A07A] to-[#9A8560]"];
   
   if (!name || typeof name !== "string") {
-    return <div className="w-full h-full bg-gradient-to-br from-[#8B9EBF] to-[#6A7FA0] text-white font-extrabold flex items-center justify-center text-3xl rounded-2xl">👤</div>;
+    return <div className={`w-full h-full bg-gradient-to-br from-[#8B9EBF] to-[#6A7FA0] text-white font-extrabold flex items-center justify-center text-xl ${rounded}`}>👤</div>;
   }
   
   const hash = name?.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) || 0;
   const bg = colors[hash % colors.length];
-  return <div className={`w-full h-full bg-gradient-to-br ${bg} text-white font-extrabold flex items-center justify-center text-3xl rounded-2xl`}>{name?.[0] || "👤"}</div>;
+  return <div className={`w-full h-full bg-gradient-to-br ${bg} text-white font-extrabold flex items-center justify-center text-xl ${rounded}`}>{name?.[0] || "👤"}</div>;
 }
 
 interface Profile {
@@ -47,30 +47,6 @@ interface Profile {
   allergen_tags: string[];
   child_age_months: number | null;
   children_profiles?: ChildProfile[];
-}
-
-interface Contribution {
-  id: string;
-  original_message_snippet: string;
-  extracted_at: string;
-  wiki_entries: Record<string, string> | null;
-}
-
-// Ensure type matches what getImpactFeedback returns
-interface ImpactData {
-  articlesHelped: number;
-  totalSourcesInArticles: number;
-  thanks: number;
-  trustScore: number;
-  message: string;
-  recentImpacts?: {
-    title: string;
-    slug: string;
-    category: string;
-    snippet: string;
-    trustScore: number;
-    extractedAt: string;
-  }[];
 }
 
 interface BookmarkData {
@@ -125,7 +101,7 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
       <div className="bg-white rounded-[28px] p-5 border border-[var(--color-border-light)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] mb-5">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-16 h-16 relative shrink-0 rounded-2xl overflow-hidden">
-            {renderAvatar(editAvatar, editName || profile.display_name)}
+            {renderAvatar(editAvatar, editName || profile.display_name, "rounded-2xl")}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[16px] font-extrabold text-[var(--color-text)] truncate">{editName || profile.display_name}</p>
@@ -230,7 +206,6 @@ function OnboardingChildSetup({ initialPrefs, onComplete, onSkip }: {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      {/* Benefits banner */}
       <div className="px-5 pt-5 pb-2">
         <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-[var(--color-surface-warm)] border border-emerald-100">
           <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">
@@ -284,23 +259,18 @@ function OnboardingComplete() {
 export default function MyPageClient({ initialData }: { initialData: any }) {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(initialData?.data?.profile || null);
-  const [contributions, setContributions] = useState<Contribution[]>(initialData?.data?.contributions || []);
-  const [impact, setImpact] = useState<ImpactData | null>(initialData?.data?.impact || null);
   const [bookmarks, setBookmarks] = useState<BookmarkData[]>(initialData?.data?.bookmarks || []);
   const [recommendedWikis, setRecommendedWikis] = useState<RecommendedWikiData[]>(initialData?.data?.recommendedWikis || []);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetchingImpact, setIsFetchingImpact] = useState(!initialData?.data?.impact);
   const [isFetchingRecommended, setIsFetchingRecommended] = useState(!initialData?.data?.recommendedWikis || initialData?.data?.recommendedWikis?.length === 0);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  // === F6: Privacy controls ===
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [streakData, setStreakData] = useState<{ currentStreak: number; longestStreak: number; totalDays: number } | null>(initialData?.data?.streak || null);
+  const [showChildInfo, setShowChildInfo] = useState(false);
   const initErrText = initialData?.error || "";
   const initIsAuthErr = initErrText.includes("ログイン") || initErrText.includes("認証") || initErrText.includes("DB未接続");
   const [hasError, setHasError] = useState(initialData?.success === false && !initIsAuthErr);
-  const [errorMsg, setErrorMsg] = useState(initIsAuthErr ? "" : "接続エラーが発生しました。ページを再読み込みしてください。");
+  const [errorMsg] = useState(initIsAuthErr ? "" : "接続エラーが発生しました。ページを再読み込みしてください。");
   const [isBootstrapping, setIsBootstrapping] = useState(!initialData);
 
   // Instant Navigation Bootstrapper
@@ -309,58 +279,36 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       import("@/app/actions/mypage").then(m => m.getFullMyPageData()).then((res: any) => {
         if (res.success && res.data) {
           setProfile(res.data.profile);
-          setContributions(res.data.contributions);
           setBookmarks(res.data.bookmarks);
-          setStreakData(res.data.streak);
           if (res.data.profile) {
-            // Initiate parallel deferred fetches now that we have profile
-            getImpactFeedback().then((impRes: any) => {
-              if (impRes.success && impRes.data) setImpact(impRes.data);
-              setIsFetchingImpact(false);
-            }).catch(() => setIsFetchingImpact(false));
-            
             getPersonalizedWikiEntries().then((recRes: any) => {
               if (recRes.success && recRes.data) setRecommendedWikis(recRes.data);
               setIsFetchingRecommended(false);
             }).catch(() => setIsFetchingRecommended(false));
           }
         } else {
-          if (res.error?.includes("ログイン")) {
-             // Let it silently pass so the "Login required" screen catches it
-          } else {
+          if (!res.error?.includes("ログイン")) {
              setHasError(true);
-             setErrorMsg(res.error || "データ取得に失敗しました");
           }
-           setIsFetchingImpact(false);
-           setIsFetchingRecommended(false);
+          setIsFetchingRecommended(false);
         }
         setIsBootstrapping(false);
       });
     }
   }, [initialData]);
 
-  // Deferred non-critical fetching for blazing fast TTFB (Fallback for non-bootstrap route)
+  // Deferred recommendation fetching
   useEffect(() => {
     if (initIsAuthErr || !profile || isBootstrapping) return;
-    
-    // Fetch impact if missing
-    if (!impact) {
-      getImpactFeedback().then(res => {
-        if (res.success && res.data) setImpact(res.data);
-        setIsFetchingImpact(false);
-      }).catch(() => setIsFetchingImpact(false));
-    }
-    
-    // Fetch personalized recommendations if missing
     if (recommendedWikis.length === 0) {
       getPersonalizedWikiEntries().then(res => {
          if (res.success && res.data) setRecommendedWikis(res.data);
          setIsFetchingRecommended(false);
       }).catch(() => setIsFetchingRecommended(false));
     }
-  }, [profile, initIsAuthErr, isBootstrapping]); // Ensures it doesn't collide with the bootstrapper
+  }, [profile, initIsAuthErr, isBootstrapping]);
 
-  // Profile Basic Info Edit Modal
+  // Profile Edit Modal state
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editName, setEditName] = useState((initialData?.data?.profile as any)?.display_name || "");
@@ -369,26 +317,18 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // ─── Onboarding State ─────────────────────────────────────────────
-  // "welcome" | "child-setup" | "complete" | null
-  // Initialize to null (safe for SSR), then check localStorage in useEffect
   const [onboardingStep, setOnboardingStep] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!initialData?.data?.profile) return; // Not logged in
+    if (!initialData?.data?.profile) return;
     const p = initialData.data.profile;
     const hasChildData = (p.children_profiles && Array.isArray(p.children_profiles) && p.children_profiles.length > 0) ||
                          (p.allergen_tags && Array.isArray(p.allergen_tags) && p.allergen_tags.length > 0);
-    if (localStorage.getItem("anshin_onboarding_done") === "true") {
-      return; // Already completed onboarding
-    }
-    if (!hasChildData) {
-      setOnboardingStep("welcome");
-    }
+    if (localStorage.getItem("anshin_onboarding_done") === "true") return;
+    if (!hasChildData) setOnboardingStep("welcome");
   }, [initialData]);
 
-  // Handle the profile edit in welcome step
   async function handleWelcomeNext(name: string, avatar: string | null) {
-    // Save profile changes
     if (profile && (name !== profile.display_name || avatar !== profile.avatar_url)) {
       setIsSavingProfile(true);
       const result = await updateMyProfile({ display_name: name, avatar_url: avatar });
@@ -402,40 +342,29 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     setOnboardingStep("child-setup");
   }
 
-  // Skip all onboarding
   function handleSkipOnboarding() {
     localStorage.setItem("anshin_onboarding_done", "true");
     setOnboardingStep("complete");
-    setTimeout(() => {
-      router.push("/talk");
-    }, 1200);
+    setTimeout(() => { router.push("/talk"); }, 1200);
   }
 
-  // Save function is now handled purely inside OnboardingWizard. Update UI optimistically to prevent 5-second reload wait.
   function handleWizardComplete(prefs: UserPreferences) {
     setIsEditing(false);
     if (profile) {
-      setProfile({
-        ...profile,
-        children_profiles: prefs.children as unknown as ChildProfile[]
-      });
+      setProfile({ ...profile, children_profiles: prefs.children as unknown as ChildProfile[] });
     }
-    // If coming from onboarding flow, redirect to talk
     if (onboardingStep === "child-setup") {
       localStorage.setItem("anshin_onboarding_done", "true");
       setOnboardingStep("complete");
-      setTimeout(() => {
-        router.push("/talk");
-      }, 1200);
+      setTimeout(() => { router.push("/talk"); }, 1200);
     }
   }
 
   function getMigratedInitialPrefs(): UserPreferences {
     if (!profile) return { children: [], interests: [] };
     if (profile.children_profiles && profile.children_profiles.length > 0) {
-      return { children: profile.children_profiles, interests: [] }; /* interests typically mapped elsewhere or locally */
+      return { children: profile.children_profiles, interests: [] };
     }
-    // Migrate legacy tags
     if (profile.allergen_tags && profile.allergen_tags.length > 0) {
       let ageGroup = "";
       if (profile.child_age_months !== null) {
@@ -445,13 +374,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         else ageGroup = "0-1";
       }
       return {
-        children: [{
-          id: "child-migrated",
-          name: "1人目",
-          allergens: profile.allergen_tags,
-          customAllergens: [],
-          ageGroup
-        }],
+        children: [{ id: "child-migrated", name: "1人目", allergens: profile.allergen_tags, customAllergens: [], ageGroup }],
         interests: []
       };
     }
@@ -474,14 +397,12 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
 
   async function handleLogout() {
     setIsLoggingOut(true);
-    // 状態の二重管理（Façade）を防ぎ、別端末や別ユーザーログイン時のデータ漏洩を遮断する
     localStorage.removeItem("anshin_user_preferences");
     localStorage.removeItem("anshin_onboarding_done");
     localStorage.removeItem("anshin_post_count");
     await logoutAction();
   }
 
-  // === F6: Account deletion ===
   async function handleDeleteAccount() {
     setIsDeleting(true);
     const result = await deleteMyAccount();
@@ -496,40 +417,13 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     }
   }
 
-  const handleShareImpact = async () => {
-    if (!impact) return;
-    const shareText = `あんしんキッズで、私の体験が「${impact.articlesHelped}件のまとめ記事」として採用され、「${impact.thanks}人」のパパ・ママから感謝されました！\nアレルギーを持つ親子に役立つコミュニティです✨\n#あんしんキッズ #食物アレルギー`;
-    const url = `${window.location.origin}/`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "あんしんキッズでの貢献",
-          text: shareText,
-          url: url
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      await navigator.clipboard.writeText(`${shareText}\n${url}`);
-      alert("実績をコピーしました！SNSでシェアしましょう。");
-    }
-  };
-
   // ─── Onboarding Screens ───────────────────────────────────────────
-  if (onboardingStep === "complete") {
-    return <OnboardingComplete />;
-  }
+  if (onboardingStep === "complete") return <OnboardingComplete />;
 
   if (onboardingStep === "welcome" && profile) {
     return (
       <AnimatePresence mode="wait">
-        <OnboardingWelcome
-          key="welcome"
-          profile={profile}
-          onNext={handleWelcomeNext}
-          onSkipAll={handleSkipOnboarding}
-        />
+        <OnboardingWelcome key="welcome" profile={profile} onNext={handleWelcomeNext} onSkipAll={handleSkipOnboarding} />
       </AnimatePresence>
     );
   }
@@ -537,36 +431,25 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
   if (onboardingStep === "child-setup" && profile) {
     return (
       <AnimatePresence mode="wait">
-        <OnboardingChildSetup
-          key="child-setup"
-          initialPrefs={getMigratedInitialPrefs()}
-          onComplete={handleWizardComplete}
-          onSkip={handleSkipOnboarding}
-        />
+        <OnboardingChildSetup key="child-setup" initialPrefs={getMigratedInitialPrefs()} onComplete={handleWizardComplete} onSkip={handleSkipOnboarding} />
       </AnimatePresence>
     );
   }
 
-  // ─── Normal MyPage Rendering ──────────────────────────────────────
-
-  if (isLoading || isBootstrapping) {
+  // ─── Loading / Error / Login States ───────────────────────────────
+  if (isBootstrapping) {
     return (
       <div className="w-full min-h-[100dvh] bg-[var(--color-background)] pb-24 fade-in">
-         {/* Profile Skeleton */}
-         <div className="bg-[var(--color-surface)] pb-8 pt-10 rounded-b-[40px] shadow-sm mb-6 flex flex-col items-center">
-            <div className="shimmer w-[72px] h-[72px] rounded-3xl mx-auto mb-3" />
-            <div className="shimmer w-32 h-6 rounded-md mb-2" />
-            <div className="shimmer w-16 h-5 rounded-full" />
-         </div>
-         {/* Stats Skeleton */}
-         <div className="px-4 mb-8">
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="shimmer h-24 rounded-[32px]" />
-              <div className="shimmer h-24 rounded-[32px]" />
+         <div className="px-5 pt-8 pb-4">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="shimmer w-12 h-12 rounded-full" />
+              <div className="flex-1"><div className="shimmer w-28 h-5 rounded-lg mb-1.5" /><div className="shimmer w-20 h-3 rounded-lg" /></div>
             </div>
-            {/* Bento blocks Skeleton */}
-            <div className="shimmer h-[140px] w-full rounded-[32px] mb-4" />
-            <div className="shimmer h-[160px] w-full rounded-[32px]" />
+         </div>
+         <div className="px-4 space-y-3">
+           <div className="shimmer h-6 w-32 rounded-lg" />
+           <div className="shimmer h-24 rounded-2xl" />
+           <div className="shimmer h-24 rounded-2xl" />
          </div>
       </div>
     );
@@ -581,12 +464,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           </div>
           <h3>エラーが発生しました</h3>
           <p className="text-[13px] text-[var(--color-text-secondary)] mt-2">{errorMsg}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn-primary mt-6 inline-flex items-center gap-2"
-          >
-            ページを再読み込み
-          </button>
+          <button onClick={() => window.location.reload()} className="btn-primary mt-6 inline-flex items-center gap-2">ページを再読み込み</button>
         </div>
       </div>
     );
@@ -599,43 +477,47 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2 shadow-sm">
             <span className="text-3xl">🔐</span>
           </div>
-          <h3>ログインが必要です</h3>
-          <p>マイページを見るにはログインしてください</p>
-          <a
-            href="/login"
-            className="btn-primary mt-6 inline-flex items-center gap-2"
-            id="login-from-mypage"
-          >
-            <LogOut className="w-4 h-4" />
-            LINEでログイン
-          </a>
+          <h3 className="break-keep text-balance">ログインが必要です</h3>
+          <p className="text-[13px] text-[var(--color-text-secondary)] mt-2 leading-relaxed">マイページの閲覧にはアカウントが必要です。</p>
+          <Link href="/login" className="btn-primary mt-6 inline-flex items-center gap-2" id="mypage-login-cta">ログインする</Link>
         </div>
       </div>
     );
   }
 
-  // Satisfy TypeScript type checker (handled by loading/bootstrapping above)
   if (!profile) return null;
 
-  // Check if profile is effectively empty (no child data set)
   const hasProfileData = (profile.children_profiles && profile.children_profiles.length > 0) ||
                          (profile.allergen_tags && profile.allergen_tags.length > 0);
 
+  // ════════════════════════════════════════════════════════════════════
+  //  Reader-First MyPage
+  // ════════════════════════════════════════════════════════════════════
   return (
     <div className="fade-in pb-4">
-      {/* Top action bar */}
-      <div className="flex justify-between items-center px-5 pt-6 pb-2">
-        <div>
-          <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight break-keep text-balance">
-            マイページ
-          </h1>
-          <p className="text-[13px] text-[var(--color-text-secondary)] mt-1.5 font-medium">
-            あなたの回答が、みんなのまとめ記事になります。
-          </p>
+      {/* ─── Compact Profile Strip ─────────────────────────────── */}
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 relative shrink-0 rounded-full overflow-hidden shadow-sm border border-[var(--color-border-light)]">
+              {renderAvatar(profile.avatar_url, profile.display_name)}
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-[17px] font-extrabold text-[var(--color-text)] truncate">{profile.display_name}</h1>
+              <p className="text-[11px] text-[var(--color-subtle)] font-medium">マイページ</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setShowProfileEdit(true)} 
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] border border-[var(--color-border-light)] transition-colors"
+            aria-label="プロフィール編集"
+          >
+            <Settings className="w-4 h-4 text-[var(--color-subtle)]" />
+          </button>
         </div>
-
       </div>
 
+      {/* Wizard overlay when editing child info */}
       {isEditing && (
         <OnboardingWizard
           initialPrefs={getMigratedInitialPrefs()}
@@ -644,503 +526,306 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         />
       )}
 
-      {/* Profile Card */}
+      {/* ─── Section 1: おまもりノート (Bookmarks) ─────────────── */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="px-4 mb-4"
+        className="px-4 mb-5"
       >
-        <div className="bg-white/90 backdrop-blur-md border border-[var(--color-border-light)] rounded-[32px] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-          <>
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 relative shrink-0">
-                    {renderAvatar(profile.avatar_url, profile.display_name)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-[18px] font-black text-[var(--color-text)] truncate">{profile.display_name}</h2>
-                  </div>
-                </div>
-                <button onClick={() => setShowProfileEdit(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] text-[11px] font-bold text-[var(--color-text-secondary)] rounded-full transition-colors flex-shrink-0">
-                  <Settings className="w-3.5 h-3.5" /> 変更
-                </button>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-2">
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, type: "spring" }} className="bg-[var(--color-surface-warm)] rounded-[20px] p-4 text-center border border-[var(--color-border-light)] transform transition-transform hover:scale-105">
-                  <BookOpen className="w-5 h-5 text-[var(--color-text)] mx-auto mb-2 opacity-50" />
-                  <div className="text-[20px] font-black text-[var(--color-text)] leading-none">{profile.total_contributions}</div>
-                  <div className="text-[10px] font-bold text-[var(--color-subtle)] mt-1.5 break-keep text-balance line-clamp-2 leading-tight">発言回数</div>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: "spring" }} className="bg-rose-50/70 rounded-[20px] p-4 text-center border border-rose-100 transform transition-transform hover:scale-105">
-                  <Heart className="w-5 h-5 text-rose-400 mx-auto mb-2" />
-                  <div className="text-[20px] font-black text-rose-600 leading-none">{profile.total_thanks_received}</div>
-                  <div className="text-[10px] font-bold text-rose-400 mt-1.5 break-keep text-balance line-clamp-2 leading-tight">いいね</div>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, type: "spring" }} className="bg-emerald-50/70 rounded-[20px] p-4 text-center border border-emerald-100 transform transition-transform hover:scale-105">
-                  <TrendingUp className="w-5 h-5 text-emerald-500 mx-auto mb-2" />
-                  <div className="text-[20px] font-black text-emerald-600 leading-none">{contributions.length}</div>
-                  <div className="text-[10px] font-bold text-emerald-500 mt-1.5 break-keep text-balance line-clamp-2 leading-tight">まとめ記事へ採用</div>
-                </motion.div>
-              </div>
-
-              {/* Streak */}
-              {streakData && streakData.totalDays > 0 && (
-                <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-[var(--color-warning)]/30">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xl">🔥</span>
-                    <div className="flex-1">
-                      <p className="text-[12px] font-bold text-[var(--color-warning)]">
-                        {streakData.currentStreak > 0 ? `${streakData.currentStreak}日連続で遊びにきてるね！` : `通算${streakData.totalDays}日参加`}
-                      </p>
-                      <p className="text-[10px] text-[var(--color-warning)]">
-                        最長 {streakData.longestStreak}日連続アクセス
-                      </p>
-                    </div>
-                    {/* Mini bar chart */}
-                    <div className="flex items-end gap-px">
-                      {Array.from({ length: 7 }).map((_, i) => (
-                        <div key={i} className={`w-1.5 rounded-full ${i < Math.min(streakData.currentStreak, 7) ? "bg-amber-400" : "bg-amber-200"}`} style={{ height: `${8 + i * 2}px` }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Multi-Child Allergen Tags */}
-              <div className="mt-5 pt-4 border-t border-[var(--color-border-light)]">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[13px] font-black text-[var(--color-text-secondary)]">登録されているお子さま情報</p>
-                  <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-text-secondary)] bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] transition-colors px-3 py-1.5 rounded-full">
-                    <Settings className="w-3.5 h-3.5" /> 変更
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {getMigratedInitialPrefs().children.length === 0 ? (
-                    <div className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-dashed border-[var(--color-border)]">
-                      <p className="text-[12px] font-bold text-[var(--color-muted)] mb-2 break-keep text-balance">まだお子さまの情報が登録されていません</p>
-                      <button 
-                        onClick={() => setIsEditing(true)}
-                        className="text-[12px] font-bold text-[var(--color-primary)] underline"
-                      >
-                        登録して、おすすめ情報を受け取る →
-                      </button>
-                    </div>
-                  ) : (
-                    getMigratedInitialPrefs().children.map((child, idx) => (
-                      <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-2xl p-3 flex flex-col gap-2 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-white/40 blur-xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                        <div className="flex items-center justify-between z-10">
-                          <span className="font-extrabold text-[13px] text-[var(--color-text)]">{child.name}</span>
-                          {child.ageGroup && <span className="text-[10px] font-black bg-white/80 px-2.5 py-1 rounded-full text-[var(--color-subtle)]">{child.ageGroup}才</span>}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 z-10">
-                          {child.allergens.map(tag => (
-                            <span key={tag} className="px-2.5 py-1 bg-white shadow-sm rounded-full text-[11px] font-bold text-[var(--color-text)]">{tag}</span>
-                          ))}
-                          {child.customAllergens.map(tag => (
-                            <span key={tag} className="px-2.5 py-1 bg-white border border-dashed border-[var(--color-border)] rounded-full text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
-                          ))}
-                          {child.allergens.length === 0 && child.customAllergens.length === 0 && (
-                            <span className="text-[11px] font-bold text-[var(--color-muted)]">アレルギー登録なし</span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </>
-        </div>
-      </motion.div>
-
-      {/* === F8: Visual Impact Dashboard (Bento UI) === */}
-      {isFetchingImpact ? (
-        <div className="px-4 mb-6 fade-in">
-           <div className="shimmer h-6 w-32 rounded-lg mb-4" />
-           <div className="grid grid-cols-2 gap-3 mb-4">
-             <div className="shimmer h-28 rounded-3xl" />
-             <div className="shimmer h-28 rounded-3xl" />
-           </div>
-        </div>
-      ) : (impact && (impact.articlesHelped > 0 || (impact.recentImpacts && impact.recentImpacts.length > 0))) ? (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, type: "spring" }}
-          className="px-4 mb-6"
-        >
-          <h3 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
-            <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
-            みんなへのお役立ち
-          </h3>
-          <p className="text-[12px] text-[var(--color-text-secondary)] mb-4 leading-relaxed font-medium">
-            あなたの回答は、同じ悩みを抱える親御さんのための大切なまとめ記事として残ります。
-          </p>
-          
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 flex flex-col justify-between h-28 shadow-sm relative overflow-hidden group hover:border-[var(--color-success)]/40 transition-colors">
-              <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">📖</div>
-              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">まとめ記事への採用</p>
-              <div className="flex items-end gap-1.5">
-                <span className="text-3xl font-extrabold text-[var(--color-success-deep)]">{impact.articlesHelped}</span>
-                <span className="text-[11px] font-semibold text-[var(--color-success)] mb-1">件</span>
-              </div>
+        <h2 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+          <Bookmark className="w-4.5 h-4.5 text-[var(--color-primary)]" />
+          おまもりノート
+        </h2>
+        
+        {bookmarks.length === 0 ? (
+          <div className="bg-white rounded-[24px] p-6 text-center border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+            <div className="w-14 h-14 rounded-[20px] bg-[var(--color-surface-warm)] flex items-center justify-center mx-auto mb-3 border border-[var(--color-border-light)]">
+              <span className="text-2xl">🔖</span>
             </div>
-            <div className="p-4 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-pink-50 border border-pink-100 flex flex-col justify-between h-28 shadow-sm relative overflow-hidden group hover:border-[var(--color-heart)]/40 transition-colors">
-              <div className="absolute -right-2 -bottom-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">❤️</div>
-              <p className="text-[11px] font-bold text-[var(--color-text-secondary)]">あなたの情報で助かった親御さん</p>
-              <div className="flex items-end gap-1.5">
-                <span className="text-3xl font-extrabold text-[var(--color-heart)]">{impact.thanks}</span>
-                <span className="text-[11px] font-semibold text-pink-500 mb-1">人</span>
-              </div>
-            </div>
+            <p className="text-[14px] text-[var(--color-text)] font-bold mb-1 break-keep text-balance">
+              まだブックマークがありません
+            </p>
+            <p className="text-[12px] text-[var(--color-subtle)] leading-relaxed mb-4 break-keep text-balance">
+              まとめ記事の中で気になった情報の<br/>🔖ボタンを押すと、ここに保存されます。
+            </p>
+            <Link href="/wiki" className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[var(--color-primary)] hover:underline">
+              まとめ記事を読む <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-
-          <div className="space-y-3">
-            {impact.recentImpacts && impact.recentImpacts.map((imp, idx) => (
-              <Link 
-                key={idx}
-                href={`/wiki/${imp.slug}`}
-                className="block p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/40 hover:shadow-md transition-all group"
-              >
-                <div className="flex items-start gap-3">
-                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-primary)]/5 flex items-center justify-center flex-shrink-0">
-                     <BookOpen className="w-5 h-5 text-[var(--color-primary)] opacity-80" />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                     <p className="text-[10px] text-[var(--color-success)] font-bold mb-1 flex items-center gap-1">
-                       <Check className="w-3 h-3" /> まとめ記事に採用されました
-                     </p>
-                     <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">
-                       {imp.title}
-                     </h4>
-                     <div className="text-[12px] bg-[var(--color-surface-warm)] rounded-xl p-2.5 text-[var(--color-text-secondary)] leading-relaxed relative">
-                       <div className="absolute left-0 top-1/2 -mt-1.5 -ml-1.5 border-[6px] border-transparent border-r-[var(--color-surface-warm)]" />
-                       <span className="font-semibold opacity-70">あなたの体験:</span><br/>
-                       「{imp.snippet.length > 40 ? imp.snippet.slice(0, 40) + "..." : imp.snippet}」
-                     </div>
-                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-4 flex justify-center">
-             <button
-                onClick={handleShareImpact}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[var(--color-border)] shadow-sm text-[var(--color-text)] font-semibold text-[13px] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-all"
-             >
-                <Share className="w-4 h-4" />
-                自分の貢献実績をSNSでシェア
-             </button>
-          </div>
-        </motion.div>
-      ) : null}
-
-      {/* === F9: Bookmarked Snippets (Micro-Bookmarking) === */}
-      {bookmarks.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, type: "spring" }}
-          className="px-4 mb-6"
-        >
-          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
-            <span className="text-xl">🔖</span>
-            お気に入り
-          </h3>
-          <p className="text-[12px] text-[var(--color-text-secondary)] mb-3 font-medium">
-            お気に入りの情報にいつでもアクセスできます。
-          </p>
-          <div className="space-y-3">
+        ) : (
+          <div className="space-y-2.5">
             {bookmarks.map((bm) => (
               <Link
                 key={bm.id}
                 href={`/wiki/${bm.wiki_entries.slug}`}
-                className="block p-4 rounded-2xl bg-white border border-[var(--color-border)] hover:border-[var(--color-primary)]/40 hover:shadow-md transition-all group"
+                className="block p-4 rounded-[20px] bg-white border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-[var(--color-subtle)] mb-1.5 flex items-center gap-1 group-hover:text-[var(--color-primary)] transition-colors">
-                    <BookOpen className="w-3 h-3" />
-                    {bm.wiki_entries.category} / {bm.wiki_entries.title.replace("【みんなの知恵袋】", "").trim()}
-                  </p>
-                  <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 leading-tight break-keep text-balance">
-                    {bm.snippet_title}
-                  </h4>
-                  <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed bg-[var(--color-surface-warm)] p-2.5 rounded-xl">
-                    {bm.snippet_content}
-                  </p>
-                </div>
+                <p className="text-[10px] text-[var(--color-subtle)] mb-1 flex items-center gap-1 font-bold">
+                  <BookOpen className="w-3 h-3" />
+                  {bm.wiki_entries.category}
+                </p>
+                <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 leading-snug group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">
+                  {bm.snippet_title}
+                </h4>
+                <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed bg-[var(--color-surface-warm)] p-2.5 rounded-xl">
+                  {bm.snippet_content}
+                </p>
               </Link>
             ))}
           </div>
+        )}
+      </motion.div>
+
+      {/* ─── Section 2: おすすめ記事 (Recommendations) ─────────── */}
+      {isFetchingRecommended ? (
+        <div className="px-4 mb-5 fade-in">
+           <div className="shimmer h-5 w-40 rounded-lg mb-3" />
+           <div className="space-y-2.5">
+             <div className="shimmer h-24 rounded-[20px]" />
+             <div className="shimmer h-24 rounded-[20px]" />
+           </div>
+        </div>
+      ) : recommendedWikis.length > 0 ? (
+        <motion.div 
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
+          className="px-4 mb-5"
+        >
+          <h2 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
+            <Sparkles className="w-4.5 h-4.5 text-amber-500" />
+            あなたへのおすすめ
+          </h2>
+          {!hasProfileData && (
+            <div className="mb-3 p-3 rounded-2xl bg-gradient-to-r from-amber-50/60 to-[var(--color-surface-warm)] border border-amber-100/50">
+              <p className="text-[11px] text-amber-700 font-medium break-keep text-balance">
+                💡 <button onClick={() => setIsEditing(true)} className="underline font-bold">お子さまの情報を登録</button>すると、アレルギーや年齢に合った記事が自動的におすすめされます。
+              </p>
+            </div>
+          )}
+          <div className="space-y-2.5">
+            {recommendedWikis.map((wiki) => {
+              const url = wiki.slug.startsWith("/talk/") ? wiki.slug : `/wiki/${wiki.slug}`;
+              const isRecent = wiki.slug.startsWith("/talk/");
+              return (
+                <Link
+                  key={wiki.id}
+                  href={url}
+                  className="block p-4 rounded-[20px] bg-gradient-to-br from-[#FFFBF0] to-white border border-[#FBECC8] hover:border-[#F2D696] hover:shadow-md transition-all group relative overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                >
+                  <div className="absolute top-0 right-0 w-14 h-14 bg-gradient-to-bl from-[#FFF3D6] to-transparent rounded-bl-[28px] opacity-50 pointer-events-none" />
+                  <div className="flex-1 min-w-0 relative z-10">
+                    <div className="flex justify-between items-start mb-1 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-[#A67C00]/80 flex items-center gap-1 font-bold mb-1">
+                          <BookOpen className="w-3 h-3" />
+                          {wiki.category}
+                        </p>
+                        <h4 className="text-[14px] font-bold text-[#805F00] leading-snug break-keep text-balance group-hover:text-[#A67C00] transition-colors">
+                          {wiki.title.replace("【みんなの知恵袋】", "").trim()}
+                        </h4>
+                      </div>
+                      {isRecent && (
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0 relative z-20" onClick={(e) => e.preventDefault()}>
+                          <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold shadow-sm">NEW</span>
+                          <TopicBookmarkButton summaryId={wiki.id} snippetTitle={wiki.title} snippetContent={wiki.summary} />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[12px] text-[#A67C00]/70 line-clamp-2 leading-relaxed font-medium mt-1">
+                      {wiki.summary}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </motion.div>
+      ) : hasProfileData ? null : (
+        <motion.div 
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="px-4 mb-5"
+        >
+          <div className="bg-gradient-to-br from-amber-50/80 to-white rounded-[24px] p-5 text-center border border-amber-100/60 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+            <div className="w-12 h-12 rounded-[16px] bg-amber-100 flex items-center justify-center mx-auto mb-3">
+              <Sparkles className="w-6 h-6 text-amber-500" />
+            </div>
+            <p className="text-[14px] text-[var(--color-text)] font-bold mb-1 break-keep text-balance">
+              あなた専用のおすすめを表示
+            </p>
+            <p className="text-[12px] text-[var(--color-subtle)] leading-relaxed mb-4 break-keep text-balance">
+              お子さまのアレルギーや年齢を登録すると、<br/>ぴったりの情報が自動配信されます。
+            </p>
+            <button onClick={() => setIsEditing(true)} className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--color-text)] text-white text-[13px] font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform">
+              お子さま情報を登録する
+            </button>
+          </div>
         </motion.div>
       )}
 
-      {/* === F10: Recommended Wiki Entries (ONLY when profile is configured) === */}
-      {isFetchingRecommended ? (
-        <div className="px-4 mb-6 fade-in">
-           <div className="shimmer h-6 w-48 rounded-lg mb-4" />
-           <div className="space-y-3">
-             <div className="shimmer h-24 rounded-2xl" />
-             <div className="shimmer h-24 rounded-2xl" />
-           </div>
-        </div>
-      ) : (hasProfileData && recommendedWikis.length > 0) ? (
+      {/* ─── Section 3: お子さま情報 (Collapsible) ────────────── */}
+      {hasProfileData && (
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, type: "spring" }}
-          className="px-4 mb-6"
+          transition={{ delay: 0.15, type: "spring" }}
+          className="px-4 mb-4"
         >
-          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
-            <span className="text-xl">✨</span>
-            あなたへの特別なおすすめ
-          </h3>
-          <p className="text-[12px] text-[var(--color-text-secondary)] mb-3 font-medium">
-            設定されたお子様の年齢やアレルギー情報に基づき、いま役立つ知恵袋を厳選しました。
-          </p>
-          <div className="space-y-3">
-            {recommendedWikis.map((wiki) => {
-              const url = wiki.slug.startsWith("/talk/") ? wiki.slug : `/wiki/${wiki.slug}`;
-              // For topic summaries, we append a notification badge indicator if it's recent
-              const isRecent = wiki.slug.startsWith("/talk/");
-              
-              return (
-              <Link
-                key={wiki.id}
-                href={url}
-                className="block p-4 rounded-2xl bg-gradient-to-br from-[#FFFBF0] to-white border border-[#FBECC8] hover:border-[#F2D696] hover:shadow-md transition-all group relative overflow-hidden"
+          <button 
+            onClick={() => setShowChildInfo(!showChildInfo)}
+            className="w-full flex items-center justify-between p-3.5 rounded-[18px] bg-white border border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="text-lg">👶</span>
+              <span className="text-[13px] font-bold text-[var(--color-text)]">登録中のお子さま情報</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                {getMigratedInitialPrefs().children.length}名
+              </span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-[var(--color-subtle)] transition-transform ${showChildInfo ? "rotate-180" : ""}`} />
+          </button>
+          
+          <AnimatePresence>
+            {showChildInfo && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#FFF3D6] to-transparent rounded-bl-[32px] opacity-50 pointer-events-none" />
-                <div className="flex-1 min-w-0 relative z-10">
-                  <div className="flex justify-between items-start mb-1.5 gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-[#A67C00]/80 flex items-center gap-1 font-bold mb-1">
-                        <BookOpen className="w-3 h-3" />
-                        {wiki.category}
-                      </p>
-                      <h4 className="text-[14px] font-bold text-[#805F00] leading-tight break-keep text-balance group-hover:text-[#A67C00] transition-colors">
-                        {wiki.title.replace("【みんなの知恵袋】", "").trim()}
-                      </h4>
-                    </div>
-                    {isRecent && (
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0 relative z-20" onClick={(e) => e.preventDefault()}>
-                        <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold shadow-sm">NEW記事</span>
-                        <TopicBookmarkButton summaryId={wiki.id} snippetTitle={wiki.title} snippetContent={wiki.summary} />
+                <div className="pt-2.5 space-y-2">
+                  {getMigratedInitialPrefs().children.map((child, idx) => (
+                    <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-[16px] p-3.5 border border-[var(--color-border-light)]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-[13px] text-[var(--color-text)]">{child.name}</span>
+                        {child.ageGroup && <span className="text-[10px] font-bold bg-white/80 px-2 py-0.5 rounded-full text-[var(--color-subtle)]">{child.ageGroup}才</span>}
                       </div>
-                    )}
-                  </div>
-                  <p className="text-[12px] text-[#A67C00]/70 line-clamp-2 leading-relaxed font-medium mt-1">
-                    {wiki.summary}
-                  </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {child.allergens.map(tag => (
+                          <span key={tag} className="px-2 py-0.5 bg-white shadow-sm rounded-full text-[11px] font-bold text-[var(--color-text)]">{tag}</span>
+                        ))}
+                        {child.customAllergens.map(tag => (
+                          <span key={tag} className="px-2 py-0.5 bg-white border border-dashed border-[var(--color-border)] rounded-full text-[11px] font-bold text-[var(--color-text-secondary)]">{tag}</span>
+                        ))}
+                        {child.allergens.length === 0 && child.customAllergens.length === 0 && (
+                          <span className="text-[11px] font-bold text-[var(--color-muted)]">アレルギー登録なし</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={() => setIsEditing(true)} className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-bold text-[var(--color-primary)] hover:underline">
+                    <Settings className="w-3.5 h-3.5" /> 変更する
+                  </button>
                 </div>
-              </Link>
-            )})}
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
-      ) : null}
+      )}
 
-      {/* CTA to talk rooms */}
-      <div className="px-4 pb-4">
-        <Link href="/talk" className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform">
-          <span className="text-lg">💬</span> トークルームへ行く
+      {/* ─── Quick Actions ────────────────────────────────────── */}
+      <div className="px-4 mb-4 flex gap-2">
+        <Link href="/talk" className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] bg-[var(--color-text)] text-white text-[13px] font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-sm">
+          <span>💬</span> トークルームへ
+        </Link>
+        <Link href="/notifications" className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] bg-white text-[var(--color-text)] text-[13px] font-bold border border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors shadow-sm">
+          <Bell className="w-4 h-4" /> 通知・活動履歴
         </Link>
       </div>
 
-      {/* Contributions Fallback list (Historical data not in top 3 Bento UI) */}
-      {contributions.length > 0 && !(impact && impact.recentImpacts && impact.recentImpacts.length > 0) && (
-        <div className="px-4 pb-4">
-          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
-            <span className="text-lg">🌱</span>
-            今までのお話し
-          </h3>
-            <div className="space-y-3">
-              {contributions.map((contrib) => (
-                <Link
-                  key={contrib.id}
-                  href={contrib.wiki_entries ? `/wiki/${(contrib.wiki_entries as Record<string, string>).slug}` : "/wiki"}
-                  className="card p-4 stagger-item block hover:border-[var(--color-success)]/30 transition-all"
-                  id={`contrib-${contrib.id}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-success-light)] to-green-100/50 flex items-center justify-center flex-shrink-0 shadow-sm">
-                      <span className="text-lg">🌱</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {contrib.wiki_entries && (
-                        <h4 className="font-bold text-[14px] text-[var(--color-text)] break-keep text-balance">
-                          {((contrib.wiki_entries as Record<string, string>).title || "").replace("【みんなの知恵袋】", "").trim()}
-                        </h4>
-                      )}
-                      <p className="text-[12px] text-[var(--color-subtle)] mt-1 line-clamp-2 leading-relaxed">
-                        あなたの体験: 「{contrib.original_message_snippet}」
-                      </p>
-                      <div className="flex items-center gap-3 mt-2">
-                        <span className="text-[10px] text-[var(--color-muted)] bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-full">
-                          {new Date(contrib.extracted_at).toLocaleDateString("ja-JP")}に反映
-                        </span>
-                        <span className="text-[10px] text-[var(--color-success)] font-semibold">
-                          まとめ記事を確認する →
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-        </div>
-      )}
-
-      {contributions.length === 0 && (
-         <div className="px-4 pb-6">
-          <div className="bg-white rounded-[32px] p-6 text-center border border-[var(--color-border-light)]">
-            <div className="w-14 h-14 rounded-[20px] bg-[var(--color-surface-warm)] flex items-center justify-center mx-auto mb-4 border border-[var(--color-border-light)]">
-              <Sparkles className="w-6 h-6 text-[var(--color-text-secondary)]" />
-            </div>
-            <p className="text-[15px] text-[var(--color-text)] mb-1.5 font-black tracking-tight leading-tight break-keep text-balance">
-              まだまとめ記事に採用された発言はありません
-            </p>
-            <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed font-medium mb-6 break-keep text-balance">
-              トークルームで話題に参加すると、AIが知見を抽出し、まとめ記事へと進化させます。
-            </p>
-            <Link href="/talk" className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform">
-              <span className="text-lg">💬</span> トークルームへ行く
-            </Link>
-          </div>
-         </div>
-      )}
-
-
-
-      {/* === F6: Privacy & Data Controls === */}
+      {/* ─── Section 4: 設定・プライバシー (Compact) ──────────── */}
       <div className="px-4 pb-4">
-        <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2 break-keep text-balance">
-          <span className="text-lg">🔒</span>
-          プライバシー設定
-        </h3>
+        <div className="bg-white rounded-[20px] border border-[var(--color-border-light)] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+          {/* Privacy toggle */}
+          <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-light)]">
+            <div className="flex-1 min-w-0 mr-3">
+              <p className="text-[13px] font-bold text-[var(--color-text)] mb-0.5">トークでの情報表示</p>
+              <p className="text-[10px] text-[var(--color-subtle)] leading-relaxed">
+                年齢やアレルギーを投稿の横に表示
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                 if (!profile || !profile.children_profiles || profile.children_profiles.length === 0) return;
+                 setIsSavingProfile(true);
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 const isCurrentlyPublic = !profile.children_profiles.some(c => (c as any).isPublic === false);
+                 const newProfs = profile.children_profiles.map(c => ({...c, isPublic: !isCurrentlyPublic}));
+                 setProfile({ ...profile, children_profiles: newProfs as ChildProfile[] });
+                 const { updateMyProfile: updateProfileAction } = await import("@/app/actions/mypage");
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 await updateProfileAction({ children_profiles: newProfs as any[] });
+                 setIsSavingProfile(false);
+              }}
+              disabled={isSavingProfile || !profile?.children_profiles || profile.children_profiles.length === 0}
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-40 shadow-inner ${
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (profile?.children_profiles && profile.children_profiles.length > 0 && !profile.children_profiles.some(c => (c as any).isPublic === false)) ? "bg-[var(--color-primary)]" : "bg-gray-300"
+              }`}
+            >
+              <span className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (profile?.children_profiles && profile.children_profiles.length > 0 && !profile.children_profiles.some(c => (c as any).isPublic === false)) ? "translate-x-5" : "translate-x-0"
+              }`} />
+            </button>
+          </div>
+          
+          {/* Support link */}
+          <Link href="/support" className="flex items-center justify-between p-4 border-b border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors">
+            <span className="text-[13px] font-bold text-[var(--color-text)]">サポート・ヘルプ</span>
+            <ChevronRight className="w-4 h-4 text-[var(--color-subtle)]" />
+          </Link>
 
-        {/* Data Info */}
-        <div className="card p-4 mb-3">
-          <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed mb-3 font-medium">
-            あんしんキッズは、プライバシー優先のシステム設計です。
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
-              <div className="flex-1 min-w-0 mr-3">
-                <p className="text-[13px] font-bold text-[var(--color-text)] mb-1">トークルームでの年齢・アレルギー表示</p>
-                <p className="text-[11px] text-[var(--color-text-secondary)]">
-                  {(!profile?.children_profiles || profile.children_profiles.length === 0)
-                    ? "お子さま情報を登録すると、この設定が有効になります。"
-                    : "あなたの投稿の横にお子様の情報（年齢やアレルギー）を表示し、他の親御さんが参考にしやすくします。"}
-                </p>
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="w-full flex items-center justify-between p-4 border-b border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors disabled:opacity-50"
+          >
+            <span className="text-[13px] font-bold text-[var(--color-subtle)] flex items-center gap-2">
+              <LogOut className="w-4 h-4" />
+              {isLoggingOut ? "ログアウト中..." : "ログアウト"}
+            </span>
+          </button>
+
+          {/* Delete Account */}
+          <div className="p-4">
+            {showDeleteConfirm ? (
+              <div className="space-y-2.5">
+                <p className="text-[12px] text-red-600 font-bold">本当に削除しますか？この操作は取り消せません。</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-600 text-white text-[12px] font-bold disabled:opacity-50"
+                  >
+                    {isDeleting ? <><Loader2 className="w-3 h-3 animate-spin" /> 削除中...</> : "完全に削除する"}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-[var(--color-border)] text-[12px] text-[var(--color-subtle)]"
+                  >
+                    キャンセル
+                  </button>
+                </div>
               </div>
+            ) : (
               <button
-                onClick={async () => {
-                   if (!profile || !profile.children_profiles || profile.children_profiles.length === 0) return;
-                   setIsSavingProfile(true);
-                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                   const isCurrentlyPublic = !profile.children_profiles.some(c => (c as any).isPublic === false);
-                   const newProfs = profile.children_profiles.map(c => ({...c, isPublic: !isCurrentlyPublic}));
-                   
-                   setProfile({ ...profile, children_profiles: newProfs as ChildProfile[] });
-                   
-                   const { updateMyProfile: updateProfileAction } = await import("@/app/actions/mypage");
-                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                   await updateProfileAction({ children_profiles: newProfs as any[] });
-                   
-                   setIsSavingProfile(false);
-                }}
-                disabled={isSavingProfile || !profile?.children_profiles || profile.children_profiles.length === 0}
-                className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 shadow-inner ${
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (profile?.children_profiles && profile.children_profiles.length > 0 && !profile.children_profiles.some(c => (c as any).isPublic === false)) ? "bg-[var(--color-primary)]" : "bg-gray-300"
-                }`}
+                onClick={() => setShowDeleteConfirm(true)}
+                className="text-[12px] text-[var(--color-danger)] font-medium hover:underline"
               >
-                <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (profile?.children_profiles && profile.children_profiles.length > 0 && !profile.children_profiles.some(c => (c as any).isPublic === false)) ? "translate-x-6" : "translate-x-0"
-                }`} />
+                アカウントを削除する
               </button>
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
-              <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>トークルームの投稿は一定時間経過後に自動消去されます</span>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
-              <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>まとめ記事には一切の個人情報を残しません</span>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)]">
-              <Check className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" />
-              <span>LINE上の友だち情報等をシステムが取得することはありません</span>
-            </div>
+            )}
           </div>
         </div>
-
-        {/* Delete Account */}
-        <div className="card p-4 border-[var(--color-danger)]/30">
-          <h4 className="text-[13px] font-bold text-[var(--color-danger)] mb-2 break-keep text-balance">⚠️ アカウントとデータの削除</h4>
-          <p className="text-[11px] text-[var(--color-subtle)] leading-relaxed mb-3">
-            すべてのデータ（プロフィール、共有記録）を完全に削除します。
-            まとめ記事に匿名化済みの情報は残りますが、あなたへの紐付けは解除されます。
-          </p>
-          {showDeleteConfirm ? (
-            <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-red-50 border border-[var(--color-danger)]/30">
-                <p className="text-[12px] text-red-700 font-bold mb-1">本当に削除しますか？</p>
-                <p className="text-[10px] text-[var(--color-danger)]">この操作は取り消せません。</p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleDeleteAccount}
-                  disabled={isDeleting}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-600 text-white text-[12px] font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
-                  id="confirm-delete"
-                >
-                  {isDeleting ? <><Loader2 className="w-3 h-3 animate-spin" /> 削除中...</> : "完全に削除する"}
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-[var(--color-border)] text-[12px] text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)]"
-                  id="cancel-delete"
-                >
-                  キャンセル
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full p-2.5 rounded-xl border border-[var(--color-danger)]/30 text-[12px] text-[var(--color-danger)] hover:bg-red-50 transition-all"
-              id="show-delete"
-            >
-              アカウントを削除する
-            </button>
-          )}
-        </div>
       </div>
 
-
-
-      {/* Logout */}
-      <div className="px-4 pb-8 pt-2">
-        <button
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="w-full p-3.5 rounded-2xl border border-[var(--color-border)] text-[13px] text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)] hover:text-[var(--color-danger)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          id="logout-button"
-        >
-          <LogOut className="w-4 h-4" />
-          {isLoggingOut ? "ログアウト中..." : "ログアウト"}
-        </button>
-      </div>
-
-      {/* Profile Basic Auth Edit Modal */}
+      {/* ═══════ Profile Edit Modal ═══════ */}
       {showProfileEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={(e) => { if (e.target === e.currentTarget) setShowProfileEdit(false); }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
@@ -1150,7 +835,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
             <div className="mb-5">
               <label className="block text-[12px] font-bold text-[var(--color-subtle)] mb-2">アイコン</label>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-16 h-16 shrink-0 shadow-sm relative">
+                <div className="w-16 h-16 shrink-0 shadow-sm relative rounded-full overflow-hidden">
                   {renderAvatar(editAvatar, editName || profile?.display_name || "👤")}
                   {editAvatar && (
                     <button onClick={() => setEditAvatar(null)} className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] shadow-md hover:text-[var(--color-danger)] z-10 transition-colors">
@@ -1175,23 +860,13 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                             const maxSize = 200;
                             let { width, height } = img;
                             if (width > height) {
-                              if (width > maxSize) {
-                                height = Math.round(height * maxSize / width);
-                                width = maxSize;
-                              }
+                              if (width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
                             } else {
-                              if (height > maxSize) {
-                                width = Math.round(width * maxSize / height);
-                                height = maxSize;
-                              }
+                              if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
                             }
-                            canvas.width = width;
-                            canvas.height = height;
+                            canvas.width = width; canvas.height = height;
                             const ctx = canvas.getContext("2d");
-                            if (ctx) {
-                              ctx.drawImage(img, 0, 0, width, height);
-                              setEditAvatar(canvas.toDataURL("image/jpeg", 0.7));
-                            }
+                            if (ctx) { ctx.drawImage(img, 0, 0, width, height); setEditAvatar(canvas.toDataURL("image/jpeg", 0.7)); }
                           };
                           img.src = e.target?.result as string;
                         };

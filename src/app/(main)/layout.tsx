@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, User, LogIn, Settings } from "@/components/icons";
+import { MessageCircle, User, LogIn, Bell } from "@/components/icons";
 
 const navItems = [
   { href: "/talk", label: "テーマ一覧", Icon: MessageCircle },
-  { href: "/support", label: "サポート", Icon: Settings },
+  { href: "/notifications", label: "通知", Icon: Bell },
   { href: "/mypage", label: "マイページ", Icon: User },
 ];
 
@@ -48,7 +48,8 @@ export default function MainLayout({
         <nav className="bottom-nav" id="main-navigation" role="navigation" aria-label="メインナビゲーション">
           <div className="flex justify-around items-center max-w-lg mx-auto">
             {navItems.map((item) => {
-              if (item.href === "/mypage" && isLoggedIn === false) {
+              // Hide notifications & mypage for logged-out users
+              if ((item.href === "/mypage" || item.href === "/notifications") && isLoggedIn === false) {
                 return null;
               }
 
