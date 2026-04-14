@@ -432,7 +432,7 @@ export default function ChatClient({
     // プロフィールで設定した絵文字アバター (1〜4文字)
     if (avatar_url && avatar_url.length <= 4) {
       return (
-        <div className="w-full h-full bg-[var(--color-surface-warm)] flex items-center justify-center rounded-full border border-[var(--color-border-light)]">
+        <div className="w-full h-full bg-[var(--color-bg)] flex items-center justify-center rounded-full shadow-inner">
           <span className="text-[14px]">{avatar_url}</span>
         </div>
       );
@@ -441,8 +441,8 @@ export default function ChatClient({
     const bg = getAvatarBg(user_id);
     const initial = getAvatarInitial(user_id, name);
     return (
-      <div className={`w-full h-full ${bg} flex items-center justify-center rounded-full`}>
-        <span className="text-[11px] font-bold text-[var(--color-text-secondary)]">{initial}</span>
+      <div className={`w-full h-full ${bg} flex items-center justify-center rounded-full shadow-inner`}>
+        <span className="text-[11px] font-black text-white mix-blend-overlay opacity-80">{initial}</span>
       </div>
     );
   }
@@ -465,22 +465,18 @@ export default function ChatClient({
       return (
         <div className="flex flex-col items-center px-4 pt-8 pb-4">
           <div className="w-full max-w-sm">
-            <div className="relative rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/10 p-5">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[20px] flex-shrink-0">
-                  {topicSummary ? "📝" : (roomInfo?.icon_emoji || "💬")}
-                </div>
-                <div className="flex-1 pt-0.5">
-                  <p className="text-[14px] font-bold text-[var(--color-text)] leading-snug mb-1">
-                    {topicSummary ? "過去の声はまとめ記事に反映されました" : "この話題にまだ声がありません"}
-                  </p>
-                  <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
-                    {topicSummary
-                      ? "プライバシー保護のためトーク内容は一定期間で自動削除されますが、知恵はまとめ記事として残ります"
-                      : "あなたの体験やヒントが、同じ悩みを持つ誰かの助けになります"}
-                  </p>
-                </div>
+            <div className="relative rounded-[32px] bg-white shadow-soft p-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center text-[28px] mx-auto mb-4 shadow-inner">
+                {topicSummary ? "📝" : (roomInfo?.icon_emoji || "💬")}
               </div>
+              <p className="text-[15px] font-extrabold text-[var(--color-text)] leading-snug mb-2">
+                {topicSummary ? "過去の声はまとめ記事に反映されました" : "この話題にまだ声がありません"}
+              </p>
+              <p className="text-[13px] font-medium text-[var(--color-subtle)] leading-relaxed">
+                {topicSummary
+                  ? "プライバシー保護のためトーク内容は一定期間で自動削除されますが、知恵はまとめ記事として残ります"
+                  : "あなたの体験やヒントが、同じ悩みを持つ誰かの助けになります"}
+              </p>
               {topicSummary && (
                 <p className="text-[12px] text-[var(--color-primary)] font-medium mt-2">
                   💡 上部の「まとめ」をタップして記事を読めます。新しい体験談もぜひ共有してください！
@@ -520,8 +516,8 @@ export default function ChatClient({
       }
 
       const dateDivider = showDateDivider ? (
-        <div className="flex justify-center my-5 slide-up" key={`date-${msg.id}`}>
-          <span className="text-[11px] font-bold text-[var(--color-text-secondary)] bg-[var(--color-surface-soft)] px-3 py-1 rounded-full border border-[var(--color-border)] shadow-sm">
+        <div className="flex justify-center my-6 slide-up" key={`date-${msg.id}`}>
+          <span className="text-[11px] font-black text-[var(--color-subtle)] bg-white px-4 py-2 rounded-full shadow-soft opacity-80">
             {dateStr}
           </span>
         </div>
@@ -546,12 +542,12 @@ export default function ChatClient({
                 {renderAvatar(msg.author_avatar || null, msg.user_id, getAnonymousName(msg.user_id, msg.author_name))}
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[11px] font-bold text-[var(--color-text-secondary)] mr-1 mb-0.5">
+                <span className="text-[11px] font-extrabold text-[var(--color-subtle)] mr-2 mb-1">
                   {getAnonymousName(msg.user_id, msg.author_name)}
                 </span>
-                <div className="px-4 py-2.5 rounded-[20px] rounded-br-[4px] bg-[var(--color-primary)] text-white shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed">
+                <div className="px-5 py-3.5 rounded-[28px] rounded-br-[6px] bg-[var(--color-primary)] text-white shadow-soft break-words whitespace-pre-wrap text-[15px] font-medium leading-relaxed max-w-full">
                   {msg.image_url && (
-                    <div className="mb-2 -mx-1 -mt-1 rounded-t-[14px] overflow-hidden relative">
+                    <div className="mb-2 -mx-1 -mt-1 rounded-t-[20px] overflow-hidden relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={msg.image_url} alt="attached" className="w-[200px] aspect-square object-cover bg-black/10" />
                     </div>
@@ -579,13 +575,13 @@ export default function ChatClient({
                       <div className="relative">
                         <button
                           onClick={() => setActiveReactionMsg(activeReactionMsg === msg.id ? null : msg.id)}
-                          className={`flex items-center justify-center w-6 h-6 rounded-full transition-all border ${
+                          className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
                             activeReactionMsg === msg.id 
-                              ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm"
-                              : "bg-[var(--color-surface)] text-[var(--color-subtle)] border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)]"
+                              ? "bg-[var(--color-primary-dark)] text-white shadow-md"
+                              : "bg-white text-[var(--color-subtle)] shadow-soft hover:shadow-md"
                           }`}
                         >
-                          <span className="text-[12px] font-bold">+</span>
+                          <span className="text-[14px] font-black">+</span>
                         </button>
                         
                         {activeReactionMsg === msg.id && (
@@ -621,10 +617,10 @@ export default function ChatClient({
                       <button
                         key={emoji}
                         onClick={() => handleReactionToggle(msg.id, emoji)}
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] transition-all border shadow-sm ${
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] transition-all shadow-soft ${
                           data.hasReacted
-                            ? "bg-blue-50 border-blue-200 text-blue-700"
-                            : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-text)]"
+                            ? "bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] font-black"
+                            : "bg-white text-[var(--color-subtle)] font-bold"
                         }`}
                       >
                         <span>{emoji}</span>
@@ -659,20 +655,20 @@ export default function ChatClient({
               </div>
               <div className="flex flex-col items-start min-w-0 flex-1">
                 <div className="flex items-center flex-wrap gap-1 mb-1 ml-1">
-                  <span className="text-[11px] font-bold text-[var(--color-primary)]">
+                  <span className="text-[12px] font-extrabold text-[var(--color-text)] opacity-80">
                     {getAnonymousName(msg.user_id, msg.author_name)}
                   </span>
                   {msg.author_age && (
-                    <span className="text-[9px] font-bold bg-[var(--color-surface-warm)] text-[var(--color-subtle)] px-1.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold bg-[var(--color-bg)] text-[var(--color-subtle)] px-2 py-0.5 rounded-full shadow-inner">
                       {msg.author_age.includes("歳") ? msg.author_age : msg.author_age + "歳"}
                     </span>
                   )}
                   {msg.author_allergens && msg.author_allergens.length > 0 && (
-                    <div className="flex gap-0.5">
+                    <div className="flex gap-1">
                       {msg.author_allergens.slice(0,3).map(a => {
                         const emoji = a.includes("卵") ? "🥚" : a.includes("乳") ? "🥛" : a.includes("小麦") ? "🌾" : "🌱";
                         return (
-                          <span key={a} className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-100 flex items-center gap-0.5">
+                          <span key={a} className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                             {emoji}{a}
                           </span>
                         );
@@ -680,11 +676,11 @@ export default function ChatClient({
                     </div>
                   )}
                 </div>
-                <div className="px-4 py-2.5 rounded-[20px] rounded-bl-[4px] bg-white border border-[var(--color-border-light)] text-[var(--color-text)] shadow-sm break-words whitespace-pre-wrap text-[14px] leading-relaxed max-w-full">
+                <div className="px-5 py-3.5 rounded-[28px] rounded-bl-[6px] bg-white text-[var(--color-text)] shadow-soft break-words whitespace-pre-wrap text-[15px] font-medium leading-relaxed max-w-full">
                   {msg.image_url && (
-                    <div className="mb-2 -mx-1 -mt-1 rounded-t-[14px] overflow-hidden relative">
+                    <div className="mb-2 -mx-1 -mt-1 rounded-t-[20px] overflow-hidden relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={msg.image_url} alt="attached" className="w-[200px] aspect-square object-cover bg-[var(--color-surface-warm)]" />
+                      <img src={msg.image_url} alt="attached" className="w-[200px] aspect-square object-cover bg-[var(--color-bg)]" />
                     </div>
                   )}
                   {msg.content}
@@ -702,14 +698,14 @@ export default function ChatClient({
                     <div className="relative">
                       <button
                         onClick={() => setActiveReactionMsg(activeReactionMsg === msg.id ? null : msg.id)}
-                        className={`flex items-center justify-center w-6 h-6 rounded-full transition-all border ${
+                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
                           activeReactionMsg === msg.id 
-                            ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm"
-                            : "bg-[var(--color-surface)] text-[var(--color-subtle)] border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)]"
+                            ? "bg-[var(--color-primary-dark)] text-white shadow-md"
+                            : "bg-[var(--color-bg)] text-[var(--color-subtle)] shadow-inner hover:shadow-soft hover:bg-white"
                         }`}
                         title="リアクションを追加"
                       >
-                        <span className="text-[12px] font-bold">+</span>
+                        <span className="text-[14px] font-black">+</span>
                       </button>
                       
                       {activeReactionMsg === msg.id && (
@@ -806,42 +802,44 @@ export default function ChatClient({
           <div className="mx-4 mt-4 mb-2">
             <button
               onClick={() => setShowSummary(!showSummary)}
-              className="w-full flex items-center justify-between p-4 rounded-t-2xl bg-gradient-to-r from-[var(--color-primary)]/5 to-[var(--color-accent)]/5 border border-[var(--color-primary)]/15 border-b-0 transition-all"
+              className="w-full flex items-center justify-between p-5 rounded-[28px] bg-white shadow-soft transition-all active:scale-[0.98]"
             >
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[var(--color-primary)]" />
-                <span className="text-[13px] font-bold text-[var(--color-primary)]">AIまとめ</span>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center shadow-inner">
+                  <BookOpen className="w-4 h-4 text-[var(--color-primary-dark)]" />
+                </div>
+                <span className="text-[15px] font-extrabold text-[var(--color-text)]">AIまとめ</span>
                 {topicSummary.allergen_tags && Array.isArray(topicSummary.allergen_tags) && topicSummary.allergen_tags.length > 0 && (
-                  <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
+                  <span className="text-[12px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100">
                     {topicSummary.allergen_tags.slice(0, 3).join("・")}
                   </span>
                 )}
                 {topicSummary.allergen_tags && !Array.isArray(topicSummary.allergen_tags) && (
-                  <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
+                  <span className="text-[12px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100">
                     {String(topicSummary.allergen_tags).slice(0, 10)}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <ChevronDown className={`w-4 h-4 text-[var(--color-primary)] transition-transform ${showSummary ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-5 h-5 text-[var(--color-subtle)] transition-transform ${showSummary ? 'rotate-180' : ''}`} />
               </div>
             </button>
-            <div className={`absolute top-4 right-4 transition-all z-10 block`}>
+            <div className={`absolute top-6 right-6 transition-all z-10 block`}>
                <TopicBookmarkButton summaryId={topicSummary.id} snippetTitle={topicInfo?.title || "お役立ち情報"} snippetContent={topicSummary.summary_snippet || ""} />
             </div>
             {showSummary && (
-              <div className="p-4 rounded-b-2xl bg-white border border-[var(--color-primary)]/15 border-t-0 slide-up">
+              <div className="mt-2 p-5 rounded-[28px] bg-white shadow-soft slide-up">
                 {topicSummary.summary_snippet && (
-                  <p className="text-[14px] font-medium text-[var(--color-text)] leading-relaxed mb-4">
+                  <p className="text-[14px] font-medium text-[var(--color-text)] leading-relaxed mb-4 bg-[var(--color-bg)] rounded-[20px] px-4 py-3 shadow-inner">
                     {topicSummary.summary_snippet}
                   </p>
                 )}
                 {/* Render structured full_summary beautifully */}
-                <div className="mt-4 border-t border-[var(--color-border-light)] pt-4">
+                <div className="mt-4 pt-2">
                   <ThemeSummaryRenderer theme={themeInfo} topicSummary={topicSummary} roomSlug={slug} topicId={topicId} />
                 </div>
                 
-                <p className="text-[10px] text-[var(--color-muted)] mt-5 pt-3 border-t border-[var(--color-border-light)] font-medium">
+                <p className="text-[11px] text-[var(--color-muted)] mt-5 pt-4 border-t border-[var(--color-border-light)] font-bold text-center">
                   ※会話の内容をもとにAIが自動生成した要約です
                 </p>
               </div>
@@ -869,7 +867,7 @@ export default function ChatClient({
 
       {/* Input Area */}
       <div
-        className="p-3 bg-white border-t border-[var(--color-border-light)] shadow-[0_-4px_15px_-10px_rgba(0,0,0,0.1)] relative z-20"
+        className="p-3 bg-[var(--color-bg)] shadow-[0_-10px_30px_rgba(0,0,0,0.02)] relative z-20"
         style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
       >
         {selectedImagePreview && (
@@ -915,11 +913,11 @@ export default function ChatClient({
             type="button"
             disabled={isSending}
             onClick={() => fileInputRef.current?.click()}
-            className="flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-[var(--color-primary)] bg-[var(--color-surface-warm)] hover:bg-[var(--color-primary)]/10 active:scale-95 transition-all border border-[var(--color-primary)]/20 shadow-sm"
+            className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full text-[var(--color-subtle)] bg-white shadow-soft active:scale-95 transition-all outline-none"
           >
-            <Camera className="w-[22px] h-[22px]" />
+            <Camera className="w-[24px] h-[24px]" />
           </button>
-          <div className="flex-1 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] focus-within:border-[var(--color-primary)] focus-within:ring-1 focus-within:ring-[var(--color-primary)] transition-all overflow-hidden flex items-end min-h-[44px] px-3 py-2">
+          <div className="flex-1 bg-white rounded-[32px] shadow-soft overflow-hidden flex items-end min-h-[48px] px-5 py-3.5">
             <textarea
               ref={textareaRef}
               value={newMessage}
@@ -939,13 +937,13 @@ export default function ChatClient({
           <button
             type="submit"
             disabled={(!newMessage.trim() && !selectedImage) || isSending}
-            className={`flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-full transition-all ${
+            className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full transition-all outline-none ${
               (newMessage.trim() || selectedImage) && !isSending
-                ? "bg-[var(--color-primary)] text-white shadow-md active:scale-90"
-                : "bg-[var(--color-surface-warm)] text-[var(--color-muted)]"
+                ? "bg-[var(--color-primary)] text-white shadow-glow active:scale-90"
+                : "bg-white text-[var(--color-muted)] shadow-soft opacity-70"
             }`}
           >
-            <Send className="w-5 h-5 ml-0.5" />
+            <Send className="w-[22px] h-[22px] ml-0.5" />
           </button>
         </form>
       </div>

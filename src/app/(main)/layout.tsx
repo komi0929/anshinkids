@@ -41,7 +41,7 @@ export default function MainLayout({
   const isTalkDetail = /^\/talk\/[^/]+\/[^/]+/.test(pathname);
 
   return (
-    <div className={`min-h-[100dvh] ${isTalkDetail ? "" : "pb-[72px]"} max-w-md mx-auto relative bg-[var(--color-bg)] shadow-md`}>
+    <div className={`min-h-[100dvh] ${isTalkDetail ? "" : "pb-[100px]"} max-w-md mx-auto relative bg-[var(--color-bg)] shadow-[0_0_40px_rgba(0,0,0,0.03)]`}>
       {children}
 
       {/* Bottom Navigation */}

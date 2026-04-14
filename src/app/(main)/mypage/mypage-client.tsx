@@ -98,10 +98,10 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white rounded-[28px] p-5 border border-[var(--color-border-light)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] mb-5">
+      <div className="bg-white rounded-[32px] p-6 shadow-soft mb-5">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 relative shrink-0 rounded-2xl overflow-hidden">
-            {renderAvatar(editAvatar, editName || profile.display_name, "rounded-2xl")}
+          <div className="w-16 h-16 relative shrink-0 rounded-full overflow-hidden shadow-sm">
+            {renderAvatar(editAvatar, editName || profile.display_name, "rounded-full")}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[16px] font-extrabold text-[var(--color-text)] truncate">{editName || profile.display_name}</p>
@@ -179,7 +179,7 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
 
       <button
         onClick={() => onNext(editName.trim() || profile.display_name, editAvatar)}
-        className="w-full py-4 rounded-2xl bg-[var(--color-text)] text-white text-[15px] font-black flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform mb-3"
+        className="w-full py-4 rounded-full bg-[var(--color-primary)] text-white text-[15px] font-black flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform mb-3 shadow-glow"
       >
         次へ：お子さまの情報を登録
         <ChevronRight className="w-5 h-5" />
@@ -509,10 +509,10 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           </div>
           <button 
             onClick={() => setShowProfileEdit(true)} 
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] border border-[var(--color-border-light)] transition-colors"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-soft hover:shadow-md transition-shadow text-[var(--color-subtle)]"
             aria-label="プロフィール編集"
           >
-            <Settings className="w-4 h-4 text-[var(--color-subtle)]" />
+            <Settings className="w-5 h-5 text-[var(--color-subtle)]" />
           </button>
         </div>
       </div>
@@ -539,8 +539,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         </h2>
         
         {bookmarks.length === 0 ? (
-          <div className="bg-white rounded-[24px] p-6 text-center border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-14 h-14 rounded-[20px] bg-[var(--color-surface-warm)] flex items-center justify-center mx-auto mb-3 border border-[var(--color-border-light)]">
+          <div className="bg-white rounded-[32px] p-6 text-center shadow-soft">
+            <div className="w-14 h-14 rounded-full bg-[var(--color-bg)] flex items-center justify-center mx-auto mb-3 shadow-inner">
               <span className="text-2xl">🔖</span>
             </div>
             <p className="text-[14px] text-[var(--color-text)] font-bold mb-1 break-keep text-balance">
@@ -559,7 +559,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
               <Link
                 key={bm.id}
                 href={`/wiki/${bm.wiki_entries.slug}`}
-                className="block p-4 rounded-[20px] bg-white border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                className="block p-5 rounded-[28px] bg-white hover:shadow-md transition-all shadow-soft group"
               >
                 <p className="text-[10px] text-[var(--color-subtle)] mb-1 flex items-center gap-1 font-bold">
                   <BookOpen className="w-3 h-3" />
@@ -612,7 +612,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                 <Link
                   key={wiki.id}
                   href={url}
-                  className="block p-4 rounded-[20px] bg-gradient-to-br from-[#FFFBF0] to-white border border-[#FBECC8] hover:border-[#F2D696] hover:shadow-md transition-all group relative overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                  className="block p-5 rounded-[28px] bg-white hover:shadow-md transition-all group relative overflow-hidden shadow-soft"
                 >
                   <div className="absolute top-0 right-0 w-14 h-14 bg-gradient-to-bl from-[#FFF3D6] to-transparent rounded-bl-[28px] opacity-50 pointer-events-none" />
                   <div className="flex-1 min-w-0 relative z-10">
@@ -676,7 +676,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         >
           <button 
             onClick={() => setShowChildInfo(!showChildInfo)}
-            className="w-full flex items-center justify-between p-3.5 rounded-[18px] bg-white border border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
+            className="w-full flex items-center justify-between p-4 rounded-[28px] bg-white shadow-soft transition-all active:scale-[0.98]"
           >
             <div className="flex items-center gap-2.5">
               <span className="text-lg">👶</span>
@@ -728,20 +728,20 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
       )}
 
       {/* ─── Quick Actions ────────────────────────────────────── */}
-      <div className="px-4 mb-4 flex gap-2">
-        <Link href="/talk" className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] bg-[var(--color-text)] text-white text-[13px] font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-sm">
+      <div className="px-4 mb-5 flex gap-3">
+        <Link href="/talk" className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-md">
           <span>💬</span> トークルームへ
         </Link>
-        <Link href="/notifications" className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] bg-white text-[var(--color-text)] text-[13px] font-bold border border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors shadow-sm">
-          <Bell className="w-4 h-4" /> 通知・活動履歴
+        <Link href="/notifications" className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-white text-[var(--color-text)] text-[14px] font-black shadow-soft hover:shadow-md transition-all">
+          <Bell className="w-5 h-5 text-[var(--color-text)]" /> 通知履歴
         </Link>
       </div>
 
       {/* ─── Section 4: 設定・プライバシー (Compact) ──────────── */}
-      <div className="px-4 pb-4">
-        <div className="bg-white rounded-[20px] border border-[var(--color-border-light)] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+      <div className="px-4 pb-6">
+        <div className="bg-white rounded-[32px] shadow-soft overflow-hidden">
           {/* Privacy toggle */}
-          <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-light)]">
+          <div className="flex items-center justify-between p-5 border-b border-[var(--color-bg)]">
             <div className="flex-1 min-w-0 mr-3">
               <p className="text-[13px] font-bold text-[var(--color-text)] mb-0.5">トークでの情報表示</p>
               <p className="text-[10px] text-[var(--color-subtle)] leading-relaxed">

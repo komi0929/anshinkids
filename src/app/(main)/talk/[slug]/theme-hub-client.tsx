@@ -207,22 +207,22 @@ export default function ThemeHubClient({
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[var(--color-bg)]">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+      <div className="px-4 py-3 flex items-center gap-3 bg-[var(--color-bg)]/80 backdrop-blur-md sticky top-0 z-40">
         <Link
           href="/talk"
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors active:scale-95"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-soft hover:shadow-md transition-all active:scale-95"
         >
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
-        <div className="flex items-center gap-2.5 flex-1">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-bg-warm)] flex items-center justify-center text-[22px] shadow-sm border border-[var(--color-border-light)]">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="w-12 h-12 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center text-[24px] shadow-sm">
             {roomInfo?.icon_emoji || "💬"}
           </div>
           <div>
-            <h1 className="text-[15px] font-bold text-[var(--color-text)] break-keep text-balance leading-tight">
+            <h1 className="text-[16px] font-extrabold text-[var(--color-text)] break-keep text-balance leading-tight">
               {roomInfo?.name || ""}
             </h1>
-            <p className="text-[11px] font-medium mt-0.5" style={{ color: "var(--color-subtle)" }}>
+            <p className="text-[12px] font-bold mt-0.5 text-[var(--color-subtle)]">
               {topics.length}件のトピック
             </p>
           </div>
@@ -259,7 +259,7 @@ export default function ThemeHubClient({
                 placeholder="このテーマ内を検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-[var(--color-border-light)] text-[14px] font-medium text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all shadow-sm"
+                className="w-full pl-10 pr-4 py-4 rounded-full bg-white text-[14px] font-bold text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 transition-all shadow-soft"
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -312,12 +312,12 @@ export default function ThemeHubClient({
                         document.getElementById("create-topic-section")?.scrollIntoView({ behavior: "smooth" });
                       }, 100);
                     }}
-                    className="card-elevated text-left px-4 py-3 border border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md transition-all flex items-center justify-between group bg-white w-full"
+                    className="text-left px-5 py-4 rounded-[28px] bg-white shadow-soft hover:shadow-md transition-all flex items-center justify-between group w-full"
                   >
-                    <span className="text-[13px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors pr-2 break-keep text-balance line-clamp-1">
+                    <span className="text-[14px] font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors pr-2 break-keep text-balance line-clamp-1">
                       {prompt}
                     </span>
-                    <span className="text-[10px] bg-[var(--color-primary)] text-white px-2.5 py-1 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0">
+                    <span className="text-[11px] bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-full font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0">
                       話す
                     </span>
                   </motion.button>
@@ -365,10 +365,10 @@ export default function ThemeHubClient({
                         layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group relative overflow-hidden"
+                        className="p-5 rounded-[32px] bg-white shadow-soft transition-all group relative overflow-hidden"
                        >
                         <div className="flex items-start justify-between gap-4 mb-2">
-                          <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance leading-snug pr-2">
+                          <h3 className="text-[16px] font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary-dark)] transition-colors break-keep text-balance leading-snug pr-2">
                             {topic.title}
                           </h3>
                           <div className="relative z-20 flex-shrink-0">
@@ -376,7 +376,7 @@ export default function ThemeHubClient({
                           </div>
                         </div>
                         {summary?.summary_snippet && (
-                          <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed mt-2 mb-3 bg-[var(--color-surface-warm)] rounded-xl px-3 py-2.5 shadow-inner">
+                          <p className="text-[14px] text-[var(--color-text-secondary)] font-medium leading-relaxed mt-2 mb-3 bg-[var(--color-bg)] rounded-[20px] px-4 py-3 shadow-inner">
                             {summary.summary_snippet}
                           </p>
                         )}
@@ -391,22 +391,17 @@ export default function ThemeHubClient({
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--color-muted)] mt-2">
-                          <span className="flex items-center gap-1 bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
-                            <MessageCircle className="w-3 h-3" />
+                        <div className="flex items-center gap-2 text-[12px] font-bold text-[var(--color-muted)] mt-2">
+                          <span className="flex items-center gap-1 bg-[var(--color-bg)] px-2.5 py-1 rounded-md">
+                            <MessageCircle className="w-4 h-4" />
                             {topic.message_count}声
                           </span>
                           {summary?.allergen_tags && Array.isArray(summary.allergen_tags) && summary.allergen_tags.length > 0 && (
-                            <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100">
+                            <span className="flex items-center gap-1 bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] px-2.5 py-1 rounded-md">
                               {summary.allergen_tags.slice(0, 3).join("・")}
                             </span>
                           )}
-                          {summary?.allergen_tags && !Array.isArray(summary.allergen_tags) && (
-                            <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100">
-                              {String(summary.allergen_tags).slice(0, 10)}
-                            </span>
-                          )}
-                          <span className="ml-auto">{timeAgo(topic.updated_at)}</span>
+                          <span className="ml-auto font-medium">{timeAgo(topic.updated_at)}</span>
                         </div>
                        </motion.div>
                       </Link>
@@ -438,27 +433,27 @@ export default function ThemeHubClient({
                       layout
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all group"
+                      className="p-5 rounded-[28px] bg-white shadow-soft hover:shadow-md transition-all group"
                      >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-[15px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-1.5 break-keep text-balance leading-snug">
+                          <h3 className="text-[15px] font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors mb-2 break-keep text-balance leading-snug">
                             {topic.title}
                           </h3>
                           {topic.last_message_preview && (
-                            <p className="text-[12px] text-[var(--color-subtle)] truncate mb-2 leading-relaxed">
+                            <p className="text-[13px] font-medium text-[var(--color-subtle)] truncate mb-3 leading-relaxed">
                               {topic.last_message_preview}
                             </p>
                           )}
-                          <div className="flex items-center gap-3 text-[11px] font-medium text-[var(--color-muted)]">
-                            <span className="flex items-center gap-1 bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-md">
-                              <MessageCircle className="w-3 h-3" />
+                          <div className="flex items-center gap-3 text-[12px] font-bold text-[var(--color-muted)]">
+                            <span className="flex items-center gap-1 bg-[var(--color-bg)] px-2.5 py-1 rounded-md">
+                              <MessageCircle className="w-4 h-4" />
                               {topic.message_count}声
                             </span>
                             <span>{timeAgo(topic.updated_at)}</span>
                           </div>
                         </div>
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors mt-1">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--color-bg)] flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors mt-1">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-muted)] group-hover:text-white transition-colors">
                             <polyline points="9 18 15 12 9 6" />
                           </svg>
@@ -475,42 +470,42 @@ export default function ThemeHubClient({
           {/* Create Topic Section */}
           <div id="create-topic-section">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm bg-[var(--color-surface-warm)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">✏️</span>
-              <h2 className="text-[15px] font-extrabold text-[var(--color-text)]">話題をつくる</h2>
+              <span className="text-xl bg-white shadow-soft px-2 py-1.5 rounded-full">✏️</span>
+              <h2 className="text-[16px] font-extrabold text-[var(--color-text)]">話題をつくる</h2>
             </div>
 
             {!showCreateForm ? (
               <button
                 onClick={() => setShowCreateForm(true)}
-                className="w-full p-4 rounded-2xl border-2 border-dashed border-[var(--color-border)] text-[13px] font-bold text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-all flex items-center justify-center gap-2"
+                className="w-full p-5 rounded-[28px] bg-white border border-transparent shadow-soft hover:shadow-md text-[14px] font-extrabold text-[var(--color-subtle)] hover:text-[var(--color-primary-dark)] transition-all flex items-center justify-center gap-2"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
                 自分で話題を作成する
               </button>
             ) : (
-              <div className="p-4 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-primary)]/20 slide-up">
-                <form onSubmit={handleCreateTopic} className="space-y-3">
+              <div className="p-5 rounded-[32px] bg-white shadow-md slide-up">
+                <form onSubmit={handleCreateTopic} className="space-y-4">
                   <input
                     type="text"
                     value={newTopicTitle}
                     onChange={(e) => setNewTopicTitle(e.target.value)}
                     placeholder="例：おすすめの米粉パン教えて！"
                     maxLength={100}
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all text-[14px] outline-none"
+                    className="w-full px-5 py-4 rounded-full bg-[var(--color-bg)] text-[14px] font-bold text-[var(--color-text)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 transition-all"
                     autoFocus
                   />
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => { setShowCreateForm(false); setNewTopicTitle(""); }}
-                      className="px-4 py-2 text-[13px] font-medium text-[var(--color-subtle)]"
+                      className="px-5 py-3 text-[14px] font-bold text-[var(--color-subtle)]"
                     >
                       キャンセル
                     </button>
                     <button
                       type="submit"
                       disabled={!newTopicTitle.trim() || isCreating}
-                      className="px-5 py-2 rounded-xl bg-[var(--color-primary)] text-white text-[13px] font-bold disabled:opacity-50 transition-opacity"
+                      className="px-6 py-3 rounded-full bg-[var(--color-primary)] text-white text-[14px] font-black shadow-glow disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
                     >
                       {isCreating ? "作成中..." : "作成する"}
                     </button>

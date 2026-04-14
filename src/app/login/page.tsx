@@ -55,9 +55,9 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm">
           {/* Brand */}
-          <div className="text-center mb-8 fade-in">
-            <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(32,201,151,0.2)] overflow-hidden">
-              <Image src="/logo.png" alt="あんしんキッズ ロゴ" width={64} height={64} className="w-full h-full object-cover" />
+          <div className="text-center mb-10 fade-in">
+            <div className="w-20 h-20 mx-auto mb-5 bg-[var(--color-primary)] rounded-[32px] flex items-center justify-center shadow-[0_8px_24px_rgba(141,224,60,0.3)] overflow-hidden p-3">
+              <Image src="/logo.png" alt="あんしんキッズ ロゴ" width={80} height={80} className="w-full h-full object-contain filter drop-shadow-sm brightness-0 invert" />
             </div>
             <h1
               className="text-[24px] font-extrabold tracking-tight text-[var(--color-text)]"
@@ -72,25 +72,25 @@ export default function LoginPage() {
           </div>
 
           {/* How it Works — Compact */}
-          <div className="mb-7 fade-in" style={{ animationDelay: "100ms" }}>
-            <div className="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-              <div className="flex items-center gap-3">
+          <div className="mb-8 fade-in" style={{ animationDelay: "100ms" }}>
+            <div className="p-5 rounded-[32px] bg-white shadow-soft">
+              <div className="flex items-center gap-2">
                 {[
                   { icon: "💬", label: "体験を話す" },
                   { icon: "🤖", label: "AIが整理" },
                   { icon: "📖", label: "まとめに" },
                 ].map((step, i) => (
-                  <div key={step.label} className="flex items-center gap-2 flex-1">
-                    <div className="flex flex-col items-center gap-1 flex-1">
-                      <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[16px]">
+                  <div key={step.label} className="flex items-center gap-1 flex-1">
+                    <div className="flex flex-col items-center gap-1.5 flex-1">
+                      <div className="w-10 h-10 rounded-full bg-[var(--color-bg)] flex items-center justify-center text-[18px] shadow-sm border border-[var(--color-border-light)]">
                         {step.icon}
                       </div>
-                      <span className="text-[10px] font-bold text-[var(--color-text-secondary)] whitespace-nowrap">
+                      <span className="text-[10px] font-extrabold text-[var(--color-subtle)] whitespace-nowrap">
                         {step.label}
                       </span>
                     </div>
                     {i < 2 && (
-                      <span className="text-[var(--color-muted)] text-[10px] -mt-3 flex-shrink-0">→</span>
+                      <span className="text-[var(--color-muted)] text-[12px] opacity-50 flex-shrink-0 -mt-4">→</span>
                     )}
                   </div>
                 ))}
@@ -99,15 +99,15 @@ export default function LoginPage() {
           </div>
 
           {/* LINE Login Button */}
-          <div className="space-y-3 fade-in" style={{ animationDelay: "200ms" }}>
+          <div className="space-y-4 fade-in" style={{ animationDelay: "200ms" }}>
             <button
               onClick={handleLineLogin}
               disabled={isLoading}
               id="line-login-button"
-              className="w-full py-4 px-6 rounded-2xl font-bold text-[16px] text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 rounded-full font-bold text-[16px] text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: "#06C755",
-                boxShadow: "0 3px 12px rgba(6, 199, 85, 0.25)",
+                boxShadow: "0 8px 24px rgba(6, 199, 85, 0.25)",
               }}
             >
               <svg
@@ -150,7 +150,7 @@ export default function LoginPage() {
 
           {/* Safety Points */}
           <div
-            className="mt-6 p-4 rounded-2xl fade-in bg-[var(--color-surface)] border border-[var(--color-border)]"
+            className="mt-8 p-5 rounded-[32px] fade-in bg-white shadow-soft"
             style={{ animationDelay: "300ms" }}
           >
             <h3

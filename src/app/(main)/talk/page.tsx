@@ -47,22 +47,22 @@ async function TalkContent() {
             key={room.id || index}
             href={`/talk/${room.slug}`}
             prefetch={true}
-            className="card card-tilt card-active block p-4 stagger-item group"
+            className="block p-5 rounded-[28px] bg-white shadow-soft transition-all hover:shadow-md active:scale-[0.98] stagger-item group"
             id={`talk-room-${room.slug}`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[var(--color-surface-warm)] to-white flex items-center justify-center text-[24px] flex-shrink-0 shadow-sm border border-[var(--color-border-light)] group-hover:scale-105 transition-transform">
+              <div className="w-14 h-14 rounded-[20px] bg-[var(--color-bg)] flex items-center justify-center text-[28px] flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
                 {room.icon_emoji}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">
+                <h3 className="font-extrabold text-[15px] text-[var(--color-text)] group-hover:text-[var(--color-primary-dark)] transition-colors break-keep text-balance">
                   {room.name}
                 </h3>
-                <p className="text-[13px] text-[var(--color-subtle)] font-medium mt-0.5 truncate leading-relaxed">
+                <p className="text-[13px] text-[var(--color-subtle)] font-medium mt-1 truncate leading-relaxed">
                   {room.description}
                 </p>
               </div>
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface-warm)] flex items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-bg)] flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-all">
                 <ArrowRight size={14} className="text-[var(--color-muted)] group-hover:text-white transition-colors" />
               </div>
             </div>

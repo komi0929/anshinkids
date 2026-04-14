@@ -1,80 +1,73 @@
 @import "tailwindcss";
 
 @theme {
-  /* === Unified Palette: Teal × Warm White === */
-  --color-bg: #f8f6f2;
-  --color-bg-warm: #f2f0ea;
+  /* === Nani Style: Lime × Pure White === */
+  --color-bg: #F4F9F1;
   --color-surface: #ffffff;
-  --color-surface-warm: #faf8f5;
-  --color-surface-soft: #f5f3ef;
+  --color-surface-soft: #F9FCF7;
 
-  /* Primary: Mint Green (フレッシュ・モダン) */
-  --color-primary: #20c997;
-  --color-primary-light: #5bf0c4;
-  --color-primary-dark: #12b881;
-  --color-primary-bg: rgba(32, 201, 151, 0.08);
-  --color-primary-bg-hover: rgba(32, 201, 151, 0.15);
+  /* Primary: Nani Lime */
+  --color-primary: #8DE03C; /* Bright, playful yellow-green */
+  --color-primary-light: #A4EB58;
+  --color-primary-dark: #76C729;
+  --color-primary-bg: rgba(141, 224, 60, 0.1);
+  --color-primary-bg-hover: rgba(141, 224, 60, 0.15);
 
-  /* Accent: Warm coral (控えめ、ポイント使い) */
-  --color-accent: #e87461;
-  --color-accent-light: #f4a698;
-  --color-accent-warm: #f08d7c;
+  /* Accent: Playful coral (控えめ、ポイント使い) */
+  --color-accent: #FF8F70;
+  --color-accent-light: #FFAA93;
 
   /* Secondary/Amber */
-  --color-secondary: #e8a838;
-  --color-secondary-light: #f5ce7a;
+  --color-secondary: #FFB347;
 
-  /* Neutrals */
-  --color-muted: #b8b4ad;
-  --color-text: #1c1917;
-  --color-text-secondary: #57534e;
-  --color-subtle: #908a82;
+  /* Neutrals: Using slate/slate-blue for cooler contrast against lime */
+  --color-muted: #CBD5E1;
+  --color-text: #1E293B;
+  --color-text-secondary: #475569;
+  --color-subtle: #94A3B8;
 
   /* Status */
-  --color-success: #20c997;
-  --color-success-light: #e6fcf5;
-  --color-success-deep: #12b881;
-  --color-warning: #d97706;
-  --color-warning-light: #fef3c7;
-  --color-danger: #dc2626;
-  --color-danger-light: #fee2e2;
+  --color-success: #8DE03C;
+  --color-success-light: #F4F9F1;
+  --color-success-deep: #76C729;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #EF4444;
+  --color-danger-light: #FEE2E2;
 
-  /* Borders */
-  --color-border: #e7e5e0;
-  --color-border-light: #f0eeea;
+  /* Borders: Very subtle in Nani style */
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
 
   /* Misc */
-  --color-heart: #e87461;
-  --color-heart-light: #fff0ed;
+  --color-heart: #FF8F70;
+  --color-heart-light: #FFF0ED;
 
-  /* Typography */
+  /* Typography: Force rounded geometry style */
   --font-sans:
-    var(--font-inter), var(--font-noto-sans-jp), "Hiragino Kaku Gothic ProN",
+    "Inter", "Nunito", var(--font-noto-sans-jp), "Hiragino Kaku Gothic ProN", "M PLUS Rounded 1c",
     sans-serif;
-  --font-display: var(--font-inter), var(--font-noto-sans-jp), sans-serif;
+  --font-display: "Nunito", var(--font-inter), var(--font-noto-sans-jp), sans-serif;
 
-  /* Spacing / Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
+  /* Spacing / Radius: Nani utilizes extremely large radii */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
   --radius-3xl: 32px;
   --radius-full: 9999px;
 
-  /* Shadows - warm toned */
-  --shadow-soft:
-    0 1px 3px rgba(28, 25, 23, 0.04), 0 1px 2px rgba(28, 25, 23, 0.02);
-  --shadow-md:
-    0 4px 14px rgba(28, 25, 23, 0.06), 0 2px 4px rgba(28, 25, 23, 0.03);
-  --shadow-lg:
-    0 8px 28px rgba(28, 25, 23, 0.08), 0 4px 8px rgba(28, 25, 23, 0.04);
-  --shadow-glow: 0 4px 24px rgba(32, 201, 151, 0.15);
-  --shadow-accent: 0 4px 20px rgba(232, 116, 97, 0.15);
+  /* Shadows - Crisp, light shadows on pure white */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 4px 24px rgba(141, 224, 60, 0.2);
+  --shadow-accent: 0 4px 24px rgba(255, 143, 112, 0.2);
   
-  /* Claymorphism (tactile) */
-  --shadow-clay-primary: 0 4px 12px rgba(32, 201, 151, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.15), inset 0 2px 2px rgba(255, 255, 255, 0.25);
-  --shadow-clay-accent: 0 4px 12px rgba(232, 116, 97, 0.25), inset 0 -3px 0 rgba(180, 50, 30, 0.2), inset 0 2px 2px rgba(255, 255, 255, 0.3);
+  /* Claymorphism (tactile) - used sparingly for buttons */
+  --shadow-clay-primary: 0 4px 16px rgba(141, 224, 60, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.08), inset 0 2px 2px rgba(255, 255, 255, 0.4);
+  --shadow-clay-accent: 0 4px 16px rgba(255, 143, 112, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.08), inset 0 2px 2px rgba(255, 255, 255, 0.4);
 }
 
 @layer base {
@@ -124,34 +117,12 @@
     font-family: var(--font-sans);
     color: var(--color-text);
     font-size: 15px;
-    font-weight: 450;
+    font-weight: 500;
     line-height: 1.75;
     overflow-x: hidden;
-    overscroll-behavior-y: none; /* iOS app-like rubber-band prevention */
+    overscroll-behavior-y: none;
     position: relative;
-
-    /* 250-point Organic Ambient Background */
-    background: linear-gradient(
-      120deg,
-      var(--color-bg),
-      #f2f5f4,
-      #fdfbf7,
-      #e0efe8
-    );
-    background-size: 400% 400%;
-    animation: ambient-breathe 14s ease-in-out infinite alternate;
-  }
-
-  @keyframes ambient-breathe {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
+    background: var(--color-bg);
   }
 
   ::selection {
@@ -472,50 +443,46 @@
   /* === BOTTOM NAVIGATION === */
   /* ========================== */
 
+  /* Nani-style floating pill navigation */
   .bottom-nav {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.96); /* Higher opacity to prevent text legibility bleed */
-    backdrop-filter: blur(28px) saturate(200%);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
-    border-top: 1px solid var(--color-border);
-    padding: 8px 0;
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 50; /* Increased to ensure it's always above content */
+    bottom: max(24px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 48px);
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    border-radius: var(--radius-full);
+    padding: 8px 16px;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
   }
 
   .nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 6px 14px;
-    color: var(--color-muted);
+    gap: 4px;
+    padding: 8px 12px;
+    color: var(--color-subtle);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 800;
     text-decoration: none;
     white-space: nowrap;
-    transition: color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     -webkit-tap-highlight-color: transparent;
     position: relative;
+    border-radius: var(--radius-full);
   }
 
   .nav-item.active {
-    color: var(--color-primary);
-  }
-
-  .nav-item.active::before {
-    content: "";
-    position: absolute;
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 3px;
-    background: var(--color-primary);
-    border-radius: 0 0 3px 3px;
+    color: var(--color-primary-dark);
+    background: var(--color-primary-bg);
   }
 
   .nav-item svg {
