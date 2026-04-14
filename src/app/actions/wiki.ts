@@ -5,359 +5,359 @@ import { ActionResponse, CommonSchemas } from "@/types/actions";
 import { revalidatePath, unstable_noStore as noStore, unstable_cache } from "next/cache";
 
 export const getInitialWikiEntries = unstable_cache(
-  async () => {
-    try {
-      const supabase = createStaticClient();
-      if (!supabase) return { success: true, data: [] };
+ async () => {
+ try {
+ const supabase = createStaticClient();
+ if (!supabase) return { success: true, data: [] };
 
-      const { data, error } = await supabase
-        .from("wiki_entries")
-        .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at")
-        .order("avg_trust_score", { ascending: false })
-        .order("source_count", { ascending: false })
-        .limit(50);
+ const { data, error } = await supabase
+ .from("wiki_entries")
+ .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at")
+ .order("avg_trust_score", { ascending: false })
+ .order("source_count", { ascending: false })
+ .limit(50);
 
-      if (error) throw error;
-      return { success: true, data: data || [] };
-    } catch (err) {
-      console.error("[getInitialWikiEntries]", err);
-      return { success: true, data: [] };
-    }
-  },
-  ["wiki-initial-entries"],
-  { revalidate: 3600, tags: ["wiki-entries"] }
+ if (error) throw error;
+ return { success: true, data: data || [] };
+ } catch (err) {
+ console.error("[getInitialWikiEntries]", err);
+ return { success: true, data: [] };
+ }
+ },
+ ["wiki-initial-entries"],
+ { revalidate: 3600, tags: ["wiki-entries"] }
 );
 
 export async function searchWiki(query: string, filters?: { category?: string; allergens?: string[]; sortBy?: string }, offset: number = 0) {
-  noStore();
-  try {
-    const supabase = await createClient();
-    if (!supabase) return { success: true, data: [] };
+ noStore();
+ try {
+ const supabase = await createClient();
+ if (!supabase) return { success: true, data: [] };
 
-    let queryBuilder = supabase
-      .from("wiki_entries")
-      .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at");
+ let queryBuilder = supabase
+ .from("wiki_entries")
+ .select("id, title, slug, category, summary, allergen_tags, avg_trust_score, source_count, updated_at");
 
-    // Sort
-    switch (filters?.sortBy) {
-      case "latest":
-        queryBuilder = queryBuilder.order("updated_at", { ascending: false });
-        break;
-      case "voices":
-        queryBuilder = queryBuilder.order("source_count", { ascending: false });
-        break;
-      case "popular":
-      default:
-        queryBuilder = queryBuilder.order("avg_trust_score", { ascending: false }).order("source_count", { ascending: false });
-        break;
-    }
+ // Sort
+ switch (filters?.sortBy) {
+ case "latest":
+ queryBuilder = queryBuilder.order("updated_at", { ascending: false });
+ break;
+ case "voices":
+ queryBuilder = queryBuilder.order("source_count", { ascending: false });
+ break;
+ case "popular":
+ default:
+ queryBuilder = queryBuilder.order("avg_trust_score", { ascending: false }).order("source_count", { ascending: false });
+ break;
+ }
 
-    if (query) {
-      queryBuilder = queryBuilder.or(`title.ilike.%${query}%,summary.ilike.%${query}%`);
-    }
+ if (query) {
+ queryBuilder = queryBuilder.or(`title.ilike.%${query}%,summary.ilike.%${query}%`);
+ }
 
-    if (filters?.category) {
-      queryBuilder = queryBuilder.eq("category", filters.category);
-    }
+ if (filters?.category) {
+ queryBuilder = queryBuilder.eq("category", filters.category);
+ }
 
-    if (filters?.allergens && filters.allergens.length > 0) {
-      queryBuilder = queryBuilder.overlaps("allergen_tags", filters.allergens);
-    }
+ if (filters?.allergens && filters.allergens.length > 0) {
+ queryBuilder = queryBuilder.overlaps("allergen_tags", filters.allergens);
+ }
 
-    const { data, error } = await queryBuilder.range(offset, offset + 49);
+ const { data, error } = await queryBuilder.range(offset, offset + 49);
 
-    if (error) throw error;
-    return { success: true, data: data || [] };
-  } catch (err) {
-    console.error("[searchWiki]", err);
-    return { success: true, data: [] };
-  }
+ if (error) throw error;
+ return { success: true, data: data || [] };
+ } catch (err) {
+ console.error("[searchWiki]", err);
+ return { success: true, data: [] };
+ }
 }
 
 export interface WikiEntryWithSources {
-  id: string;
-  title: string;
-  slug: string;
-  category: string;
-  summary: string;
-  allergen_tags: string[];
-  avg_trust_score: number;
-  source_count: number;
-  updated_at: string;
-  created_at: string;
-  sections?: unknown;
-  wiki_sources?: {
-    id: string;
-    original_message_snippet: string;
-    contributor_trust_score: number;
-    extracted_at: string;
-  }[];
+ id: string;
+ title: string;
+ slug: string;
+ category: string;
+ summary: string;
+ allergen_tags: string[];
+ avg_trust_score: number;
+ source_count: number;
+ updated_at: string;
+ created_at: string;
+ sections?: unknown;
+ wiki_sources?: {
+ id: string;
+ original_message_snippet: string;
+ contributor_trust_score: number;
+ extracted_at: string;
+ }[];
 }
 
 export async function getWikiEntry(slug: string): Promise<ActionResponse<WikiEntryWithSources>> {
-  try {
-    const validSlug = CommonSchemas.PageSlug.safeParse(slug);
-    if (!validSlug.success) return { success: false, error: "不正なURLです" };
+ try {
+ const validSlug = CommonSchemas.PageSlug.safeParse(slug);
+ if (!validSlug.success) return { success: false, error: "不正なURLです" };
 
 
-    const { createAdminClient } = await import("@/lib/supabase/admin");
-    const supabase = createAdminClient();
+ const { createAdminClient } = await import("@/lib/supabase/admin");
+ const supabase = createAdminClient();
 
-    const { data, error } = await supabase
-      .from("wiki_entries")
-      .select(`
-        *,
-        wiki_sources (
-          id,
-          original_message_snippet,
-          contributor_trust_score,
-          extracted_at
-        )
-      `)
-      .eq("slug", validSlug.data)
-      .maybeSingle();
+ const { data, error } = await supabase
+ .from("wiki_entries")
+ .select(`
+ *,
+ wiki_sources (
+ id,
+ original_message_snippet,
+ contributor_trust_score,
+ extracted_at
+ )
+ `)
+ .eq("slug", validSlug.data)
+ .maybeSingle();
 
-    if (!data) return { success: false, error: "記事が見つかりません" };
+ if (!data) return { success: false, error: "記事が見つかりません" };
 
-    if (error) throw error;
-    return { success: true, data };
-  } catch (err) {
-    console.error("[getWikiEntry]", err);
-    return { success: false, error: "記事の取得に失敗しました" };
-  }
+ if (error) throw error;
+ return { success: true, data };
+ } catch (err) {
+ console.error("[getWikiEntry]", err);
+ return { success: false, error: "記事の取得に失敗しました" };
+ }
 }
 
 export async function getRelatedWikiEntries(currentSlug: string, allergenTags: string[], limit: number = 3) {
-  try {
-    const supabase = await createClient();
-    if (!supabase) return { success: true, data: [] };
+ try {
+ const supabase = await createClient();
+ if (!supabase) return { success: true, data: [] };
 
-    let queryBuilder = supabase
-      .from("wiki_entries")
-      .select("id, title, slug, category, summary, allergen_tags, source_count")
-      .neq("slug", currentSlug)
-      .order("source_count", { ascending: false })
-      .limit(limit);
+ let queryBuilder = supabase
+ .from("wiki_entries")
+ .select("id, title, slug, category, summary, allergen_tags, source_count")
+ .neq("slug", currentSlug)
+ .order("source_count", { ascending: false })
+ .limit(limit);
 
-    if (allergenTags && allergenTags.length > 0) {
-      queryBuilder = queryBuilder.overlaps("allergen_tags", allergenTags);
-    }
+ if (allergenTags && allergenTags.length > 0) {
+ queryBuilder = queryBuilder.overlaps("allergen_tags", allergenTags);
+ }
 
-    const { data, error } = await queryBuilder;
-    if (error) throw error;
-    return { success: true, data: data || [] };
-  } catch (err) {
-    console.error("[getRelatedWikiEntries]", err);
-    return { success: true, data: [] };
-  }
+ const { data, error } = await queryBuilder;
+ if (error) throw error;
+ return { success: true, data: data || [] };
+ } catch (err) {
+ console.error("[getRelatedWikiEntries]", err);
+ return { success: true, data: [] };
+ }
 }
 
 export async function voteWikiHelpful(entryId: string): Promise<ActionResponse> {
-  try {
-    const validEntry = CommonSchemas.UUID.safeParse(entryId);
-    if (!validEntry.success) return { success: false, error: "不正な記事IDです" };
+ try {
+ const validEntry = CommonSchemas.UUID.safeParse(entryId);
+ if (!validEntry.success) return { success: false, error: "不正な記事IDです" };
 
-    const supabase = await createClient();
-    if (!supabase) return { success: false, error: "DB未接続" };
+ const supabase = await createClient();
+ if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await getCachedUser();
-    if (!user) return { success: false, error: "ログインが必要です" };
+ const { data: { user } } = await getCachedUser();
+ if (!user) return { success: false, error: "ログインが必要です" };
 
-    const { error } = await supabase
-      .from("wiki_helpful_votes")
-      .insert({
-        wiki_entry_id: validEntry.data,
-        user_id: user.id,
-      });
+ const { error } = await supabase
+ .from("wiki_helpful_votes")
+ .insert({
+ wiki_entry_id: validEntry.data,
+ user_id: user.id,
+ });
 
-    // code 23505 is unique violation (already voted)
-    if (error && error.code === '23505') {
-      return { success: false, error: "既に「役に立った」を押しています" };
-    }
-    if (error) throw error;
+ // code 23505 is unique violation (already voted)
+ if (error && error.code === '23505') {
+ return { success: false, error: "既に「役に立った」を押しています" };
+ }
+ if (error) throw error;
 
-    // Helpful counts and total contributor returns are natively evaluated
-    // by PostgreSQL Triggers (on_wiki_helpful_vote) to guarantee pure atomic scalability.
+ // Helpful counts and total contributor returns are natively evaluated
+ // by PostgreSQL Triggers (on_wiki_helpful_vote) to guarantee pure atomic scalability.
 
-    revalidatePath("/", "layout");
-    return { success: true };
-  } catch (err) {
-    console.error("[voteWikiHelpful]", err);
-    return { success: false, error: "投票に失敗しました" };
-  }
+ revalidatePath("/", "layout");
+ return { success: true };
+ } catch (err) {
+ console.error("[voteWikiHelpful]", err);
+ return { success: false, error: "投票に失敗しました" };
+ }
 }
 
 export async function toggleSnippetBookmark(entryId: string, snippetTitle: string, snippetContent: string): Promise<ActionResponse<{ bookmarked: boolean }>> {
-  try {
-    const validEntry = CommonSchemas.UUID.safeParse(entryId);
-    if (!validEntry.success || !snippetTitle) return { success: false, error: "不正なリクエストです" };
+ try {
+ const validEntry = CommonSchemas.UUID.safeParse(entryId);
+ if (!validEntry.success || !snippetTitle) return { success: false, error: "不正なリクエストです" };
 
-    const supabase = await createClient();
-    if (!supabase) return { success: false, error: "DB未接続" };
+ const supabase = await createClient();
+ if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await getCachedUser();
-    if (!user) return { success: false, error: "ログインが必要です" };
+ const { data: { user } } = await getCachedUser();
+ if (!user) return { success: false, error: "ログインが必要です" };
 
-    // Check if it already exists
-    const { data: existing } = await supabase
-      .from("user_bookmarks")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("wiki_entry_id", validEntry.data)
-      .eq("snippet_title", snippetTitle)
-      .maybeSingle();
+ // Check if it already exists
+ const { data: existing } = await supabase
+ .from("user_bookmarks")
+ .select("id")
+ .eq("user_id", user.id)
+ .eq("wiki_entry_id", validEntry.data)
+ .eq("snippet_title", snippetTitle)
+ .maybeSingle();
 
-    if (existing) {
-      await supabase.from("user_bookmarks").delete().eq("id", existing.id);
-      revalidatePath("/", "layout");
-      return { success: true, data: { bookmarked: false } };
-    } else {
-      await supabase.from("user_bookmarks").insert({
-        user_id: user.id,
-        wiki_entry_id: validEntry.data,
-        snippet_title: snippetTitle,
-        snippet_content: snippetContent,
-      });
-      revalidatePath("/", "layout");
-      return { success: true, data: { bookmarked: true } };
-    }
-  } catch (err) {
-    console.error("[toggleSnippetBookmark]", err);
-    return { success: false, error: "ブックマークの切り替えに失敗しました" };
-  }
+ if (existing) {
+ await supabase.from("user_bookmarks").delete().eq("id", existing.id);
+ revalidatePath("/", "layout");
+ return { success: true, data: { bookmarked: false } };
+ } else {
+ await supabase.from("user_bookmarks").insert({
+ user_id: user.id,
+ wiki_entry_id: validEntry.data,
+ snippet_title: snippetTitle,
+ snippet_content: snippetContent,
+ });
+ revalidatePath("/", "layout");
+ return { success: true, data: { bookmarked: true } };
+ }
+ } catch (err) {
+ console.error("[toggleSnippetBookmark]", err);
+ return { success: false, error: "ブックマークの切り替えに失敗しました" };
+ }
 }
 
 export async function toggleTopicSummaryBookmark(summaryId: string, snippetTitle: string, snippetContent: string): Promise<ActionResponse<{ bookmarked: boolean }>> {
-  try {
-    const validEntry = CommonSchemas.UUID.safeParse(summaryId);
-    if (!validEntry.success || !snippetTitle) return { success: false, error: "不正なリクエストです" };
+ try {
+ const validEntry = CommonSchemas.UUID.safeParse(summaryId);
+ if (!validEntry.success || !snippetTitle) return { success: false, error: "不正なリクエストです" };
 
-    const supabase = await createClient();
-    if (!supabase) return { success: false, error: "DB未接続" };
+ const supabase = await createClient();
+ if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await getCachedUser();
-    if (!user) return { success: false, error: "ログインが必要です" };
+ const { data: { user } } = await getCachedUser();
+ if (!user) return { success: false, error: "ログインが必要です" };
 
-    // Check if it already exists
-    const { data: existing } = await supabase
-      .from("user_bookmarks")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("topic_summary_id", validEntry.data)
-      .eq("snippet_title", snippetTitle)
-      .maybeSingle();
+ // Check if it already exists
+ const { data: existing } = await supabase
+ .from("user_bookmarks")
+ .select("id")
+ .eq("user_id", user.id)
+ .eq("topic_summary_id", validEntry.data)
+ .eq("snippet_title", snippetTitle)
+ .maybeSingle();
 
-    if (existing) {
-      await supabase.from("user_bookmarks").delete().eq("id", existing.id);
-      revalidatePath("/", "layout");
-      return { success: true, data: { bookmarked: false } };
-    } else {
-      await supabase.from("user_bookmarks").insert({
-        user_id: user.id,
-        topic_summary_id: validEntry.data,
-        snippet_title: snippetTitle,
-        snippet_content: snippetContent,
-      });
-      revalidatePath("/", "layout");
-      return { success: true, data: { bookmarked: true } };
-    }
-  } catch (err) {
-    console.error("[toggleTopicSummaryBookmark]", err);
-    return { success: false, error: "ブックマークの切り替えに失敗しました" };
-  }
+ if (existing) {
+ await supabase.from("user_bookmarks").delete().eq("id", existing.id);
+ revalidatePath("/", "layout");
+ return { success: true, data: { bookmarked: false } };
+ } else {
+ await supabase.from("user_bookmarks").insert({
+ user_id: user.id,
+ topic_summary_id: validEntry.data,
+ snippet_title: snippetTitle,
+ snippet_content: snippetContent,
+ });
+ revalidatePath("/", "layout");
+ return { success: true, data: { bookmarked: true } };
+ }
+ } catch (err) {
+ console.error("[toggleTopicSummaryBookmark]", err);
+ return { success: false, error: "ブックマークの切り替えに失敗しました" };
+ }
 }
 
 export async function checkBookmarkedSnippets(entryId: string): Promise<ActionResponse<string[]>> {
-  try {
-    const validEntry = CommonSchemas.UUID.safeParse(entryId);
-    if (!validEntry.success) return { success: false, error: "不正な記事IDです" };
+ try {
+ const validEntry = CommonSchemas.UUID.safeParse(entryId);
+ if (!validEntry.success) return { success: false, error: "不正な記事IDです" };
 
-    const supabase = await createClient();
-    if (!supabase) return { success: false, error: "DB未接続" };
+ const supabase = await createClient();
+ if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await getCachedUser();
-    if (!user) return { success: true, data: [] }; // Not logged in -> no bookmarks
+ const { data: { user } } = await getCachedUser();
+ if (!user) return { success: true, data: [] }; // Not logged in -> no bookmarks
 
-    const { data, error } = await supabase
-      .from("user_bookmarks")
-      .select("snippet_title")
-      .eq("user_id", user.id)
-      .or(`wiki_entry_id.eq.${validEntry.data},topic_summary_id.eq.${validEntry.data}`);
+ const { data, error } = await supabase
+ .from("user_bookmarks")
+ .select("snippet_title")
+ .eq("user_id", user.id)
+ .or(`wiki_entry_id.eq.${validEntry.data},topic_summary_id.eq.${validEntry.data}`);
 
-    if (error) throw error;
-    
-    return { success: true, data: data.map(d => d.snippet_title) };
-  } catch (err) {
-    console.error("[checkBookmarkedSnippets]", err);
-    return { success: false, error: "ブックマークの取得に失敗しました" };
-  }
+ if (error) throw error;
+ 
+ return { success: true, data: data.map(d => d.snippet_title) };
+ } catch (err) {
+ console.error("[checkBookmarkedSnippets]", err);
+ return { success: false, error: "ブックマークの取得に失敗しました" };
+ }
 }
 
 export async function getMyBookmarks() {
-  try {
-    const supabase = await createClient();
-    if (!supabase) return { success: false, error: "DB未接続" };
+ try {
+ const supabase = await createClient();
+ if (!supabase) return { success: false, error: "DB未接続" };
 
-    const { data: { user } } = await getCachedUser();
-    if (!user) return { success: false, error: "ログインが必要です" };
+ const { data: { user } } = await getCachedUser();
+ if (!user) return { success: false, error: "ログインが必要です" };
 
-    const { data, error } = await supabase
-      .from("user_bookmarks")
-      .select(`
-        id,
-        snippet_title,
-        snippet_content,
-        created_at,
-        wiki_entries (
-          id,
-          title,
-          slug,
-          category
-        ),
-        topic_summaries (
-          talk_topics (
-            id,
-            title,
-            talk_rooms (
-              slug,
-              name
-            )
-          )
-        )
-      `)
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(200);
+ const { data, error } = await supabase
+ .from("user_bookmarks")
+ .select(`
+ id,
+ snippet_title,
+ snippet_content,
+ created_at,
+ wiki_entries (
+ id,
+ title,
+ slug,
+ category
+ ),
+ topic_summaries (
+ talk_topics (
+ id,
+ title,
+ talk_rooms (
+ slug,
+ name
+ )
+ )
+ )
+ `)
+ .eq("user_id", user.id)
+ .order("created_at", { ascending: false })
+ .limit(200);
 
-    if (error) throw error;
-    
-    // Normalize data so the client gets a uniform Interface 
-    const normalizedData = (data as any[]).map(bm => {
-      let mergedWikiEntries = bm.wiki_entries;
-      
-      if (!mergedWikiEntries && bm.topic_summaries) {
-        const topic = Array.isArray(bm.topic_summaries.talk_topics) ? bm.topic_summaries.talk_topics[0] : bm.topic_summaries.talk_topics;
-        const room = topic ? (Array.isArray(topic.talk_rooms) ? topic.talk_rooms[0] : topic.talk_rooms) : null;
-        if (topic && room) {
-          mergedWikiEntries = {
-            id: topic.id,
-            title: topic.title,
-            slug: `/talk/${room.slug}/${topic.id}`,
-            category: room.name
-          };
-        }
-      }
-      
-      return {
-        ...bm,
-        wiki_entries: mergedWikiEntries || { title: "不明", slug: "", category: "アーカイブ" },
-        topic_summaries: undefined
-      };
-    });
+ if (error) throw error;
+ 
+ // Normalize data so the client gets a uniform Interface 
+ const normalizedData = (data as any[]).map(bm => {
+ let mergedWikiEntries = bm.wiki_entries;
+ 
+ if (!mergedWikiEntries && bm.topic_summaries) {
+ const topic = Array.isArray(bm.topic_summaries.talk_topics) ? bm.topic_summaries.talk_topics[0] : bm.topic_summaries.talk_topics;
+ const room = topic ? (Array.isArray(topic.talk_rooms) ? topic.talk_rooms[0] : topic.talk_rooms) : null;
+ if (topic && room) {
+ mergedWikiEntries = {
+ id: topic.id,
+ title: topic.title,
+ slug: `/talk/${room.slug}/${topic.id}`,
+ category: room.name
+ };
+ }
+ }
+ 
+ return {
+ ...bm,
+ wiki_entries: mergedWikiEntries || { title: "不明", slug: "", category: "アーカイブ" },
+ topic_summaries: undefined
+ };
+ });
 
-    return { success: true, data: normalizedData };
-  } catch (err) {
-    console.error("[getMyBookmarks]", err);
-    return { success: false, error: "ブックマーク一覧の取得に失敗しました" };
-  }
+ return { success: true, data: normalizedData };
+ } catch (err) {
+ console.error("[getMyBookmarks]", err);
+ return { success: false, error: "ブックマーク一覧の取得に失敗しました" };
+ }
 }

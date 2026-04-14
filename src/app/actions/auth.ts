@@ -12,13 +12,13 @@ import { redirect } from "next/navigation";
  */
 
 export async function logoutAction() {
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
-  if (!supabase) {
-    redirect("/login");
-    return;
-  }
+ const { createClient } = await import("@/lib/supabase/server");
+ const supabase = await createClient();
+ if (!supabase) {
+ redirect("/login");
+ return;
+ }
 
-  await supabase.auth.signOut();
-  redirect("/login");
+ await supabase.auth.signOut();
+ redirect("/login");
 }

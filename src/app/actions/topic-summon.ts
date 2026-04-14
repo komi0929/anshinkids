@@ -12,17 +12,17 @@ import { SchemaType } from "@google/generative-ai";
  * 自動テキストを生成する。
  */
 export async function generateSummonText(themeSlug: string, sectionHeading: string, itemTitle: string): Promise<{
-  success: boolean;
-  text: string;
-  roomSlug: string;
+ success: boolean;
+ text: string;
+ roomSlug: string;
 }> {
-  const theme = THEME_BY_SLUG[themeSlug];
-  if (!theme) {
-    return { success: false, text: "", roomSlug: "" };
-  }
+ const theme = THEME_BY_SLUG[themeSlug];
+ if (!theme) {
+ return { success: false, text: "", roomSlug: "" };
+ }
 
-  try {
-    const model = getGeminiFlash(`あなたは「${theme.name}」というテーマの保護者コミュニティのファシリテーターです。
+ try {
+ const model = getGeminiFlash(`あなたは「${theme.name}」というテーマの保護者コミュニティのファシリテーターです。
 まとめ記事の「${sectionHeading}」について、「${itemTitle}」に関する新しい体験談やエピソードを募集したいです。
 
 以下のルールで、保護者が思わずコメントを返したくなるような、短く温かい「問いかけ（話題の投下）」を1〜2文で生成してください。
@@ -30,49 +30,49 @@ export async function generateSummonText(themeSlug: string, sectionHeading: stri
 - 親しみやすく、少し絵文字を交える
 - 「最近はどうですか？」「工夫はありますか？」などの問いかけで終わること`);
 
-    const prompt = `トピック: ${itemTitle}
+ const prompt = `トピック: ${itemTitle}
 上記に関する問いかけを生成してください。`;
 
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { 
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: SchemaType.OBJECT,
-          properties: {
-            questionText: {
-              type: SchemaType.STRING,
-              description: "生成した問いかけ"
-            }
-          },
-          required: ["questionText"]
-        },
-        temperature: 0.5,
-      }
-    });
+ const result = await model.generateContent({
+ contents: [{ role: "user", parts: [{ text: prompt }] }],
+ generationConfig: { 
+ responseMimeType: "application/json",
+ responseSchema: {
+ type: SchemaType.OBJECT,
+ properties: {
+ questionText: {
+ type: SchemaType.STRING,
+ description: "生成した問いかけ"
+ }
+ },
+ required: ["questionText"]
+ },
+ temperature: 0.5,
+ }
+ });
 
-    let text = "";
-    try {
-      const parsed = JSON.parse(result.response.text());
-      text = parsed.questionText;
-    } catch {
-      text = `【まとめ記事から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
-    }
+ let text = "";
+ try {
+ const parsed = JSON.parse(result.response.text());
+ text = parsed.questionText;
+ } catch {
+ text = `【まとめ記事から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
+ }
 
-    return {
-      success: true,
-      text: text || `【みんなのまとめ】${itemTitle}について、最近の体験を教えてください！`,
-      roomSlug: themeSlug,
-    };
-  } catch (error) {
-    console.error("[generateSummonText] AI Error:", error);
-    // Fallback in case AI is unreachable
-    const text = `【まとめ記事から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
-    return {
-      success: true,
-      text,
-      roomSlug: themeSlug,
-    };
-  }
+ return {
+ success: true,
+ text: text || `【みんなのまとめ】${itemTitle}について、最近の体験を教えてください！`,
+ roomSlug: themeSlug,
+ };
+ } catch (error) {
+ console.error("[generateSummonText] AI Error:", error);
+ // Fallback in case AI is unreachable
+ const text = `【まとめ記事から】${itemTitle}について、最新の体験談や工夫があれば教えてください！🌱`;
+ return {
+ success: true,
+ text,
+ roomSlug: themeSlug,
+ };
+ }
 }
 
