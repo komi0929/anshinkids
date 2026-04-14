@@ -130,7 +130,7 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
             value={editName}
             onChange={e => setEditName(e.target.value)}
             maxLength={20}
-            className="w-full text-[14px] px-4 py-3 rounded-xl border border-[var(--color-border-light)] focus:border-[var(--color-primary)] focus:outline-none transition-colors bg-[var(--color-surface-warm)]"
+            className="w-full text-[14px] px-4 py-3 rounded-xl border border-[var(--color-border-light)] focus:border-[var(--color-primary)] focus:outline-none transition-colors bg-[var(--color-surface-soft)]"
             placeholder="表示名（例：ゆいママ）"
           />
         </div>
@@ -139,7 +139,7 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
         <div>
           <label className="block text-[12px] font-bold text-[var(--color-subtle)] mb-1.5">アイコン</label>
           <div className="flex items-center gap-2 mb-2">
-            <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] transition-colors rounded-xl text-[12px] font-bold text-[var(--color-text-secondary)] border border-[var(--color-border)] cursor-pointer">
+            <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--color-surface-soft)] hover:bg-[var(--color-border-light)] transition-colors rounded-xl text-[12px] font-bold text-[var(--color-text-secondary)] border border-[var(--color-border)] cursor-pointer">
               <span className="text-sm">📸</span> 写真を選択
               <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -169,7 +169,7 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
           </div>
           <div className="flex flex-wrap gap-2">
             {["👦", "👧", "👨", "👩", "🐻", "🐶", "🐱", "🐰", "🐼", "🐨", "🦊", "🦁"].map(emoji => (
-              <button key={emoji} onClick={() => setEditAvatar(emoji)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${editAvatar === emoji ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 scale-110" : "border-[var(--color-border-light)] bg-white hover:bg-[var(--color-surface-warm)]"}`}>
+              <button key={emoji} onClick={() => setEditAvatar(emoji)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${editAvatar === emoji ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 scale-110" : "border-[var(--color-border-light)] bg-white hover:bg-[var(--color-surface-soft)]"}`}>
                 {emoji}
               </button>
             ))}
@@ -207,21 +207,21 @@ function OnboardingChildSetup({ initialPrefs, onComplete, onSkip }: {
       exit={{ opacity: 0, y: -20 }}
     >
       <div className="px-5 pt-5 pb-2">
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-[var(--color-surface-warm)] border border-emerald-100">
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-[var(--color-primary-bg)] to-[var(--color-surface-soft)] border border-[var(--color-border-light)]">
           <h3 className="text-[14px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">
             🌟 お子さまの情報を登録すると…
           </h3>
           <ul className="space-y-1.5">
             <li className="flex items-start gap-2 text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
-              <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+              <Check className="w-3.5 h-3.5 text-[var(--color-primary-dark)] mt-0.5 flex-shrink-0" />
               <span className="break-keep text-balance"><strong>同じアレルギーの先輩ママ・パパの知恵</strong>が自動で届きます</span>
             </li>
             <li className="flex items-start gap-2 text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
-              <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+              <Check className="w-3.5 h-3.5 text-[var(--color-primary-dark)] mt-0.5 flex-shrink-0" />
               <span className="break-keep text-balance"><strong>年齢に合わせた情報</strong>（離乳食、給食、外食…）をおすすめ</span>
             </li>
             <li className="flex items-start gap-2 text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
-              <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+              <Check className="w-3.5 h-3.5 text-[var(--color-primary-dark)] mt-0.5 flex-shrink-0" />
               <span className="break-keep text-balance">トークルームであなたの投稿に<strong>アレルギー情報を自動表示</strong>し、同じ悩みの方と繋がりやすく</span>
             </li>
           </ul>
@@ -459,7 +459,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     return (
       <div className="fade-in">
         <div className="empty-state mt-16">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2 shadow-sm">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-soft)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2 shadow-sm">
             <span className="text-3xl">⚠️</span>
           </div>
           <h3>エラーが発生しました</h3>
@@ -474,7 +474,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
     return (
       <div className="fade-in">
         <div className="empty-state mt-16">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-warm)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2 shadow-sm">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-surface-soft)] to-[var(--color-primary)]/10 flex items-center justify-center mb-2 shadow-sm">
             <span className="text-3xl">🔐</span>
           </div>
           <h3 className="break-keep text-balance">ログインが必要です</h3>
@@ -568,7 +568,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                 <h4 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5 leading-snug group-hover:text-[var(--color-primary)] transition-colors break-keep text-balance">
                   {bm.snippet_title}
                 </h4>
-                <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed bg-[var(--color-surface-warm)] p-2.5 rounded-xl">
+                <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed bg-[var(--color-surface-soft)] p-2.5 rounded-xl">
                   {bm.snippet_content}
                 </p>
               </Link>
@@ -594,11 +594,11 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           className="px-4 mb-5"
         >
           <h2 className="text-[16px] font-extrabold text-[var(--color-text)] mb-3 flex items-center gap-2">
-            <Sparkles className="w-4.5 h-4.5 text-amber-500" />
+            <Sparkles className="w-4.5 h-4.5 text-[var(--color-secondary)]" />
             あなたへのおすすめ
           </h2>
           {!hasProfileData && (
-            <div className="mb-3 p-3 rounded-2xl bg-gradient-to-r from-amber-50/60 to-[var(--color-surface-warm)] border border-amber-100/50">
+            <div className="mb-3 p-3 rounded-2xl bg-gradient-to-r from-amber-50/60 to-[var(--color-surface-soft)] border border-amber-100/50">
               <p className="text-[11px] text-amber-700 font-medium break-keep text-balance">
                 💡 <button onClick={() => setIsEditing(true)} className="underline font-bold">お子さまの情報を登録</button>すると、アレルギーや年齢に合った記事が自動的におすすめされます。
               </p>
@@ -650,8 +650,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           className="px-4 mb-5"
         >
           <div className="bg-gradient-to-br from-amber-50/80 to-white rounded-[24px] p-5 text-center border border-amber-100/60 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
-            <div className="w-12 h-12 rounded-[16px] bg-amber-100 flex items-center justify-center mx-auto mb-3">
-              <Sparkles className="w-6 h-6 text-amber-500" />
+            <div className="w-12 h-12 rounded-[16px] bg-[var(--color-secondary)]/10 flex items-center justify-center mx-auto mb-3">
+              <Sparkles className="w-6 h-6 text-[var(--color-secondary)]" />
             </div>
             <p className="text-[14px] text-[var(--color-text)] font-bold mb-1 break-keep text-balance">
               あなた専用のおすすめを表示
@@ -699,7 +699,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
               >
                 <div className="pt-2.5 space-y-2">
                   {getMigratedInitialPrefs().children.map((child, idx) => (
-                    <div key={child.id || idx} className="bg-[var(--color-surface-warm)] rounded-[16px] p-3.5 border border-[var(--color-border-light)]">
+                    <div key={child.id || idx} className="bg-[var(--color-surface-soft)] rounded-[16px] p-3.5 border border-[var(--color-border-light)]">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-bold text-[13px] text-[var(--color-text)]">{child.name}</span>
                         {child.ageGroup && <span className="text-[10px] font-bold bg-white/80 px-2 py-0.5 rounded-full text-[var(--color-subtle)]">{child.ageGroup}才</span>}
@@ -775,7 +775,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           </div>
           
           {/* Support link */}
-          <Link href="/support" className="flex items-center justify-between p-4 border-b border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors">
+          <Link href="/support" className="flex items-center justify-between p-4 border-b border-[var(--color-border-light)] hover:bg-[var(--color-surface-soft)] transition-colors">
             <span className="text-[13px] font-bold text-[var(--color-text)]">サポート・ヘルプ</span>
             <ChevronRight className="w-4 h-4 text-[var(--color-subtle)]" />
           </Link>
@@ -784,7 +784,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="w-full flex items-center justify-between p-4 border-b border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)] transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-between p-4 border-b border-[var(--color-border-light)] hover:bg-[var(--color-surface-soft)] transition-colors disabled:opacity-50"
           >
             <span className="text-[13px] font-bold text-[var(--color-subtle)] flex items-center gap-2">
               <LogOut className="w-4 h-4" />
@@ -847,7 +847,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                   <p className="text-[11px] text-[var(--color-muted)] leading-relaxed mb-2">
                     自由に写真を追加するか、お好みの絵文字を選択できます。
                   </p>
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-surface-warm)] hover:bg-[var(--color-border-light)] hover:text-[var(--color-primary)] transition-colors rounded-lg text-[11px] font-bold text-[var(--color-text-secondary)] border border-[var(--color-border)] cursor-pointer">
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-surface-soft)] hover:bg-[var(--color-border-light)] hover:text-[var(--color-primary)] transition-colors rounded-lg text-[11px] font-bold text-[var(--color-text-secondary)] border border-[var(--color-border)] cursor-pointer">
                     <span className="text-sm">📸</span> 写真を選択
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -878,7 +878,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
               </div>
               <div className="flex flex-wrap gap-2">
                 {["👦", "👧", "👨", "👩", "🐻", "🐶", "🐱", "🐰", "🐼", "🐨", "🦊", "🦁"].map(emoji => (
-                  <button key={emoji} onClick={() => setEditAvatar(emoji)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${editAvatar === emoji ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10" : "border-[var(--color-border-light)] bg-white hover:bg-[var(--color-surface-warm)]"}`}>
+                  <button key={emoji} onClick={() => setEditAvatar(emoji)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${editAvatar === emoji ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10" : "border-[var(--color-border-light)] bg-white hover:bg-[var(--color-surface-soft)]"}`}>
                     {emoji}
                   </button>
                 ))}
@@ -905,7 +905,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
               >
                 {isSavingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : "保存する"}
               </button>
-              <button onClick={() => setShowProfileEdit(false)} className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-[13px] font-bold text-[var(--color-subtle)] hover:bg-[var(--color-surface-warm)]">
+              <button onClick={() => setShowProfileEdit(false)} className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-[13px] font-bold text-[var(--color-subtle)] hover:bg-[var(--color-surface-soft)]">
                 キャンセル
               </button>
             </div>

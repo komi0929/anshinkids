@@ -233,14 +233,14 @@ export default function ThemeHubClient({
       {imageGallery && imageGallery.length > 0 && (
         <div className="px-4 pt-3 pb-2">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm bg-[var(--color-surface-warm)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">📸</span>
+            <span className="text-sm bg-[var(--color-surface-soft)] px-1.5 py-0.5 rounded border border-[var(--color-border-light)]">📸</span>
             <h2 className="text-[15px] font-extrabold text-[var(--color-text)]">みんなのおすすめ</h2>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 snap-x -mx-4 px-4 scrollbar-hide">
              {imageGallery.map((img, idx) => (
                 <div key={idx} className="relative w-28 h-28 flex-shrink-0 rounded-2xl overflow-hidden shadow-sm border border-[var(--color-border-light)] snap-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt={`gallery-${idx}`} className="w-full h-full object-cover bg-[var(--color-surface-warm)]" />
+                  <img src={img} alt={`gallery-${idx}`} className="w-full h-full object-cover bg-[var(--color-surface-soft)]" />
                 </div>
              ))}
           </div>
@@ -280,7 +280,7 @@ export default function ThemeHubClient({
                   onClick={() => setFilterPersonalized(!filterPersonalized)}
                   className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-bold transition-all ${
                     filterPersonalized 
-                      ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" 
+                      ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm" 
                       : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border-light)] hover:bg-[var(--color-surface)]"
                   }`}
                 >
@@ -415,7 +415,7 @@ export default function ThemeHubClient({
                 <div className="space-y-3">
                   {topicsWithSummary.length > 0 && (
                     <div className="flex items-center gap-2 mb-1 mt-4">
-                      <span className="text-sm bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-lg border border-[var(--color-border-light)] font-bold">
+                      <span className="text-sm bg-[var(--color-surface-soft)] px-2 py-0.5 rounded-lg border border-[var(--color-border-light)] font-bold">
                         💬
                       </span>
                       <h2 className="text-[13px] font-extrabold text-[var(--color-text)]">会話中</h2>
@@ -546,7 +546,7 @@ export default function ThemeHubClient({
                 </p>
               </div>
 
-              <div className="bg-[var(--color-surface-warm)] border border-[var(--color-primary)]/15 p-4 rounded-2xl relative overflow-hidden mt-2">
+              <div className="bg-[var(--color-surface-soft)] border border-[var(--color-primary)]/15 p-4 rounded-2xl relative overflow-hidden mt-2">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[var(--color-primary)]/10 to-transparent rounded-full -mr-10 -mt-10 blur-xl" />
                 <p className="text-[11px] font-bold text-[var(--color-primary)] mb-1.5">見つかった既存の募集部屋</p>
                 <div className="text-[15px] font-bold text-[var(--color-text)] leading-snug drop-shadow-sm min-h-[1.5em]">

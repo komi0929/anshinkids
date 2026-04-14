@@ -21,7 +21,7 @@ export default function SupportPage() {
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
           <Link
             href="/about"
-            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"
+            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-soft)] transition-colors border-b border-[var(--color-border-light)]"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
@@ -36,10 +36,10 @@ export default function SupportPage() {
           </Link>
           <a
             href="mailto:support@anshin-kids.app?subject=アプリへのアイデア・バグ報告"
-            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors border-b border-[var(--color-border-light)]"
+            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-soft)] transition-colors border-b border-[var(--color-border-light)]"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-[var(--color-secondary)]">
                 <span className="text-sm">💡</span>
               </div>
               <div>
@@ -51,10 +51,10 @@ export default function SupportPage() {
           </a>
           <a
             href="mailto:partner@anshin-kids.app?subject=活動への協賛・支援について"
-            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-warm)] transition-colors"
+            className="flex items-center justify-between p-4 hover:bg-[var(--color-surface-soft)] transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-500">
+              <div className="w-8 h-8 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center text-[var(--color-primary)]">
                 <span className="text-sm">🤝</span>
               </div>
               <div>

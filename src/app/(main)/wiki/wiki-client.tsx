@@ -187,7 +187,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
                         }
                       }}
                       disabled={child.allergens.length === 0 && child.customAllergens.length === 0}
-                      className="px-4 py-2 rounded-full text-[13px] font-bold transition-all bg-[var(--color-surface-warm)] text-[var(--color-text)] hover:bg-[var(--color-border-light)] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 rounded-full text-[13px] font-bold transition-all bg-[var(--color-surface-soft)] text-[var(--color-text)] hover:bg-[var(--color-border-light)] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {child.name} {(child.allergens.length > 0 || child.customAllergens.length > 0) ? `のアレルゲンを選択` : `(未設定)`}
                     </button>
@@ -209,7 +209,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
                           prev.includes(allergen.label) ? prev.filter((a) => a !== allergen.label) : [...prev, allergen.label]
                         )
                       }
-                      className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all ${selectedAllergens.includes(allergen.label) ? "bg-[var(--color-primary)] text-white shadow-md scale-[1.02]" : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)]"}`}
+                      className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all ${selectedAllergens.includes(allergen.label) ? "bg-[var(--color-primary)] text-white shadow-md scale-[1.02]" : "bg-[var(--color-surface-soft)] text-[var(--color-text-secondary)]"}`}
                     >
                       {allergen.label}
                     </button>
@@ -247,7 +247,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
             <p className="text-[13px] text-[var(--color-subtle)] leading-relaxed mb-6 max-w-[260px] mx-auto">
               このカテゴリにはまだまとめ記事が存在しません。トークルームで実体験を持ち寄りましょう。
             </p>
-            <Link href="/talk" prefetch={true} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[var(--color-border-light)] shadow-sm text-[13px] font-bold text-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all">
+            <Link href="/talk" prefetch={true} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[var(--color-border-light)] shadow-sm text-[13px] font-bold text-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] transition-all">
                <MessageCircle className="w-4 h-4" />
                トークルームで体験を共有する
             </Link>

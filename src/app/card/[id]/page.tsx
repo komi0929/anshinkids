@@ -68,7 +68,7 @@ export default async function AmuletCardPage({ params }: { params: Promise<{ id:
                 ].filter(Boolean);
 
                 return (
-                  <div key={idx} className="bg-[var(--color-surface-warm)] rounded-2xl p-4 text-center">
+                  <div key={idx} className="bg-[var(--color-surface-soft)] rounded-2xl p-4 text-center">
                     <div className="text-[14px] font-extrabold text-[var(--color-text)] mb-3">
                       {child.name || `お子様 ${idx + 1}`}
                     </div>
@@ -102,7 +102,7 @@ export default async function AmuletCardPage({ params }: { params: Promise<{ id:
           </div>
           
           {/* Perforated bottom / Ticket cut */}
-          <div className="h-6 bg-[var(--color-surface-warm)] relative overflow-hidden border-t border-[var(--color-border-light)]">
+          <div className="h-6 bg-[var(--color-surface-soft)] relative overflow-hidden border-t border-[var(--color-border-light)]">
             <div className="absolute top-[-8px] left-[-8px] w-4 h-4 bg-[var(--color-bg)] rounded-full"></div>
             <div className="absolute top-[-8px] right-[-8px] w-4 h-4 bg-[var(--color-bg)] rounded-full"></div>
             <div className="flex justify-center h-full items-center gap-1 opacity-20">
@@ -116,7 +116,7 @@ export default async function AmuletCardPage({ params }: { params: Promise<{ id:
 
       {/* 300-point Growth Loop (Non-intrusive utility CTA) */}
       <div className="max-w-[360px] w-full px-5 mt-10 slide-up">
-        <div className="bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-warm)] p-5 rounded-2xl border border-[var(--color-border-light)] shadow-sm">
+        <div className="bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-soft)] p-5 rounded-2xl border border-[var(--color-border-light)] shadow-sm">
           <h2 className="text-[13px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">周りにアレルギーでお悩みの方はいませんか？</h2>
           <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed mb-4">
             このお守りカードは「あんしんキッズ」で作成されました。同じようにアレルギーを持つ親御さんのための、国内最大級の体験ライブラリです。

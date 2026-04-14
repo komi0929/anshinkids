@@ -19,8 +19,8 @@ const CATEGORIES = [
   {
     title: "AI自律ループとアーキテクチャ",
     desc: "トークを知識に変え、プラットフォームを自動で育てるLiving Knowledgeエンジンの裏側。",
-    colorClass: "from-emerald-100 to-green-50 text-emerald-700 border-emerald-200",
-    iconBg: "bg-emerald-500",
+    colorClass: "from-[var(--color-primary-bg)] to-[var(--color-primary-bg)] text-[var(--color-primary-dark)] border-[var(--color-border-light)]",
+    iconBg: "bg-[var(--color-primary)]",
     features: [
       { title: "3日間の自動アーカイブ（自律掃除）", desc: "トークルームで72時間発言がなかった場合、自動で会話をクローズし、コミュニティの文脈を常に最新に保ちます。", icon: <Clock className="w-5 h-5" />, tags: ["Cron", "DB"] },
       { title: "文脈抽出エンジン (Talk-to-Wiki)", desc: "アーカイブ時、Gemini 3 Flashが会話の全スレッドを解析し、有益な一次情報を「Snippet」として自動抽出する中核機能。", icon: <RefreshCw className="w-5 h-5" />, tags: ["Gemini"] },
@@ -52,7 +52,7 @@ export default function FeaturesPage() {
       {/* Header */}
       <div className="sticky top-0 z-40 px-5 py-4 border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[var(--color-surface-warm)] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-[var(--color-surface-soft)] flex items-center justify-center flex-shrink-0">
             <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
@@ -74,7 +74,7 @@ export default function FeaturesPage() {
           </p>
           <div className="flex flex-wrap gap-2">
             {["Next.js 16", "Supabase", "Gemini 3 Flash", "Bento UI"].map(tag => (
-               <span key={tag} className="px-3 py-1 bg-[var(--color-surface-warm)] rounded-full text-[11px] font-extrabold text-[var(--color-subtle)] border border-[var(--color-border-light)]">
+               <span key={tag} className="px-3 py-1 bg-[var(--color-surface-soft)] rounded-full text-[11px] font-extrabold text-[var(--color-subtle)] border border-[var(--color-border-light)]">
                  {tag}
                </span>
             ))}
@@ -110,7 +110,7 @@ export default function FeaturesPage() {
                         {feature.tags && (
                           <div className="flex flex-wrap gap-1.5 mt-3">
                             {feature.tags.map(tag => (
-                              <span key={tag} className="text-[9.5px] font-black uppercase tracking-wider text-[var(--color-muted)] bg-[var(--color-surface-warm)] px-2 py-0.5 rounded-lg border border-[var(--color-border-light)]">
+                              <span key={tag} className="text-[9.5px] font-black uppercase tracking-wider text-[var(--color-muted)] bg-[var(--color-surface-soft)] px-2 py-0.5 rounded-lg border border-[var(--color-border-light)]">
                                 {tag}
                               </span>
                             ))}

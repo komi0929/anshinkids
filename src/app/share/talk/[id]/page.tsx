@@ -93,7 +93,7 @@ export default async function SharePostPage({ params }: Props) {
             <p className="text-[17px] leading-[1.8] font-bold text-[var(--color-text)] whitespace-pre-wrap mb-4">
               {message.content}
             </p>
-            <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-subtle)] font-medium bg-[var(--color-surface-warm)] px-3 py-2 rounded-xl border border-[var(--color-border-light)]">
+            <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-subtle)] font-medium bg-[var(--color-surface-soft)] px-3 py-2 rounded-xl border border-[var(--color-border-light)]">
               テーマ：{roomName}
             </div>
           </div>

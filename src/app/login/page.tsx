@@ -106,7 +106,7 @@ export default function LoginPage() {
               id="line-login-button"
               className="w-full py-4 px-6 rounded-full font-bold text-[16px] text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                backgroundColor: "#06C755",
+                backgroundColor: "var(--color-primary)",
                 boxShadow: "0 8px 24px rgba(6, 199, 85, 0.25)",
               }}
             >

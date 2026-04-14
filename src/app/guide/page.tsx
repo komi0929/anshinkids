@@ -170,7 +170,7 @@ export default function GuidePage() {
             </p>
 
             {/* Tip */}
-            <div className="p-3 rounded-xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)]">
+            <div className="p-3 rounded-xl bg-[var(--color-surface-soft)] border border-[var(--color-border-light)]">
               <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">
                 💡 <span className="font-bold">ポイント：</span>{step.tip}
               </p>

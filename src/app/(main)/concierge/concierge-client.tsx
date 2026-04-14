@@ -174,7 +174,7 @@ export default function ConciergeClient({
         </div>
         
         {messages.length > 0 && (
-          <button onClick={handleReset} className="w-9 h-9 flex justify-center items-center rounded-xl bg-[var(--color-surface-warm)] text-[var(--color-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-colors" title="最初から相談する" aria-label="セッションをリセット">
+          <button onClick={handleReset} className="w-9 h-9 flex justify-center items-center rounded-xl bg-[var(--color-surface-soft)] text-[var(--color-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-colors" title="最初から相談する" aria-label="セッションをリセット">
             <RefreshCw className="w-4 h-4" />
           </button>
         )}
@@ -205,7 +205,7 @@ export default function ConciergeClient({
 
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-6 fade-in">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-warm)] flex items-center justify-center shadow-sm mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-surface-soft)] flex items-center justify-center shadow-sm mb-4">
               <Leaf className="w-7 h-7 text-[var(--color-success)]" />
             </div>
             <h2 className="text-[17px] font-extrabold text-[var(--color-text)] mb-1 break-keep text-balance">なんでも聞いてね 🌿</h2>
@@ -239,7 +239,7 @@ export default function ConciergeClient({
                 <button
                   key={suggestion}
                   onClick={() => { setInput(suggestion); textareaRef.current?.focus(); }}
-                  className="w-full text-left p-3.5 card text-[13px] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-warm)] transition-all group stagger-item"
+                  className="w-full text-left p-3.5 card text-[13px] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] transition-all group stagger-item"
                   id={`suggestion-${i}`}
                   aria-label={`質問例: ${suggestion}`}
                 >
@@ -286,7 +286,7 @@ export default function ConciergeClient({
 
             {msg.role === "user" && !contributedIndices.has(index) && showContribPrompt === index && (
               <div className="flex justify-end mt-2 fade-in">
-                <div className="max-w-[280px] p-3 rounded-2xl bg-gradient-to-r from-[var(--color-success-light)] to-[var(--color-surface-warm)] border border-[var(--color-success)]/15">
+                <div className="max-w-[280px] p-3 rounded-2xl bg-gradient-to-r from-[var(--color-success-light)] to-[var(--color-surface-soft)] border border-[var(--color-success)]/15">
                   <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed mb-2">
                     💡 この相談内容を匿名で体験まとめに追加しますか？<br/>
                     <span className="text-[10px] text-[var(--color-muted)]">他の同じ悩みの方の助けになります</span>

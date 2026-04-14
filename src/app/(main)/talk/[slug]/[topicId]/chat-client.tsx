@@ -394,7 +394,7 @@ export default function ChatClient({
   }
 
   const AVATAR_COLORS = [
-    "bg-[#E8D5C4]", // warm beige
+    "bg-[var(--color-surface-soft)]", // warm beige
     "bg-[#C9D6C8]", // sage
     "bg-[#D4C5E2]", // lavender
     "bg-[#C5D5E4]", // sky
@@ -668,7 +668,7 @@ export default function ChatClient({
                       {msg.author_allergens.slice(0,3).map(a => {
                         const emoji = a.includes("卵") ? "🥚" : a.includes("乳") ? "🥛" : a.includes("小麦") ? "🌾" : "🌱";
                         return (
-                          <span key={a} className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                          <span key={a} className="text-[10px] font-bold bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                             {emoji}{a}
                           </span>
                         );
@@ -778,7 +778,7 @@ export default function ChatClient({
       <div className="px-4 py-3 flex items-center justify-between border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
         <Link
           href={`/talk/${slug}`}
-          className="p-1.5 -ml-1.5 rounded-full hover:bg-[var(--color-surface-warm)] transition-colors active:scale-95 text-[var(--color-text)]"
+          className="p-1.5 -ml-1.5 rounded-full hover:bg-[var(--color-surface-soft)] transition-colors active:scale-95 text-[var(--color-text)]"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
@@ -810,12 +810,12 @@ export default function ChatClient({
                 </div>
                 <span className="text-[15px] font-extrabold text-[var(--color-text)]">AIまとめ</span>
                 {topicSummary.allergen_tags && Array.isArray(topicSummary.allergen_tags) && topicSummary.allergen_tags.length > 0 && (
-                  <span className="text-[12px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100">
+                  <span className="text-[12px] font-bold bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] px-3 py-1 rounded-full border border-[var(--color-border-light)]">
                     {topicSummary.allergen_tags.slice(0, 3).join("・")}
                   </span>
                 )}
                 {topicSummary.allergen_tags && !Array.isArray(topicSummary.allergen_tags) && (
-                  <span className="text-[12px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100">
+                  <span className="text-[12px] font-bold bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] px-3 py-1 rounded-full border border-[var(--color-border-light)]">
                     {String(topicSummary.allergen_tags).slice(0, 10)}
                   </span>
                 )}

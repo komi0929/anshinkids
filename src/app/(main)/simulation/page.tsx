@@ -1006,9 +1006,9 @@ const THEME_COLORS: Record<string, { from: string; to: string; accent: string }>
   "eating-out": { from: "from-rose-50", to: "to-pink-50", accent: "text-rose-600" },
   school: { from: "from-violet-50", to: "to-purple-50", accent: "text-violet-600" },
   "load-test": { from: "from-teal-50", to: "to-cyan-50", accent: "text-teal-600" },
-  "skin-care": { from: "from-lime-50", to: "to-green-50", accent: "text-lime-600" },
+  "skin-care": { from: "from-[var(--color-border)]", to: "to-[var(--color-primary-bg)]", accent: "text-[var(--color-primary)]" },
   emotions: { from: "from-fuchsia-50", to: "to-pink-50", accent: "text-fuchsia-600" },
-  "food-wins": { from: "from-emerald-50", to: "to-teal-50", accent: "text-emerald-600" },
+  "food-wins": { from: "from-[var(--color-primary-bg)]", to: "to-teal-50", accent: "text-[var(--color-primary-dark)]" },
 };
 
 /** Suppress duplicate title if it matches section heading */
@@ -1046,7 +1046,7 @@ function ThemeSpecificMeta({ item, themeSlug }: { item: Item; themeSlug: string 
   if (themeSlug === "skin-care" && item.skin_type) {
     parts.push(
       <div key="skin-type" className="mt-2">
-        <span className="px-2.5 py-1 bg-lime-50 text-lime-700 rounded-full text-[10px] font-bold border border-lime-200">
+        <span className="px-2.5 py-1 bg-[var(--color-primary-bg)] text-[var(--color-primary)] rounded-full text-[10px] font-bold border border-[var(--color-border)]">
           🧴 {item.skin_type}向け
         </span>
       </div>
@@ -1122,7 +1122,7 @@ export default function SimulationPreview() {
     <div className="flex flex-col min-h-[100dvh] bg-[var(--color-surface)]">
       {/* Header */}
       <div className="px-4 py-3 flex items-center gap-3 border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-        <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-warm)] transition-colors">
+        <Link href="/wiki" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-surface-soft)] transition-colors">
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
         <div className="flex-1 min-w-0">
@@ -1204,7 +1204,7 @@ export default function SimulationPreview() {
               <button
                 key={i}
                 onClick={() => scrollToSection(i)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left hover:bg-[var(--color-surface-warm)] transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left hover:bg-[var(--color-surface-soft)] transition-colors"
               >
                 <span className="w-1 h-3 rounded-full bg-[var(--color-primary)]" />
                 <span className="text-[12px] font-semibold text-[var(--color-text)]">{sec.heading}</span>
@@ -1232,7 +1232,7 @@ export default function SimulationPreview() {
                   const isBookmarked = bookmarked.has(itemKey);
                   
                   return (
-                    <div key={j} className="p-3.5 rounded-2xl bg-[var(--color-surface-warm)] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/20 transition-colors">
+                    <div key={j} className="p-3.5 rounded-2xl bg-[var(--color-surface-soft)] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/20 transition-colors">
                       {/* Title Row */}
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <div className="flex-1 min-w-0">
@@ -1285,7 +1285,7 @@ export default function SimulationPreview() {
                         <div className="mt-2.5 space-y-1">
                           {item.tips.map((tip, tidx) => (
                             <div key={tidx} className="flex items-start gap-1.5 px-2.5 py-1.5 bg-amber-50 rounded-lg border border-amber-100">
-                              <span className="text-amber-500 text-[10px] mt-0.5">💡</span>
+                              <span className="text-[var(--color-secondary)] text-[10px] mt-0.5">💡</span>
                               <span className="text-[11px] text-amber-800 leading-relaxed">{tip}</span>
                             </div>
                           ))}
@@ -1298,7 +1298,7 @@ export default function SimulationPreview() {
                         (item.safe_items && item.safe_items.length > 0)) && (
                         <div className="mt-2.5 flex flex-wrap gap-1.5">
                           {item.allergen_free?.map((a, aidx) => (
-                            <span key={`af-${aidx}`} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-200">
+                            <span key={`af-${aidx}`} className="px-2 py-0.5 bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] rounded-full text-[10px] font-bold border border-[var(--color-border-light)]">
                               🏷️ {a}不使用
                             </span>
                           ))}
@@ -1308,7 +1308,7 @@ export default function SimulationPreview() {
                             </span>
                           ))}
                           {item.safe_items?.map((s, sidx) => (
-                            <span key={`si-${sidx}`} className="px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-[10px] font-bold border border-green-200">
+                            <span key={`si-${sidx}`} className="px-2 py-0.5 bg-[var(--color-primary-bg)] text-[var(--color-primary)] rounded-full text-[10px] font-bold border border-[var(--color-border-light)]">
                               ✅ {s}
                             </span>
                           ))}

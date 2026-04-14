@@ -131,18 +131,18 @@ export default function NotificationsClient({
               className="p-5 rounded-[28px] bg-white shadow-soft"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-xl shadow-inner">🔥</div>
+                <div className="w-10 h-10 rounded-full bg-[var(--color-secondary)]/10 flex items-center justify-center text-xl shadow-inner">🔥</div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-black text-amber-500">
+                  <p className="text-[13px] font-black text-[var(--color-secondary)]">
                     {streak.currentStreak > 0 ? `${streak.currentStreak}日連続で参加中！` : `通算${streak.totalDays}日参加`}
                   </p>
-                  <p className="text-[11px] font-bold text-amber-400/80">
+                  <p className="text-[11px] font-bold text-[var(--color-secondary)]/80">
                     最長 {streak.longestStreak}日連続アクセス
                   </p>
                 </div>
                 <div className="flex items-end gap-1">
                   {Array.from({ length: 7 }).map((_, i) => (
-                    <div key={i} className={`w-2.5 rounded-full ${i < Math.min(streak.currentStreak, 7) ? "bg-amber-400" : "bg-amber-100"}`} style={{ height: `${12 + i * 4}px` }} />
+                    <div key={i} className={`w-2.5 rounded-full ${i < Math.min(streak.currentStreak, 7) ? "bg-[var(--color-secondary)]" : "bg-[var(--color-secondary)]/10"}`} style={{ height: `${12 + i * 4}px` }} />
                   ))}
                 </div>
               </div>

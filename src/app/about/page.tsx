@@ -86,7 +86,7 @@ export default function AboutPage() {
 
       {/* Core Mission Bento Card */}
       <div className="px-5 mb-10">
-        <div className="rounded-[32px] p-8 text-center bg-gradient-to-br from-[var(--color-surface-warm)] to-green-50 border border-green-100 shadow-[0_8px_32px_rgba(0,0,0,0.03)] relative overflow-hidden group">
+        <div className="rounded-[32px] p-8 text-center bg-gradient-to-br from-[var(--color-surface-soft)] to-[var(--color-primary-bg)] border border-[var(--color-border-light)] shadow-[0_8px_32px_rgba(0,0,0,0.03)] relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-2xl -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
           <h3 className="text-[18px] font-extrabold text-[var(--color-text)] mb-4 relative z-10">
             あなたの「今日」が、<br/>誰かの「明日」の安心に。
@@ -108,7 +108,7 @@ export default function AboutPage() {
           {STEPS.map((step) => (
             <div key={step.num} className="bg-white/80 backdrop-blur-sm rounded-[28px] p-6 border border-[var(--color-border-light)] shadow-sm hover:shadow-md hover:border-[var(--color-primary)]/30 transition-all group">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-warm)] group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-[var(--color-primary)]/10 group-hover:to-[var(--color-success)]/10 flex items-center justify-center flex-shrink-0 transition-all font-black text-[22px]">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-soft)] group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-[var(--color-primary)]/10 group-hover:to-[var(--color-success)]/10 flex items-center justify-center flex-shrink-0 transition-all font-black text-[22px]">
                   {step.icon}
                 </div>
                 <div>
@@ -142,7 +142,7 @@ export default function AboutPage() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {SAFETY_POINTS.map(({ title, desc }) => (
-            <div key={title} className="bg-[var(--color-surface-warm)] rounded-[24px] p-5 border border-[var(--color-border-light)]">
+            <div key={title} className="bg-[var(--color-surface-soft)] rounded-[24px] p-5 border border-[var(--color-border-light)]">
               <h4 className="text-[14px] font-extrabold text-[var(--color-text)] mb-2 flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
                 {title}
@@ -175,18 +175,18 @@ export default function AboutPage() {
         </h3>
         
         <div className="space-y-3 max-w-[320px] mx-auto">
-          <Link href="/talk" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
+          <Link href="/talk" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-soft)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
             <BookOpen className="w-5 h-5 text-[var(--color-primary)] group-hover:scale-110 transition-transform" /> 
             みんなのまとめ記事を読む
           </Link>
-          <Link href="/talk" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-warm)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
+          <Link href="/talk" className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl bg-[var(--color-surface-soft)] text-[var(--color-text)] font-extrabold text-[15px] border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:bg-white shadow-sm transition-all transform active:scale-95 group">
             <TrendingUp className="w-5 h-5 text-[var(--color-primary)] group-hover:scale-110 transition-transform" /> 
             話題のトークルームを見る
           </Link>
           
           <div className="h-4" />
           
-          <Link href="/login" className="w-full text-center flex items-center justify-center gap-3 py-4 rounded-3xl font-bold text-[15px] text-white shadow-lg active:scale-95 transition-all hover:opacity-90" style={{ backgroundColor: '#06C755' }}>
+          <Link href="/login" className="w-full text-center flex items-center justify-center gap-3 py-4 rounded-3xl font-bold text-[15px] text-white shadow-lg active:scale-95 transition-all hover:opacity-90" style={{ backgroundColor: 'var(--color-primary)' }}>
             <LineIcon className="text-white" />
             LINEで参加する（無料）
           </Link>
@@ -200,7 +200,7 @@ export default function AboutPage() {
       <div className="px-5 mb-10 max-w-md mx-auto relative pt-4">
         <div className="absolute top-0 left-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[var(--color-border)] to-transparent -translate-x-1/2" />
         <div className="text-center">
-            <span className="inline-block px-3 py-1 mb-3 rounded-full bg-[var(--color-surface-warm)] text-[10px] font-black tracking-wider text-[var(--color-subtle)] uppercase">Open Source Project</span>
+            <span className="inline-block px-3 py-1 mb-3 rounded-full bg-[var(--color-surface-soft)] text-[10px] font-black tracking-wider text-[var(--color-subtle)] uppercase">Open Source Project</span>
             <h3 className="text-[15px] font-extrabold text-[var(--color-text)] mb-2">
               開発者・協力者の方へ
             </h3>
