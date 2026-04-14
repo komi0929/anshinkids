@@ -617,14 +617,14 @@ export default function ChatClient({
  <button
  key={emoji}
  onClick={() => handleReactionToggle(msg.id, emoji)}
- className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] transition-all border-[1.5px] border-[var(--color-border)] ${
+ className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] btn-nani transition-all border-[1.5px] border-[var(--color-border)] ${
  data.hasReacted
  ? "bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] font-black"
  : "bg-white text-[var(--color-subtle)] font-bold"
  }`}
  >
  <span>{emoji}</span>
- <span className="font-bold opacity-80">{data.count}</span>
+ 
  </button>
  ))}
  </div>
@@ -742,14 +742,14 @@ export default function ChatClient({
  <button
  key={emoji}
  onClick={() => handleReactionToggle(msg.id, emoji)}
- className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] transition-all border ${
+ className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] btn-nani transition-all border ${
  data.hasReacted
  ? "bg-blue-50 border-blue-200 text-blue-700"
  : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-text)]"
  }`}
  >
  <span>{emoji}</span>
- <span className="font-bold opacity-80">{data.count}</span>
+ 
  </button>
  ))}
  </div>
@@ -758,7 +758,7 @@ export default function ChatClient({
  {/* Fallback for legacy thanks if present but not migrated yet */}
  {msg.thanks_count > 0 && (!msg.reactions || msg.reactions.length === 0) && (
  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] mt-1 ml-1 border bg-[var(--color-heart-light)]/50 border-[var(--color-heart)]/30 text-[var(--color-heart)]">
- ❤️ <span className="font-bold">{msg.thanks_count}</span>
+ ❤️ <span className="font-bold">わかる</span>
  </span>
  )}
  

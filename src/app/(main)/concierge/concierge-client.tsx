@@ -313,20 +313,29 @@ export default function ConciergeClient({
  </div>
  ))}
 
- {isLoading && (
- <div className="flex items-start gap-2 fade-in">
- <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center flex-shrink-0 ">
- <Sparkles className="w-4 h-4 text-white" />
- </div>
- <div className="chat-bubble assistant">
- <div className="flex gap-1.5 py-1">
- <div className="w-2 h-2 rounded-full bg-[var(--color-muted)] animate-bounce" style={{ animationDelay: "0ms" }} />
- <div className="w-2 h-2 rounded-full bg-[var(--color-muted)] animate-bounce" style={{ animationDelay: "150ms" }} />
- <div className="w-2 h-2 rounded-full bg-[var(--color-muted)] animate-bounce" style={{ animationDelay: "300ms" }} />
- </div>
- </div>
- </div>
- )}
+          {isLoading && (
+            <div className="flex items-start gap-2 fade-in">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-1 relative">
+                {/* Nani-style playful spinning ring behind the icon */}
+                <div className="absolute inset-0 rounded-xl border-2 border-transparent border-t-[var(--color-primary)] border-l-[var(--color-success)] animate-spin opacity-50"></div>
+                <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] opacity-20 rounded-xl absolute inset-0 animate-pulse"></div>
+                <Sparkles className="w-4 h-4 text-[var(--color-primary-dark)] relative z-10" />
+              </div>
+              <div className="flex flex-col gap-1 items-start">
+                <div className="chat-bubble assistant !bg-transparent !border-none !p-0 !shadow-none">
+                  <span className="text-[12px] font-extrabold text-[var(--color-primary-dark)] animate-pulse flex items-center gap-1.5 px-3 py-2 bg-[var(--color-surface-soft)] rounded-xl">
+                    <span className="text-xl">🤔</span> みんなの体験を引っ張り出しています...
+                  </span>
+                </div>
+                {/* Nani-style Skeleton shape resembling the expected 3-choice answer */}
+                <div className="mt-1 ml-1 space-y-2">
+                  <div className="h-6 w-48 rounded-lg shimmer-nani opacity-40"></div>
+                  <div className="h-4 w-32 rounded-md shimmer-nani opacity-30"></div>
+                  <div className="h-4 w-40 rounded-md shimmer-nani opacity-20"></div>
+                </div>
+              </div>
+            </div>
+          )}
  <div ref={messagesEndRef} />
  </div>
 
