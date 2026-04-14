@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
+import Script from "next/script";
+import NextTopLoader from "nextjs-toploader";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const notoSansJP = Noto_Sans_JP({ 
@@ -135,6 +136,7 @@ export default function RootLayout({
  />
  </head>
  <body className="min-h-[100dvh]">
+  <NextTopLoader color="#099bff" initialPosition={0.08} crawlSpeed={200} height={3} crawl={true} showSpinner={false} easing="ease" speed={200} shadow="0 0 10px #099bff,0 0 5px #099bff" />
  <SensoryEffectsProvider>
  {children}
  </SensoryEffectsProvider>
