@@ -60,7 +60,7 @@ function LineIcon({ className }: { className?: string }) {
 
 export default function AboutPage() {
   return (
-    <div className="fade-in pb-24 min-h-[100dvh] bg-[var(--color-bg)]">
+    <div className="fade-in pb-24 min-h-[100dvh] bg-white max-w-md mx-auto shadow-md relative">
       {/* Header */}
       <div className="sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md shadow-sm">
         <BackButton />
