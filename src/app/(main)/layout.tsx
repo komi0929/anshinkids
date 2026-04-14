@@ -46,42 +46,40 @@ export default function MainLayout({
 
       {/* Bottom Navigation */}
       {!isTalkDetail && (
-        <nav className="bottom-nav" id="main-navigation" role="navigation" aria-label="メインナビゲーション">
-          <div className="flex justify-around items-center max-w-lg mx-auto">
-            {navItems.map((item) => {
-              // Hide notifications & mypage for logged-out users
-              if ((item.href === "/mypage" || item.href === "/notifications") && isLoggedIn === false) {
-                return null;
-              }
+        <nav className="bottom-nav flex justify-between items-center px-4" id="main-navigation" role="navigation" aria-label="メインナビゲーション">
+          {navItems.map((item) => {
+            // Hide notifications & mypage for logged-out users
+            if ((item.href === "/mypage" || item.href === "/notifications") && isLoggedIn === false) {
+              return null;
+            }
 
-              const isActive =
-                pathname === item.href || pathname.startsWith(item.href + "/");
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`nav-item ${isActive ? "active" : ""}`}
-                  id={`nav-${item.href.slice(1)}`}
-                  aria-label={item.label}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  <item.Icon size={22} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-            {isLoggedIn === false && (
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
               <Link
-                href="/login"
-                className="nav-item text-[var(--color-primary)]"
-                id="nav-login"
-                aria-label="ログイン"
+                key={item.href}
+                href={item.href}
+                className={`nav-item flex flex-col items-center gap-1 p-2 flex-1 ${isActive ? "active" : ""}`}
+                id={`nav-${item.href.slice(1)}`}
+                aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
               >
-                <LogIn size={22} />
-                <span>ログイン</span>
+                <item.Icon size={22} className={isActive ? "scale-110 transition-transform" : "transition-transform"} />
+                <span className="text-[10px] sm:text-[11px] font-extrabold whitespace-nowrap">{item.label}</span>
               </Link>
-            )}
-          </div>
+            );
+          })}
+          {isLoggedIn === false && (
+            <Link
+              href="/login"
+              className="nav-item flex flex-col items-center gap-1 p-2 flex-1 text-[var(--color-primary)]"
+              id="nav-login"
+              aria-label="ログイン"
+            >
+              <LogIn size={22} />
+              <span className="text-[10px] sm:text-[11px] font-extrabold whitespace-nowrap">ログイン</span>
+            </Link>
+          )}
         </nav>
       )}
     </div>

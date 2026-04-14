@@ -598,8 +598,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
             あなたへのおすすめ
           </h2>
           {!hasProfileData && (
-            <div className="mb-3 p-3 rounded-2xl bg-gradient-to-r from-amber-50/60 to-[var(--color-surface-soft)] border border-amber-100/50">
-              <p className="text-[11px] text-amber-700 font-medium break-keep text-balance">
+            <div className="mb-3 p-3 rounded-2xl bg-[var(--color-primary-bg)] border border-[var(--color-primary)]/20">
+              <p className="text-[11px] text-[var(--color-primary-dark)] font-medium break-keep text-balance">
                 💡 <button onClick={() => setIsEditing(true)} className="underline font-bold">お子さまの情報を登録</button>すると、アレルギーや年齢に合った記事が自動的におすすめされます。
               </p>
             </div>
@@ -614,26 +614,26 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                   href={url}
                   className="block p-5 rounded-[28px] bg-white hover:shadow-md transition-all group relative overflow-hidden shadow-soft"
                 >
-                  <div className="absolute top-0 right-0 w-14 h-14 bg-gradient-to-bl from-[#FFF3D6] to-transparent rounded-bl-[28px] opacity-50 pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-14 h-14 bg-gradient-to-bl from-[var(--color-primary-bg)] to-transparent rounded-bl-[28px] opacity-50 pointer-events-none" />
                   <div className="flex-1 min-w-0 relative z-10">
                     <div className="flex justify-between items-start mb-1 gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-[#A67C00]/80 flex items-center gap-1 font-bold mb-1">
+                        <p className="text-[10px] text-[var(--color-primary-dark)] flex items-center gap-1 font-bold mb-1">
                           <BookOpen className="w-3 h-3" />
                           {wiki.category}
                         </p>
-                        <h4 className="text-[14px] font-bold text-[#805F00] leading-snug break-keep text-balance group-hover:text-[#A67C00] transition-colors">
+                        <h4 className="text-[14px] font-bold text-[var(--color-text)] leading-snug break-keep text-balance group-hover:text-[var(--color-primary)] transition-colors">
                           {wiki.title.replace("【みんなの知恵袋】", "").trim()}
                         </h4>
                       </div>
                       {isRecent && (
                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0 relative z-20" onClick={(e) => e.preventDefault()}>
-                          <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold shadow-sm">NEW</span>
+                          <span className="px-2 py-0.5 rounded-full bg-[var(--color-accent)] text-white text-[9px] font-bold shadow-sm">NEW</span>
                           <TopicBookmarkButton summaryId={wiki.id} snippetTitle={wiki.title} snippetContent={wiki.summary} />
                         </div>
                       )}
                     </div>
-                    <p className="text-[12px] text-[#A67C00]/70 line-clamp-2 leading-relaxed font-medium mt-1">
+                    <p className="text-[12px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed font-medium mt-1">
                       {wiki.summary}
                     </p>
                   </div>
@@ -649,9 +649,9 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           transition={{ delay: 0.1 }}
           className="px-4 mb-5"
         >
-          <div className="bg-gradient-to-br from-amber-50/80 to-white rounded-[24px] p-5 text-center border border-amber-100/60 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
-            <div className="w-12 h-12 rounded-[16px] bg-[var(--color-secondary)]/10 flex items-center justify-center mx-auto mb-3">
-              <Sparkles className="w-6 h-6 text-[var(--color-secondary)]" />
+          <div className="bg-gradient-to-br from-[var(--color-primary-bg)] to-white rounded-[24px] p-5 text-center border border-[var(--color-primary)]/10 shadow-soft">
+            <div className="w-12 h-12 rounded-[16px] bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto mb-3">
+              <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
             </div>
             <p className="text-[14px] text-[var(--color-text)] font-bold mb-1 break-keep text-balance">
               あなた専用のおすすめを表示

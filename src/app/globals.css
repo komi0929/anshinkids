@@ -13,17 +13,17 @@
   --color-primary-bg: rgba(36, 175, 255, 0.12);
   --color-primary-bg-hover: rgba(36, 175, 255, 0.18);
 
-  /* Accent: Playful coral/pink for contrasting points (heart, notifications) */
-  --color-accent: #ff6b8b;
-  --color-accent-light: #ff9fb4;
+  /* Accent: Playful coral/pink for contrasting points -> Changed to subtle blue */
+  --color-accent: #099bff;
+  --color-accent-light: #6acbff;
 
-  /* Secondary */
-  --color-secondary: #ffb13b;
+  /* Secondary -> Changed to deeper blue */
+  --color-secondary: #080d12;
 
   /* Neutrals: Nani uses blue-tinted grays and deep black-blue */
   --color-muted: #c2d2da;
   --color-text: #080d12;
-  --color-text-secondary: #4b5256;
+  --color-text-secondary: #3b4349;
   --color-subtle: #8a9ca8;
 
   /* Status */
@@ -40,8 +40,8 @@
   --color-border-light: #f4f8fa;
 
   /* Misc */
-  --color-heart: #ff4868;
-  --color-heart-light: #ffeeef;
+  --color-heart: #099bff;
+  --color-heart-light: #ebf6ff;
 
   /* Typography: Force rounded geometry style */
   --font-sans:
@@ -63,11 +63,11 @@
   --shadow-md: 0 8px 24px rgba(0, 20, 40, 0.06);
   --shadow-lg: 0 12px 32px rgba(0, 20, 40, 0.08);
   --shadow-glow: 0 4px 24px rgba(36, 175, 255, 0.25);
-  --shadow-accent: 0 4px 24px rgba(255, 107, 139, 0.25);
+  --shadow-accent: 0 4px 24px rgba(9, 155, 255, 0.25);
   
   /* Claymorphism (tactile) - used sparingly for buttons */
   --shadow-clay-primary: 0 4px 16px rgba(36, 175, 255, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.08), inset 0 2px 2px rgba(255, 255, 255, 0.4);
-  --shadow-clay-accent: 0 4px 16px rgba(255, 107, 139, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.08), inset 0 2px 2px rgba(255, 255, 255, 0.4);
+  --shadow-clay-accent: 0 4px 16px rgba(9, 155, 255, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.08), inset 0 2px 2px rgba(255, 255, 255, 0.4);
 }
 
 @layer base {
@@ -449,17 +449,17 @@
     bottom: max(24px, env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 48px);
-    max-width: 400px;
+    width: calc(100% - 32px); /* Widen for Nani pill style */
+    max-width: 440px;
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
     border-radius: var(--radius-full);
-    padding: 8px 16px;
+    padding: 8px;
     z-index: 50;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
   }
 
