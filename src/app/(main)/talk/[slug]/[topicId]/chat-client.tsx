@@ -343,7 +343,8 @@ export default function ChatClient({
  }
  }, [thankedIds]);
 
- const handleReactionToggle = useCallback(async (messageId: string, reactionType: string) => {
+  const handleReactionToggle = useCallback(async (messageId: string, reactionType: string, event?: React.MouseEvent) => {
+    if (event) triggerSensoryBurst(event, reactionType);
  Haptics.light();
  AudioHaptics.playPop();
  

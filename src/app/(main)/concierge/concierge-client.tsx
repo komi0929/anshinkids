@@ -1,5 +1,6 @@
 "use client";
 
+import { Haptics } from "@/lib/haptics";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw, Send } from "@/components/icons";
@@ -79,6 +80,18 @@ export default function ConciergeClient({
  const [isContributing, setIsContributing] = useState(false);
  const [contributedIndices, setContributedIndices] = useState<Set<number>>(new Set());
  const [showEmergency, setShowEmergency] = useState(false);
+
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const handleCopy = async (text: string, id: number) => {
+    Haptics.light();
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2500);
+    } catch(e) {}
+  };
+
 
  useEffect(() => {
  if (messages.length > 0) {
