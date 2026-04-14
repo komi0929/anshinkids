@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw } from "@/components/icons";
 import { askConcierge, contributeFromConcierge } from "@/app/actions/concierge";
+import { InstantCopyButton } from "@/components/ui/InstantCopyButton";
 import { checkContentSafety, EMERGENCY_GUIDANCE, calculateAnswerConfidence } from "@/lib/ai/safety-guard";
 
 interface ChatMessage {
@@ -160,7 +161,7 @@ export default function ConciergeClient({
  }
 
  return (
- <div className="flex flex-col h-[100dvh]">
+ <div className="flex flex-col h-full bg-[var(--color-bg)]">
  {/* Header */}
  <div className="page-header border-b border-[var(--color-border-light)] bg-[var(--color-surface)]/80 backdrop-blur-md flex items-center justify-between">
  <div className="flex items-center gap-3">

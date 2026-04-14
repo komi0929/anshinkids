@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { TactileLink } from "@/components/TactileLink";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MessageCircle, User, LogIn, Bell, Settings } from "@/components/icons";
+import { ConciergeDrawer } from "@/components/ui/ConciergeDrawer";
+import ConciergeClient from "@/app/(main)/concierge/concierge-client";
 
 const navItems = [
  { href: "/talk", label: "テーマ一覧", Icon: MessageCircle },
@@ -56,8 +59,9 @@ export default function MainLayout({
  const isActive =
  pathname === item.href || pathname.startsWith(item.href + "/");
  return (
- <Link
+ <TactileLink
  key={item.href}
+ prefetch={true}
  href={item.href}
  className={`nav-item flex flex-col items-center gap-1 p-2 flex-1 ${isActive ? "active" : ""}`}
  id={`nav-${item.href.slice(1)}`}
@@ -66,11 +70,12 @@ export default function MainLayout({
  >
  <item.Icon size={22} className={isActive ? "scale-110 transition-transform" : "transition-transform"} />
  <span className="text-[10px] sm:text-[11px] font-extrabold whitespace-nowrap">{item.label}</span>
- </Link>
+ </TactileLink>
  );
  })}
  {isLoggedIn === false && (
- <Link
+ <TactileLink
+ prefetch={true}
  href="/login"
  className="nav-item flex flex-col items-center gap-1 p-2 flex-1 text-[var(--color-primary)]"
  id="nav-login"
@@ -78,10 +83,17 @@ export default function MainLayout({
  >
  <LogIn size={22} />
  <span className="text-[10px] sm:text-[11px] font-extrabold whitespace-nowrap">ログイン</span>
- </Link>
+ </TactileLink>
  )}
  </nav>
  )}
- </div>
+
+      {/* Global Bottom Sheet AI Concierge -> Instantly accessible from anywhere */}
+      {!isTalkDetail && (
+        <ConciergeDrawer>
+          <ConciergeClient initialAllergens={[]} initialIsGuest={isLoggedIn === false} />
+        </ConciergeDrawer>
+      )}
+    </div>
  );
 }
