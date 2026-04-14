@@ -112,6 +112,10 @@
     scroll-behavior: smooth;
   }
 
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     font-family: var(--font-sans);
     color: var(--color-text);
