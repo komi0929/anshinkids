@@ -139,7 +139,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
         <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide px-5">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all ${showFilters || selectedAllergens.length > 0 ? "bg-[var(--color-primary)] text-white shadow-md" : "bg-white text-[var(--color-text-secondary)] shadow-sm"}`}
+            className={`flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all ${showFilters || selectedAllergens.length > 0 ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-white text-[var(--color-text-secondary)] shadow-sm"}`}
           >
             <Filter className="w-5 h-5" />
             {selectedAllergens.length > 0 && (
@@ -153,7 +153,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-[14px] font-bold transition-all ${selectedCategory === cat ? "bg-[var(--color-primary)] text-white shadow-md transform -translate-y-0.5" : "bg-white text-[var(--color-text-secondary)] shadow-sm"}`}
+              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-[14px] font-bold transition-all ${selectedCategory === cat ? "bg-[var(--color-primary)] text-white shadow-sm transform -translate-y-0.5" : "bg-white text-[var(--color-text-secondary)] shadow-sm"}`}
             >
               {CATEGORY_EMOJI[cat]} <span className="ml-1">{cat}</span>
             </button>
@@ -164,7 +164,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
       {/* Allergen Filters Overlay */}
       {showFilters && (
         <div className="px-5 mb-6 slide-up relative z-20">
-          <div className="p-5 rounded-[24px] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className="p-5 rounded-xl bg-white shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <p className="text-[14px] font-black text-[var(--color-text)]">アレルゲンフィルター</p>
               <button onClick={() => setSelectedAllergens([])} className="text-[12px] font-bold text-[var(--color-primary)]">
@@ -209,7 +209,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
                           prev.includes(allergen.label) ? prev.filter((a) => a !== allergen.label) : [...prev, allergen.label]
                         )
                       }
-                      className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all ${selectedAllergens.includes(allergen.label) ? "bg-[var(--color-primary)] text-white shadow-md scale-[1.02]" : "bg-[var(--color-surface-soft)] text-[var(--color-text-secondary)]"}`}
+                      className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all ${selectedAllergens.includes(allergen.label) ? "bg-[var(--color-primary)] text-white shadow-sm scale-[1.02]" : "bg-[var(--color-surface-soft)] text-[var(--color-text-secondary)]"}`}
                     >
                       {allergen.label}
                     </button>
@@ -225,7 +225,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
       <div className="px-5 space-y-4">
         {isLoading ? (
           [1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-[28px] p-6 shadow-sm border border-[var(--color-border-light)] slide-up">
+            <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--color-border-light)] slide-up">
               <div className="flex gap-2 mb-3">
                 <div className="shimmer w-16 h-6 rounded-lg"></div>
                 <div className="shimmer w-12 h-6 rounded-lg"></div>
@@ -262,7 +262,7 @@ export default function WikiClient({ initialEntries }: WikiClientProps) {
                 key={entry.id}
                 href={`/wiki/${entry.slug}`}
                 prefetch={true}
-                className="block relative bg-white rounded-[28px] p-6 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-transparent hover:border-[var(--color-primary)]/20 hover:shadow-[0_8px_32px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300"
+                className="block relative bg-white rounded-2xl p-6 shadow-sm border border-transparent hover:border-[var(--color-primary)]/20 hover:shadow-[0_8px_32px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex gap-2 text-[10px] font-bold">

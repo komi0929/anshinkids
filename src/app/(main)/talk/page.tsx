@@ -47,11 +47,11 @@ async function TalkContent() {
             key={room.id || index}
             href={`/talk/${room.slug}`}
             prefetch={true}
-            className="block p-5 rounded-[28px] bg-white shadow-soft transition-all hover:shadow-md active:scale-[0.98] stagger-item group"
+            className="block p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] transition-all hover:shadow-sm active:scale-[0.98] stagger-item group"
             id={`talk-room-${room.slug}`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-[20px] bg-[var(--color-bg)] flex items-center justify-center text-[28px] flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+              <div className="w-14 h-14 rounded-xl bg-[var(--color-bg)] flex items-center justify-center text-[28px] flex-shrink-0  group-hover:scale-105 transition-transform">
                 {room.icon_emoji}
               </div>
               <div className="flex-1 min-w-0">

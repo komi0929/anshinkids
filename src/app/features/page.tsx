@@ -64,7 +64,7 @@ export default function FeaturesPage() {
 
       <div className="px-5 py-6 space-y-10 max-w-2xl mx-auto">
         {/* Intro */}
-        <div className="p-6 rounded-[28px] bg-white border border-[var(--color-border-light)] shadow-sm">
+        <div className="p-6 rounded-2xl bg-white border border-[var(--color-border-light)] shadow-sm">
           <h2 className="text-[16px] font-black text-[var(--color-text)] mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
             なぜ全ての仕様を公開するのか？
@@ -97,7 +97,7 @@ export default function FeaturesPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {category.features.map((feature, fIndex) => (
-                  <div key={fIndex} className="p-5 rounded-[24px] bg-white border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:shadow-md transition-all group">
+                  <div key={fIndex} className="p-5 rounded-xl bg-white border border-[var(--color-border-light)] hover:border-[var(--color-primary)]/40 hover:shadow-sm transition-all group">
                     <div className="flex items-start gap-3">
                       <div className="pt-0.5 text-[var(--color-subtle)] group-hover:text-[var(--color-primary)] transition-colors">
                         {feature.icon}
@@ -126,18 +126,18 @@ export default function FeaturesPage() {
         </div>
 
         {/* Global CTA */}
-        <div className="mt-12 p-8 rounded-[32px] bg-[var(--color-text)] text-white text-center relative overflow-hidden group">
+        <div className="mt-12 p-8 rounded-2xl bg-[var(--color-text)] text-white text-center relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
           
           <div className="relative z-10">
-            <div className="w-14 h-14 mx-auto bg-white/10 rounded-[20px] flex items-center justify-center backdrop-blur-md mb-4 border border-white/20">
+            <div className="w-14 h-14 mx-auto bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md mb-4 border border-white/20">
               <Leaf className="w-6 h-6 text-white" />
             </div>
             <h2 className="text-[18px] font-extrabold mb-3 tracking-tight">力を貸してください 🤝</h2>
             <p className="text-[13px] font-bold text-white/80 mb-6 leading-relaxed max-w-[280px] mx-auto">
               これらの仕様を一緒に洗練させ、より多くのアレルギーっ子家族を救う開発メンバー・デザイナーを探しています。
             </p>
-            <a href="mailto:partner@anshin-kids.app" className="inline-flex items-center justify-center gap-2 bg-white text-[var(--color-text)] px-6 py-3.5 rounded-2xl text-[14px] font-black shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform">
+            <a href="mailto:partner@anshin-kids.app" className="inline-flex items-center justify-center gap-2 bg-white text-[var(--color-text)] px-6 py-3.5 rounded-2xl text-[14px] font-black shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-transform">
               <User className="w-4 h-4" /> 開発・デザインに協力する
             </a>
           </div>

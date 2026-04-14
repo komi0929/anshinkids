@@ -210,7 +210,7 @@ export default function ThemeHubClient({
       <div className="px-4 py-3 flex items-center gap-3 bg-[var(--color-bg)]/80 backdrop-blur-md sticky top-0 z-40">
         <Link
           href="/talk"
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-soft hover:shadow-md transition-all active:scale-95"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-[var(--color-border-light)] hover:shadow-sm transition-all active:scale-95"
         >
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
@@ -259,7 +259,7 @@ export default function ThemeHubClient({
                 placeholder="このテーマ内を検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-4 rounded-full bg-white text-[14px] font-bold text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 transition-all shadow-soft"
+                className="w-full pl-10 pr-4 py-4 rounded-full bg-white text-[14px] font-bold text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 transition-all shadow-sm border border-[var(--color-border-light)]"
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -312,7 +312,7 @@ export default function ThemeHubClient({
                         document.getElementById("create-topic-section")?.scrollIntoView({ behavior: "smooth" });
                       }, 100);
                     }}
-                    className="text-left px-5 py-4 rounded-[28px] bg-white shadow-soft hover:shadow-md transition-all flex items-center justify-between group w-full"
+                    className="text-left px-5 py-4 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] hover:shadow-sm transition-all flex items-center justify-between group w-full"
                   >
                     <span className="text-[14px] font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors pr-2 break-keep text-balance line-clamp-1">
                       {prompt}
@@ -365,7 +365,7 @@ export default function ThemeHubClient({
                         layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-5 rounded-[32px] bg-white shadow-soft transition-all group relative overflow-hidden"
+                        className="p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] transition-all group relative overflow-hidden"
                        >
                         <div className="flex items-start justify-between gap-4 mb-2">
                           <h3 className="text-[16px] font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary-dark)] transition-colors break-keep text-balance leading-snug pr-2">
@@ -376,7 +376,7 @@ export default function ThemeHubClient({
                           </div>
                         </div>
                         {summary?.summary_snippet && (
-                          <p className="text-[14px] text-[var(--color-text-secondary)] font-medium leading-relaxed mt-2 mb-3 bg-[var(--color-bg)] rounded-[20px] px-4 py-3 shadow-inner">
+                          <p className="text-[14px] text-[var(--color-text-secondary)] font-medium leading-relaxed mt-2 mb-3 bg-[var(--color-bg)] rounded-xl px-4 py-3 ">
                             {summary.summary_snippet}
                           </p>
                         )}
@@ -433,7 +433,7 @@ export default function ThemeHubClient({
                       layout
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-5 rounded-[28px] bg-white shadow-soft hover:shadow-md transition-all group"
+                      className="p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] hover:shadow-sm transition-all group"
                      >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -470,20 +470,20 @@ export default function ThemeHubClient({
           {/* Create Topic Section */}
           <div id="create-topic-section">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl bg-white shadow-soft px-2 py-1.5 rounded-full">✏️</span>
+              <span className="text-xl bg-white shadow-sm border border-[var(--color-border-light)] px-2 py-1.5 rounded-full">✏️</span>
               <h2 className="text-[16px] font-extrabold text-[var(--color-text)]">話題をつくる</h2>
             </div>
 
             {!showCreateForm ? (
               <button
                 onClick={() => setShowCreateForm(true)}
-                className="w-full p-5 rounded-[28px] bg-white border border-transparent shadow-soft hover:shadow-md text-[14px] font-extrabold text-[var(--color-subtle)] hover:text-[var(--color-primary-dark)] transition-all flex items-center justify-center gap-2"
+                className="w-full p-5 rounded-2xl bg-white border border-transparent shadow-sm border border-[var(--color-border-light)] hover:shadow-sm text-[14px] font-extrabold text-[var(--color-subtle)] hover:text-[var(--color-primary-dark)] transition-all flex items-center justify-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 自分で話題を作成する
               </button>
             ) : (
-              <div className="p-5 rounded-[32px] bg-white shadow-md slide-up">
+              <div className="p-5 rounded-2xl bg-white shadow-sm slide-up">
                 <form onSubmit={handleCreateTopic} className="space-y-4">
                   <input
                     type="text"

@@ -42,7 +42,7 @@ export default async function AmuletCardPage({ params }: { params: Promise<{ id:
       
       {/* Wallet Pass Style Card */}
       <div className="w-full max-w-[360px] relative px-4 fade-in">
-        <div className="rounded-[28px] bg-[var(--color-surface)] shadow-[0_12px_40px_rgba(26,143,110,0.08)] border border-[var(--color-border-light)] overflow-hidden">
+        <div className="rounded-2xl bg-[var(--color-surface)] shadow-sm border border-[var(--color-border-light)] overflow-hidden">
           
           {/* Card Header */}
           <div className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success-deep)] p-6 text-white relative flex flex-col items-center">

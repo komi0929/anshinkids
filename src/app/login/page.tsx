@@ -56,7 +56,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Brand */}
           <div className="text-center mb-10 fade-in">
-            <div className="w-20 h-20 mx-auto mb-5 bg-[var(--color-primary)] rounded-[32px] flex items-center justify-center shadow-[0_8px_24px_rgba(141,224,60,0.3)] overflow-hidden p-3">
+            <div className="w-20 h-20 mx-auto mb-5 bg-[var(--color-primary)] rounded-2xl flex items-center justify-center shadow-[0_8px_24px_rgba(141,224,60,0.3)] overflow-hidden p-3">
               <Image src="/logo.png" alt="あんしんキッズ ロゴ" width={80} height={80} className="w-full h-full object-contain filter drop-shadow-sm brightness-0 invert" />
             </div>
             <h1
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
           {/* How it Works — Compact */}
           <div className="mb-8 fade-in" style={{ animationDelay: "100ms" }}>
-            <div className="p-5 rounded-[32px] bg-white shadow-soft">
+            <div className="p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)]">
               <div className="flex items-center gap-2">
                 {[
                   { icon: "💬", label: "体験を話す" },
@@ -150,7 +150,7 @@ export default function LoginPage() {
 
           {/* Safety Points */}
           <div
-            className="mt-8 p-5 rounded-[32px] fade-in bg-white shadow-soft"
+            className="mt-8 p-5 rounded-2xl fade-in bg-white shadow-sm border border-[var(--color-border-light)]"
             style={{ animationDelay: "300ms" }}
           >
             <h3

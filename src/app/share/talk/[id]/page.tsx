@@ -77,12 +77,12 @@ export default async function SharePostPage({ params }: Props) {
       <div className="w-full max-w-[400px] slide-up">
         {/* Branding header */}
         <div className="flex justify-center mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] rounded-2xl flex items-center justify-center shadow-md">
+          <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] rounded-2xl flex items-center justify-center shadow-sm">
              <MessageCircle className="w-6 h-6 text-white" />
           </div>
         </div>
         
-        <div className="bg-white rounded-[24px] shadow-lg border border-[var(--color-border-light)] p-6 mb-6 relative overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-[var(--color-border-light)] p-6 mb-6 relative overflow-hidden">
           {/* Subtle noise/texture */}
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(#000 1px, transparent 1px)", backgroundSize: "16px 16px" }}></div>
           
@@ -101,7 +101,7 @@ export default async function SharePostPage({ params }: Props) {
 
         <Link
           href={`/talk/${roomSlug}`}
-          className="w-full btn-primary !py-4 shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-all text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-success-deep)]"
+          className="w-full btn-primary !py-4 shadow-sm flex items-center justify-center gap-2 hover:shadow-sm transition-all text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-success-deep)]"
         >
           <span className="text-[14px] font-extrabold">アプリを開いてこの質問に答える</span>
           <ArrowRight className="w-4 h-4" />

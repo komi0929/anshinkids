@@ -432,7 +432,7 @@ export default function ChatClient({
     // プロフィールで設定した絵文字アバター (1〜4文字)
     if (avatar_url && avatar_url.length <= 4) {
       return (
-        <div className="w-full h-full bg-[var(--color-bg)] flex items-center justify-center rounded-full shadow-inner">
+        <div className="w-full h-full bg-[var(--color-bg)] flex items-center justify-center rounded-full ">
           <span className="text-[14px]">{avatar_url}</span>
         </div>
       );
@@ -441,7 +441,7 @@ export default function ChatClient({
     const bg = getAvatarBg(user_id);
     const initial = getAvatarInitial(user_id, name);
     return (
-      <div className={`w-full h-full ${bg} flex items-center justify-center rounded-full shadow-inner`}>
+      <div className={`w-full h-full ${bg} flex items-center justify-center rounded-full `}>
         <span className="text-[11px] font-black text-white mix-blend-overlay opacity-80">{initial}</span>
       </div>
     );
@@ -465,8 +465,8 @@ export default function ChatClient({
       return (
         <div className="flex flex-col items-center px-4 pt-8 pb-4">
           <div className="w-full max-w-sm">
-            <div className="relative rounded-[32px] bg-white shadow-soft p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center text-[28px] mx-auto mb-4 shadow-inner">
+            <div className="relative rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] p-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center text-[28px] mx-auto mb-4 ">
                 {topicSummary ? "📝" : (roomInfo?.icon_emoji || "💬")}
               </div>
               <p className="text-[15px] font-extrabold text-[var(--color-text)] leading-snug mb-2">
@@ -517,7 +517,7 @@ export default function ChatClient({
 
       const dateDivider = showDateDivider ? (
         <div className="flex justify-center my-6 slide-up" key={`date-${msg.id}`}>
-          <span className="text-[11px] font-black text-[var(--color-subtle)] bg-white px-4 py-2 rounded-full shadow-soft opacity-80">
+          <span className="text-[11px] font-black text-[var(--color-subtle)] bg-white px-4 py-2 rounded-full shadow-sm border border-[var(--color-border-light)] opacity-80">
             {dateStr}
           </span>
         </div>
@@ -545,7 +545,7 @@ export default function ChatClient({
                 <span className="text-[11px] font-extrabold text-[var(--color-subtle)] mr-2 mb-1">
                   {getAnonymousName(msg.user_id, msg.author_name)}
                 </span>
-                <div className="px-5 py-3.5 rounded-[28px] rounded-br-[6px] bg-[var(--color-primary)] text-white shadow-soft break-words whitespace-pre-wrap text-[15px] font-medium leading-relaxed max-w-full">
+                <div className="px-5 py-3.5 rounded-2xl rounded-br-[6px] bg-[var(--color-primary)] text-white shadow-sm border border-[var(--color-border-light)] break-words whitespace-pre-wrap text-[15px] font-medium leading-relaxed max-w-full">
                   {msg.image_url && (
                     <div className="mb-2 -mx-1 -mt-1 rounded-t-[20px] overflow-hidden relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -577,15 +577,15 @@ export default function ChatClient({
                           onClick={() => setActiveReactionMsg(activeReactionMsg === msg.id ? null : msg.id)}
                           className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
                             activeReactionMsg === msg.id 
-                              ? "bg-[var(--color-primary-dark)] text-white shadow-md"
-                              : "bg-white text-[var(--color-subtle)] shadow-soft hover:shadow-md"
+                              ? "bg-[var(--color-primary-dark)] text-white shadow-sm"
+                              : "bg-white text-[var(--color-subtle)] shadow-sm border border-[var(--color-border-light)] hover:shadow-sm"
                           }`}
                         >
                           <span className="text-[14px] font-black">+</span>
                         </button>
                         
                         {activeReactionMsg === msg.id && (
-                          <div className="absolute bottom-full right-0 mb-2 bg-white/90 backdrop-blur-md border border-[var(--color-border)] shadow-lg rounded-full px-2 py-1.5 flex gap-1 z-50 animate-in fade-in zoom-in duration-200">
+                          <div className="absolute bottom-full right-0 mb-2 bg-white/90 backdrop-blur-md border border-[var(--color-border)] shadow-sm rounded-full px-2 py-1.5 flex gap-1 z-50 animate-in fade-in zoom-in duration-200">
                             {AVAILABLE_REACTIONS.map(emoji => (
                               <button
                                 key={emoji}
@@ -617,7 +617,7 @@ export default function ChatClient({
                       <button
                         key={emoji}
                         onClick={() => handleReactionToggle(msg.id, emoji)}
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] transition-all shadow-soft ${
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] transition-all shadow-sm border border-[var(--color-border-light)] ${
                           data.hasReacted
                             ? "bg-[var(--color-primary-bg)] text-[var(--color-primary-dark)] font-black"
                             : "bg-white text-[var(--color-subtle)] font-bold"
@@ -659,7 +659,7 @@ export default function ChatClient({
                     {getAnonymousName(msg.user_id, msg.author_name)}
                   </span>
                   {msg.author_age && (
-                    <span className="text-[10px] font-bold bg-[var(--color-bg)] text-[var(--color-subtle)] px-2 py-0.5 rounded-full shadow-inner">
+                    <span className="text-[10px] font-bold bg-[var(--color-bg)] text-[var(--color-subtle)] px-2 py-0.5 rounded-full ">
                       {msg.author_age.includes("歳") ? msg.author_age : msg.author_age + "歳"}
                     </span>
                   )}
@@ -676,7 +676,7 @@ export default function ChatClient({
                     </div>
                   )}
                 </div>
-                <div className="px-5 py-3.5 rounded-[28px] rounded-bl-[6px] bg-white text-[var(--color-text)] shadow-soft break-words whitespace-pre-wrap text-[15px] font-medium leading-relaxed max-w-full">
+                <div className="px-5 py-3.5 rounded-2xl rounded-bl-[6px] bg-white text-[var(--color-text)] shadow-sm border border-[var(--color-border-light)] break-words whitespace-pre-wrap text-[15px] font-medium leading-relaxed max-w-full">
                   {msg.image_url && (
                     <div className="mb-2 -mx-1 -mt-1 rounded-t-[20px] overflow-hidden relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -700,8 +700,8 @@ export default function ChatClient({
                         onClick={() => setActiveReactionMsg(activeReactionMsg === msg.id ? null : msg.id)}
                         className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
                           activeReactionMsg === msg.id 
-                            ? "bg-[var(--color-primary-dark)] text-white shadow-md"
-                            : "bg-[var(--color-bg)] text-[var(--color-subtle)] shadow-inner hover:shadow-soft hover:bg-white"
+                            ? "bg-[var(--color-primary-dark)] text-white shadow-sm"
+                            : "bg-[var(--color-bg)] text-[var(--color-subtle)]  hover:shadow-sm border border-[var(--color-border-light)] hover:bg-white"
                         }`}
                         title="リアクションを追加"
                       >
@@ -709,7 +709,7 @@ export default function ChatClient({
                       </button>
                       
                       {activeReactionMsg === msg.id && (
-                        <div className="absolute bottom-full left-0 mb-2 bg-white/90 backdrop-blur-md border border-[var(--color-border)] shadow-lg rounded-full px-2 py-1.5 flex gap-1 z-50 animate-in fade-in zoom-in duration-200">
+                        <div className="absolute bottom-full left-0 mb-2 bg-white/90 backdrop-blur-md border border-[var(--color-border)] shadow-sm rounded-full px-2 py-1.5 flex gap-1 z-50 animate-in fade-in zoom-in duration-200">
                           {AVAILABLE_REACTIONS.map(emoji => (
                             <button
                               key={emoji}
@@ -802,10 +802,10 @@ export default function ChatClient({
           <div className="mx-4 mt-4 mb-2">
             <button
               onClick={() => setShowSummary(!showSummary)}
-              className="w-full flex items-center justify-between p-5 rounded-[28px] bg-white shadow-soft transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-between p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] transition-all active:scale-[0.98]"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center shadow-inner">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center ">
                   <BookOpen className="w-4 h-4 text-[var(--color-primary-dark)]" />
                 </div>
                 <span className="text-[15px] font-extrabold text-[var(--color-text)]">AIまとめ</span>
@@ -828,9 +828,9 @@ export default function ChatClient({
                <TopicBookmarkButton summaryId={topicSummary.id} snippetTitle={topicInfo?.title || "お役立ち情報"} snippetContent={topicSummary.summary_snippet || ""} />
             </div>
             {showSummary && (
-              <div className="mt-2 p-5 rounded-[28px] bg-white shadow-soft slide-up">
+              <div className="mt-2 p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] slide-up">
                 {topicSummary.summary_snippet && (
-                  <p className="text-[14px] font-medium text-[var(--color-text)] leading-relaxed mb-4 bg-[var(--color-bg)] rounded-[20px] px-4 py-3 shadow-inner">
+                  <p className="text-[14px] font-medium text-[var(--color-text)] leading-relaxed mb-4 bg-[var(--color-bg)] rounded-xl px-4 py-3 ">
                     {topicSummary.summary_snippet}
                   </p>
                 )}
@@ -913,11 +913,11 @@ export default function ChatClient({
             type="button"
             disabled={isSending}
             onClick={() => fileInputRef.current?.click()}
-            className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full text-[var(--color-subtle)] bg-white shadow-soft active:scale-95 transition-all outline-none"
+            className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full text-[var(--color-subtle)] bg-white shadow-sm border border-[var(--color-border-light)] active:scale-95 transition-all outline-none"
           >
             <Camera className="w-[24px] h-[24px]" />
           </button>
-          <div className="flex-1 bg-white rounded-[32px] shadow-soft overflow-hidden flex items-end min-h-[48px] px-5 py-3.5">
+          <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[var(--color-border-light)] overflow-hidden flex items-end min-h-[48px] px-5 py-3.5">
             <textarea
               ref={textareaRef}
               value={newMessage}
@@ -940,7 +940,7 @@ export default function ChatClient({
             className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full transition-all outline-none ${
               (newMessage.trim() || selectedImage) && !isSending
                 ? "bg-[var(--color-primary)] text-white shadow-glow active:scale-90"
-                : "bg-white text-[var(--color-muted)] shadow-soft opacity-70"
+                : "bg-white text-[var(--color-muted)] shadow-sm border border-[var(--color-border-light)] opacity-70"
             }`}
           >
             <Send className="w-[22px] h-[22px] ml-0.5" />

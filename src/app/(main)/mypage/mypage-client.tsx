@@ -85,7 +85,7 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
       className="px-5 py-6"
     >
       <div className="text-center mb-6">
-        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center mx-auto mb-4 shadow-sm">
           <span className="text-3xl">🌿</span>
         </div>
         <h1 className="text-[22px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">
@@ -98,7 +98,7 @@ function OnboardingWelcome({ profile, onNext, onSkipAll }: {
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white rounded-[32px] p-6 shadow-soft mb-5">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--color-border-light)] mb-5">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-16 h-16 relative shrink-0 rounded-full overflow-hidden shadow-sm">
             {renderAvatar(editAvatar, editName || profile.display_name, "rounded-full")}
@@ -245,7 +245,7 @@ function OnboardingComplete() {
       className="fixed inset-0 z-[110] flex items-center justify-center bg-[var(--color-bg)]"
     >
       <div className="text-center fade-in">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-lg scale-in">
+        <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] flex items-center justify-center shadow-sm scale-in">
           <Sparkles className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-[20px] font-extrabold text-[var(--color-text)] mb-2 break-keep text-balance">準備完了！</h2>
@@ -509,7 +509,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           </div>
           <button 
             onClick={() => setShowProfileEdit(true)} 
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-soft hover:shadow-md transition-shadow text-[var(--color-subtle)]"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-[var(--color-border-light)] hover:shadow-sm transition-shadow text-[var(--color-subtle)]"
             aria-label="プロフィール編集"
           >
             <Settings className="w-5 h-5 text-[var(--color-subtle)]" />
@@ -539,8 +539,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         </h2>
         
         {bookmarks.length === 0 ? (
-          <div className="bg-white rounded-[32px] p-6 text-center shadow-soft">
-            <div className="w-14 h-14 rounded-full bg-[var(--color-bg)] flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-[var(--color-border-light)]">
+            <div className="w-14 h-14 rounded-full bg-[var(--color-bg)] flex items-center justify-center mx-auto mb-3 ">
               <span className="text-2xl">🔖</span>
             </div>
             <p className="text-[14px] text-[var(--color-text)] font-bold mb-1 break-keep text-balance">
@@ -559,7 +559,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
               <Link
                 key={bm.id}
                 href={`/wiki/${bm.wiki_entries.slug}`}
-                className="block p-5 rounded-[28px] bg-white hover:shadow-md transition-all shadow-soft group"
+                className="block p-5 rounded-2xl bg-white hover:shadow-sm transition-all shadow-sm border border-[var(--color-border-light)] group"
               >
                 <p className="text-[10px] text-[var(--color-subtle)] mb-1 flex items-center gap-1 font-bold">
                   <BookOpen className="w-3 h-3" />
@@ -582,8 +582,8 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         <div className="px-4 mb-5 fade-in">
            <div className="shimmer h-5 w-40 rounded-lg mb-3" />
            <div className="space-y-2.5">
-             <div className="shimmer h-24 rounded-[20px]" />
-             <div className="shimmer h-24 rounded-[20px]" />
+             <div className="shimmer h-24 rounded-xl" />
+             <div className="shimmer h-24 rounded-xl" />
            </div>
         </div>
       ) : recommendedWikis.length > 0 ? (
@@ -612,7 +612,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                 <Link
                   key={wiki.id}
                   href={url}
-                  className="block p-5 rounded-[28px] bg-white hover:shadow-md transition-all group relative overflow-hidden shadow-soft"
+                  className="block p-5 rounded-2xl bg-white hover:shadow-sm transition-all group relative overflow-hidden shadow-sm border border-[var(--color-border-light)]"
                 >
                   <div className="absolute top-0 right-0 w-14 h-14 bg-gradient-to-bl from-[var(--color-primary-bg)] to-transparent rounded-bl-[28px] opacity-50 pointer-events-none" />
                   <div className="flex-1 min-w-0 relative z-10">
@@ -649,7 +649,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
           transition={{ delay: 0.1 }}
           className="px-4 mb-5"
         >
-          <div className="bg-gradient-to-br from-[var(--color-primary-bg)] to-white rounded-[24px] p-5 text-center border border-[var(--color-primary)]/10 shadow-soft">
+          <div className="bg-gradient-to-br from-[var(--color-primary-bg)] to-white rounded-xl p-5 text-center border border-[var(--color-primary)]/10 shadow-sm border border-[var(--color-border-light)]">
             <div className="w-12 h-12 rounded-[16px] bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto mb-3">
               <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
             </div>
@@ -676,7 +676,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
         >
           <button 
             onClick={() => setShowChildInfo(!showChildInfo)}
-            className="w-full flex items-center justify-between p-4 rounded-[28px] bg-white shadow-soft transition-all active:scale-[0.98]"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] transition-all active:scale-[0.98]"
           >
             <div className="flex items-center gap-2.5">
               <span className="text-lg">👶</span>
@@ -729,17 +729,17 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
 
       {/* ─── Quick Actions ────────────────────────────────────── */}
       <div className="px-4 mb-5 flex gap-3">
-        <Link href="/talk" className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-md">
+        <Link href="/talk" className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--color-text)] text-white text-[14px] font-black hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-sm">
           <span>💬</span> トークルームへ
         </Link>
-        <Link href="/notifications" className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-white text-[var(--color-text)] text-[14px] font-black shadow-soft hover:shadow-md transition-all">
+        <Link href="/notifications" className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-white text-[var(--color-text)] text-[14px] font-black shadow-sm border border-[var(--color-border-light)] hover:shadow-sm transition-all">
           <Bell className="w-5 h-5 text-[var(--color-text)]" /> 通知履歴
         </Link>
       </div>
 
       {/* ─── Section 4: 設定・プライバシー (Compact) ──────────── */}
       <div className="px-4 pb-6">
-        <div className="bg-white rounded-[32px] shadow-soft overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-[var(--color-border-light)] overflow-hidden">
           {/* Privacy toggle */}
           <div className="flex items-center justify-between p-5 border-b border-[var(--color-bg)]">
             <div className="flex-1 min-w-0 mr-3">
@@ -762,7 +762,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                  setIsSavingProfile(false);
               }}
               disabled={isSavingProfile || !profile?.children_profiles || profile.children_profiles.length === 0}
-              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-40 shadow-inner ${
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-40  ${
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (profile?.children_profiles && profile.children_profiles.length > 0 && !profile.children_profiles.some(c => (c as any).isPublic === false)) ? "bg-[var(--color-primary)]" : "bg-gray-300"
               }`}
@@ -838,7 +838,7 @@ export default function MyPageClient({ initialData }: { initialData: any }) {
                 <div className="w-16 h-16 shrink-0 shadow-sm relative rounded-full overflow-hidden">
                   {renderAvatar(editAvatar, editName || profile?.display_name || "👤")}
                   {editAvatar && (
-                    <button onClick={() => setEditAvatar(null)} className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] shadow-md hover:text-[var(--color-danger)] z-10 transition-colors">
+                    <button onClick={() => setEditAvatar(null)} className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center border text-[var(--color-muted)] shadow-sm hover:text-[var(--color-danger)] z-10 transition-colors">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   )}

@@ -59,7 +59,7 @@ export default function NotificationsClient({
     <div className="fade-in pb-4">
       {/* Header */}
       <div className="px-5 py-4 flex items-center gap-3 bg-[var(--color-bg)] sticky top-0 z-40">
-        <Link href="/mypage" className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-soft hover:shadow-md transition-all active:scale-95">
+        <Link href="/mypage" className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-[var(--color-border-light)] hover:shadow-sm transition-all active:scale-95">
           <ArrowLeft className="w-5 h-5 text-[var(--color-text)]" />
         </Link>
         <div className="flex items-center gap-2">
@@ -76,8 +76,8 @@ export default function NotificationsClient({
           onClick={() => setActiveTab("activity")}
           className={`flex-1 py-3 rounded-full text-[14px] font-black transition-all ${
             activeTab === "activity"
-              ? "bg-[var(--color-text)] text-white shadow-md"
-              : "bg-white text-[var(--color-subtle)] shadow-sm hover:shadow-md"
+              ? "bg-[var(--color-text)] text-white shadow-sm"
+              : "bg-white text-[var(--color-subtle)] shadow-sm hover:shadow-sm"
           }`}
         >
           あなたの活動
@@ -86,8 +86,8 @@ export default function NotificationsClient({
           onClick={() => setActiveTab("contributions")}
           className={`flex-1 py-3 rounded-full text-[14px] font-black transition-all ${
             activeTab === "contributions"
-              ? "bg-[var(--color-text)] text-white shadow-md"
-              : "bg-white text-[var(--color-subtle)] shadow-sm hover:shadow-md"
+              ? "bg-[var(--color-text)] text-white shadow-sm"
+              : "bg-white text-[var(--color-subtle)] shadow-sm hover:shadow-sm"
           }`}
         >
           まとめ記事への貢献
@@ -104,17 +104,17 @@ export default function NotificationsClient({
               animate={{ opacity: 1, y: 0 }}
               className="grid grid-cols-3 gap-3"
             >
-              <div className="bg-white rounded-[28px] p-5 text-center shadow-soft">
+              <div className="bg-white rounded-2xl p-5 text-center shadow-sm border border-[var(--color-border-light)]">
                 <BookOpen className="w-5 h-5 text-[var(--color-subtle)] mx-auto mb-2 opacity-50" />
                 <div className="text-[24px] font-black text-[var(--color-text)] leading-none">{profile.total_contributions}</div>
                 <div className="text-[10px] font-extrabold text-[var(--color-subtle)] mt-1.5 leading-tight">発言回数</div>
               </div>
-              <div className="bg-white rounded-[28px] p-5 text-center shadow-soft">
+              <div className="bg-white rounded-2xl p-5 text-center shadow-sm border border-[var(--color-border-light)]">
                 <Heart className="w-5 h-5 text-rose-400 mx-auto mb-2" />
                 <div className="text-[24px] font-black text-rose-500 leading-none">{profile.total_thanks_received}</div>
                 <div className="text-[10px] font-extrabold text-[var(--color-subtle)] mt-1.5 leading-tight">いいね</div>
               </div>
-              <div className="bg-white rounded-[28px] p-5 text-center shadow-soft">
+              <div className="bg-white rounded-2xl p-5 text-center shadow-sm border border-[var(--color-border-light)]">
                 <TrendingUp className="w-5 h-5 text-[var(--color-primary)] mx-auto mb-2" />
                 <div className="text-[24px] font-black text-[var(--color-primary-dark)] leading-none">{impact?.articlesHelped || 0}</div>
                 <div className="text-[10px] font-extrabold text-[var(--color-subtle)] mt-1.5 leading-tight">記事へ採用</div>
@@ -128,10 +128,10 @@ export default function NotificationsClient({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="p-5 rounded-[28px] bg-white shadow-soft"
+              className="p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)]"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--color-secondary)]/10 flex items-center justify-center text-xl shadow-inner">🔥</div>
+                <div className="w-10 h-10 rounded-full bg-[var(--color-secondary)]/10 flex items-center justify-center text-xl ">🔥</div>
                 <div className="flex-1">
                   <p className="text-[13px] font-black text-[var(--color-secondary)]">
                     {streak.currentStreak > 0 ? `${streak.currentStreak}日連続で参加中！` : `通算${streak.totalDays}日参加`}
@@ -161,7 +161,7 @@ export default function NotificationsClient({
                 みんなへのお役立ち
               </h3>
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="p-5 rounded-[28px] bg-white shadow-soft flex flex-col justify-between h-28 relative overflow-hidden">
+                <div className="p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] flex flex-col justify-between h-28 relative overflow-hidden">
                   <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-[var(--color-primary-bg)] rounded-full blur-xl pointer-events-none" />
                   <p className="text-[11px] font-black text-[var(--color-subtle)] relative z-10">まとめ記事への採用</p>
                   <div className="flex items-end gap-1 relative z-10">
@@ -169,7 +169,7 @@ export default function NotificationsClient({
                     <span className="text-[11px] font-bold text-[var(--color-primary)] mb-1">件</span>
                   </div>
                 </div>
-                <div className="p-5 rounded-[28px] bg-white shadow-soft flex flex-col justify-between h-28 relative overflow-hidden">
+                <div className="p-5 rounded-2xl bg-white shadow-sm border border-[var(--color-border-light)] flex flex-col justify-between h-28 relative overflow-hidden">
                   <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-rose-100/50 rounded-full blur-xl pointer-events-none" />
                   <p className="text-[11px] font-black text-[var(--color-subtle)] relative z-10">助かった親御さん</p>
                   <div className="flex items-end gap-1 relative z-10">
@@ -193,10 +193,10 @@ export default function NotificationsClient({
                 <Link
                   key={idx}
                   href={`/wiki/${imp.slug}`}
-                  className="block p-5 rounded-[28px] bg-white hover:shadow-md transition-all shadow-soft group"
+                  className="block p-5 rounded-2xl bg-white hover:shadow-sm transition-all shadow-sm border border-[var(--color-border-light)] group"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center flex-shrink-0 shadow-inner">
+                    <div className="w-12 h-12 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center flex-shrink-0 ">
                       <BookOpen className="w-5 h-5 text-[var(--color-primary-dark)]" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -217,8 +217,8 @@ export default function NotificationsClient({
           )}
 
           {/* Empty state */}
-            <div className="text-center py-12 bg-white rounded-[32px] shadow-soft">
-              <div className="w-16 h-16 rounded-full bg-[var(--color-bg)] flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-[var(--color-border-light)]">
+              <div className="w-16 h-16 rounded-full bg-[var(--color-bg)] flex items-center justify-center mx-auto mb-4 ">
                 <span className="text-2xl">🌱</span>
               </div>
               <p className="text-[15px] font-black text-[var(--color-text)] mb-2">まだ活動はありません</p>
@@ -236,8 +236,8 @@ export default function NotificationsClient({
       {activeTab === "contributions" && (
         <div className="px-4 py-3 space-y-3">
           {contributions.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-[32px] shadow-soft">
-              <div className="w-16 h-16 rounded-full bg-[var(--color-bg)] flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-[var(--color-border-light)]">
+              <div className="w-16 h-16 rounded-full bg-[var(--color-bg)] flex items-center justify-center mx-auto mb-4 ">
                 <Sparkles className="w-7 h-7 text-[var(--color-subtle)]" />
               </div>
               <p className="text-[15px] text-[var(--color-text)] mb-2 font-black break-keep text-balance">
@@ -263,10 +263,10 @@ export default function NotificationsClient({
                 >
                   <Link
                     href={contrib.wiki_entries ? `/wiki/${contrib.wiki_entries.slug}` : "/wiki"}
-                    className="block p-5 rounded-[28px] bg-white hover:shadow-md transition-all shadow-soft group"
+                    className="block p-5 rounded-2xl bg-white hover:shadow-sm transition-all shadow-sm border border-[var(--color-border-light)] group"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <div className="w-12 h-12 rounded-full bg-[var(--color-primary-bg)] flex items-center justify-center flex-shrink-0 ">
                         <span className="text-xl">🌱</span>
                       </div>
                       <div className="flex-1 min-w-0">

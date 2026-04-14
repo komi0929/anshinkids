@@ -1152,7 +1152,7 @@ export default function SimulationPreview() {
                 onClick={() => setSelectedTheme(slug)}
                 className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold transition-all border ${
                   selectedTheme === slug
-                    ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-md scale-[1.02]"
+                    ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm scale-[1.02]"
                     : "bg-white text-[var(--color-text)] border-[var(--color-border-light)] hover:border-[var(--color-primary)]/30"
                 }`}
               >

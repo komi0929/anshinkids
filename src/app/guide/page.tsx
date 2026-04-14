@@ -153,7 +153,7 @@ export default function GuidePage() {
             </div>
 
             {/* Screenshot */}
-            <div className="rounded-2xl overflow-hidden border border-[var(--color-border-light)] shadow-md mb-3 bg-[var(--color-surface)]">
+            <div className="rounded-2xl overflow-hidden border border-[var(--color-border-light)] shadow-sm mb-3 bg-[var(--color-surface)]">
               <Image
                 src={step.image}
                 alt={step.alt}
@@ -181,7 +181,7 @@ export default function GuidePage() {
 
       {/* CTA */}
       <div className="px-5 pb-10">
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] text-center shadow-lg">
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-success)] text-center shadow-sm">
           <h2 className="text-[17px] font-extrabold text-white mb-2 break-keep text-balance">
             さっそく使ってみよう 🌿
           </h2>
@@ -190,7 +190,7 @@ export default function GuidePage() {
           </p>
           <Link
             href="/talk"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[var(--color-primary)] font-bold text-[14px] shadow-sm hover:shadow-md transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[var(--color-primary)] font-bold text-[14px] shadow-sm hover:shadow-sm transition-all"
           >
             トークルームを見る
             <ArrowRight className="w-4 h-4" />

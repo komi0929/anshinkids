@@ -60,7 +60,7 @@ function LineIcon({ className }: { className?: string }) {
 
 export default function AboutPage() {
   return (
-    <div className="fade-in pb-24 min-h-[100dvh] bg-white max-w-md mx-auto shadow-md relative">
+    <div className="fade-in pb-24 min-h-[100dvh] bg-white max-w-md mx-auto shadow-sm relative">
       {/* Header */}
       <div className="sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-[var(--color-border-light)] bg-white/80 backdrop-blur-md shadow-sm">
         <BackButton />
@@ -72,7 +72,7 @@ export default function AboutPage() {
 
       {/* Hero Section */}
       <div className="px-6 pt-12 pb-10 text-center">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-[28px] bg-white flex items-center justify-center shadow-xl overflow-hidden border border-[var(--color-border-light)] transform transition-transform hover:scale-105">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white flex items-center justify-center shadow-xl overflow-hidden border border-[var(--color-border-light)] transform transition-transform hover:scale-105">
           <Image src="/logo.png" alt="あんしんキッズ ロゴ" width={80} height={80} className="w-full h-full object-cover" />
         </div>
         <h2 className="text-[24px] font-extrabold leading-tight tracking-tight text-[var(--color-text)] mb-4">
@@ -86,7 +86,7 @@ export default function AboutPage() {
 
       {/* Core Mission Bento Card */}
       <div className="px-5 mb-10">
-        <div className="rounded-[32px] p-8 text-center bg-gradient-to-br from-[var(--color-surface-soft)] to-[var(--color-primary-bg)] border border-[var(--color-border-light)] shadow-[0_8px_32px_rgba(0,0,0,0.03)] relative overflow-hidden group">
+        <div className="rounded-2xl p-8 text-center bg-gradient-to-br from-[var(--color-surface-soft)] to-[var(--color-primary-bg)] border border-[var(--color-border-light)] shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-2xl -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
           <h3 className="text-[18px] font-extrabold text-[var(--color-text)] mb-4 relative z-10">
             あなたの「今日」が、<br/>誰かの「明日」の安心に。
@@ -106,7 +106,7 @@ export default function AboutPage() {
         </h3>
         <div className="space-y-4">
           {STEPS.map((step) => (
-            <div key={step.num} className="bg-white/80 backdrop-blur-sm rounded-[28px] p-6 border border-[var(--color-border-light)] shadow-sm hover:shadow-md hover:border-[var(--color-primary)]/30 transition-all group">
+            <div key={step.num} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-[var(--color-border-light)] shadow-sm hover:shadow-sm hover:border-[var(--color-primary)]/30 transition-all group">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-soft)] group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-[var(--color-primary)]/10 group-hover:to-[var(--color-success)]/10 flex items-center justify-center flex-shrink-0 transition-all font-black text-[22px]">
                   {step.icon}
@@ -142,7 +142,7 @@ export default function AboutPage() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {SAFETY_POINTS.map(({ title, desc }) => (
-            <div key={title} className="bg-[var(--color-surface-soft)] rounded-[24px] p-5 border border-[var(--color-border-light)]">
+            <div key={title} className="bg-[var(--color-surface-soft)] rounded-xl p-5 border border-[var(--color-border-light)]">
               <h4 className="text-[14px] font-extrabold text-[var(--color-text)] mb-2 flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
                 {title}
@@ -186,7 +186,7 @@ export default function AboutPage() {
           
           <div className="h-4" />
           
-          <Link href="/login" className="w-full text-center flex items-center justify-center gap-3 py-4 rounded-3xl font-bold text-[15px] text-white shadow-lg active:scale-95 transition-all hover:opacity-90" style={{ backgroundColor: 'var(--color-primary)' }}>
+          <Link href="/login" className="w-full text-center flex items-center justify-center gap-3 py-4 rounded-3xl font-bold text-[15px] text-white shadow-sm active:scale-95 transition-all hover:opacity-90" style={{ backgroundColor: 'var(--color-primary)' }}>
             <LineIcon className="text-white" />
             LINEで参加する（無料）
           </Link>
