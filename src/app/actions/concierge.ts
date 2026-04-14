@@ -4,6 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { askConcierge as askConciergeAI } from "@/lib/ai/concierge-rag";
 import { getMyProfile } from "./mypage";
 
+export async function warmUpConcierge() {
+  // Dummy function exactly matching Nani's Pre-warm concept.
+  // Calling this Server Action purely cold-starts the lambda before the user presses "send".
+  return { success: true };
+}
+
 export async function askConcierge(sessionId: string | null, question: string, contextPayload?: string) {
  try {
  const supabase = await createClient();

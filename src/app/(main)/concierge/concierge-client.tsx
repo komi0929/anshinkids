@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw } from "@/components/icons";
-import { askConcierge, contributeFromConcierge } from "@/app/actions/concierge";
+import { Sparkles, Leaf, MessageCircle, Plus, Check, Loader2, AlertTriangle, Phone, X, RefreshCw, Send } from "@/components/icons";
+import { askConcierge, contributeFromConcierge, warmUpConcierge } from "@/app/actions/concierge";
 import { InstantCopyButton } from "@/components/ui/InstantCopyButton";
 import { checkContentSafety, EMERGENCY_GUIDANCE, calculateAnswerConfidence } from "@/lib/ai/safety-guard";
 
