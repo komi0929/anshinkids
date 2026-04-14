@@ -173,14 +173,27 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
     if (error) throw error;
     const recentData = (data || []).reverse();
     let thankedIds: string[] = [];
-    if (user && recentData.length > 0) {
+    let allReactions: { message_id: string, user_id: string, reaction_type: string }[] = [];
+    
+    if (recentData.length > 0) {
       const msgIds = recentData.map((m) => m.id);
-      const { data: thanksData } = await supabase
-        .from("message_thanks")
-        .select("message_id")
-        .eq("user_id", user.id)
+      
+      // Fetch reactions
+      const { data: reactionsData } = await supabase
+        .from("message_reactions")
+        .select("message_id, user_id, reaction_type")
         .in("message_id", msgIds);
-      if (thanksData) thankedIds = thanksData.map((t) => t.message_id);
+        
+      if (reactionsData) allReactions = reactionsData;
+
+      if (user) {
+        const { data: thanksData } = await supabase
+          .from("message_thanks")
+          .select("message_id")
+          .eq("user_id", user.id)
+          .in("message_id", msgIds);
+        if (thanksData) thankedIds = thanksData.map((t) => t.message_id);
+      }
     }
     const enhancedData = recentData.map((msg) => {
       const profs = msg.profiles;
@@ -208,9 +221,12 @@ export async function getTopicMessages(topicId: string, offset: number = 0) {
       const author_allergens = (prof?.allergen_tags || []);
       const shareInfo = childProfs.some((c: any) => c.isPublic !== false) || childProfs.length === 0;
 
+      const msgReactions = allReactions.filter(r => r.message_id === msg.id);
+
       return {
         ...msg,
         has_thanked: thankedIds.includes(msg.id),
+        reactions: msgReactions.map(r => ({ ...r })), // Pass full reactions data to client
         author_name: prof?.display_name || "参加者",
         author_avatar: prof?.avatar_url || null,
         author_trust: prof?.trust_score || 0,
@@ -591,6 +607,72 @@ export async function removeThanks(
     return { success: true };
   } catch (err) {
     console.error("[removeThanks]", err);
+    return { success: false, error: "操作に失敗しました" };
+  }
+}
+
+// ─── Reactions ────────────────────────────────────────────
+
+export async function toggleReaction(
+  messageId: string,
+  reactionType: string
+): Promise<ActionResponse> {
+  try {
+    const validMessage = CommonSchemas.UUID.safeParse(messageId);
+    if (!validMessage.success)
+      return { success: false, error: "無効なメッセージです" };
+      
+    if (!reactionType || reactionType.length > 10) 
+      return { success: false, error: "無効なリアクションです" };
+
+    const supabase = await createClient();
+    if (!supabase) return { success: false, error: "DB未接続" };
+    
+    const { data: { user } } = await getCachedUser();
+    if (!user) return { success: false, error: "ログインが必要です" };
+
+    // Check if user already reacted with this type
+    const { data: existingReaction } = await supabase
+      .from("message_reactions")
+      .select("id, reaction_type")
+      .eq("message_id", validMessage.data)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (existingReaction) {
+      if (existingReaction.reaction_type === reactionType) {
+        // Toggle OFF (Delete)
+        await supabase
+          .from("message_reactions")
+          .delete()
+          .eq("id", existingReaction.id);
+      } else {
+        // Change existing reaction
+        await supabase
+          .from("message_reactions")
+          .update({ reaction_type: reactionType })
+          .eq("id", existingReaction.id);
+      }
+    } else {
+      // Toggle ON (Insert)
+      await supabase.from("message_reactions").insert({
+        message_id: messageId,
+        user_id: user.id,
+        reaction_type: reactionType,
+      });
+    }
+
+    // Extend message life slightly as an active connection
+    const { data: msg } = await supabase.from("messages").select("topic_id").eq("id", messageId).maybeSingle();
+    if (msg?.topic_id) {
+       const newExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+       await supabase.from("messages").update({ expires_at: newExpiry }).eq("topic_id", msg.topic_id);
+    }
+
+    revalidateTag("talk-rooms", undefined as any);
+    return { success: true };
+  } catch (err) {
+    console.error("[toggleReaction]", err);
     return { success: false, error: "操作に失敗しました" };
   }
 }

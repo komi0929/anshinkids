@@ -19,6 +19,7 @@ import {
   deleteMessage,
   sendThanks,
   removeThanks,
+  toggleReaction,
 } from "@/app/actions/messages";
 import { TopicSummary } from "@/app/actions/topic-summary";
 import {
@@ -41,6 +42,7 @@ export interface Message {
   created_at: string;
   expires_at: string;
   has_thanked?: boolean;
+  reactions?: { message_id: string, user_id: string, reaction_type: string }[];
   is_optimistic?: boolean;
   author_name?: string;
   author_avatar?: string | null;
@@ -49,6 +51,8 @@ export interface Message {
   author_age?: string;
   image_url?: string | null;
 }
+
+export const AVAILABLE_REACTIONS = ["👍", "❤️", "😂", "🥺", "🙏", "👀"];
 
 interface RoomInfo {
   id: string;
@@ -96,6 +100,7 @@ export default function ChatClient({
   const [safetyWarning, setSafetyWarning] = useState<string | null>(null);
   const [topicSummary] = useState<TopicSummary | null>(initialSummary);
   const [showSummary, setShowSummary] = useState(true);
+  const [activeReactionMsg, setActiveReactionMsg] = useState<string | null>(null);
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
@@ -158,6 +163,11 @@ export default function ChatClient({
         () => {
           loadMessages();
         }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "message_reactions" },
+        () => loadMessages()
       )
       .subscribe();
 
@@ -328,6 +338,35 @@ export default function ChatClient({
       await sendThanks(messageId);
     }
   }, [thankedIds]);
+
+  const handleReactionToggle = useCallback(async (messageId: string, reactionType: string) => {
+    Haptics.light();
+    AudioHaptics.playPop();
+    
+    // Optistic update
+    setMessages((prev) => prev.map(m => {
+      if (m.id !== messageId || !currentUserId) return m;
+      const existingReactions = m.reactions || [];
+      const userReactionIndex = existingReactions.findIndex(r => r.user_id === currentUserId && r.reaction_type === reactionType);
+      
+      let newReactions = [...existingReactions];
+      if (userReactionIndex >= 0) {
+        // Toggle off
+        newReactions.splice(userReactionIndex, 1);
+      } else {
+        // LINE style: If they tap a new reaction, we might just add it. But here our table uniquely constraints (message_id, user_id).
+        // Optistically remove any other reaction by this user first.
+        newReactions = newReactions.filter(r => r.user_id !== currentUserId);
+        newReactions.push({ message_id: messageId, user_id: currentUserId, reaction_type: reactionType });
+      }
+      return { ...m, reactions: newReactions };
+    }));
+    
+    setActiveReactionMsg(null);
+    startTransition(async () => {
+      await toggleReaction(messageId, reactionType);
+    });
+  }, [currentUserId]);
 
 
   // Anonymous label generator — gives each unique user_id a stable, distinct label
@@ -523,8 +562,7 @@ export default function ChatClient({
                     })}
                   </span>
                   {!msg.is_optimistic && (
-                    <>
-
+                    <div className="flex items-center gap-2 flex-row-reverse">
                       <button
                         onClick={() => handleDelete(msg.id)}
                         className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-danger)] flex items-center transition-colors"
@@ -533,13 +571,70 @@ export default function ChatClient({
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
-                    </>
+                      
+                      <div className="relative">
+                        <button
+                          onClick={() => setActiveReactionMsg(activeReactionMsg === msg.id ? null : msg.id)}
+                          className={`flex items-center justify-center w-6 h-6 rounded-full transition-all border ${
+                            activeReactionMsg === msg.id 
+                              ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm"
+                              : "bg-[var(--color-surface)] text-[var(--color-subtle)] border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)]"
+                          }`}
+                        >
+                          <span className="text-[12px] font-bold">+</span>
+                        </button>
+                        
+                        {activeReactionMsg === msg.id && (
+                          <div className="absolute bottom-full right-0 mb-2 bg-white/90 backdrop-blur-md border border-[var(--color-border)] shadow-lg rounded-full px-2 py-1.5 flex gap-1 z-50 animate-in fade-in zoom-in duration-200">
+                            {AVAILABLE_REACTIONS.map(emoji => (
+                              <button
+                                key={emoji}
+                                onClick={() => handleReactionToggle(msg.id, emoji)}
+                                className="text-[20px] hover:scale-125 active:scale-90 transition-transform px-1"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
+                
+                {/* Reaction Pills Stacked Below My Bubble */}
+                {msg.reactions && msg.reactions.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5 mr-1 justify-end">
+                    {Array.from(
+                      msg.reactions.reduce((acc, r) => {
+                        const existing = acc.get(r.reaction_type) || { count: 0, hasReacted: false };
+                        existing.count += 1;
+                        if (r.user_id === currentUserId) existing.hasReacted = true;
+                        acc.set(r.reaction_type, existing);
+                        return acc;
+                      }, new Map<string, { count: number, hasReacted: boolean }>())
+                    ).map(([emoji, data]) => (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReactionToggle(msg.id, emoji)}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] transition-all border shadow-sm ${
+                          data.hasReacted
+                            ? "bg-blue-50 border-blue-200 text-blue-700"
+                            : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-text)]"
+                        }`}
+                      >
+                        <span>{emoji}</span>
+                        <span className="font-bold opacity-80">{data.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
               </div>
             </div>
           </motion.div>
           </div>
+
         );
       } else {
         return (
@@ -597,23 +692,76 @@ export default function ChatClient({
                       minute: "2-digit",
                     })}
                   </span>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.85 }}
-                    onClick={(e) => handleThanks(msg.id, e)}
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] transition-all border ${
-                      isThanked
-                        ? "bg-[var(--color-heart-light)]/50 border-[var(--color-heart)]/30 text-[var(--color-heart)]"
-                        : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-subtle)]"
-                    }`}
-                  >
-                    <span>❤️</span>
-                    {msg.thanks_count > 0 && (
-                      <span className="font-bold">{msg.thanks_count}</span>
-                    )}
-                  </motion.button>
-
+                  
+                  {/* Plus button to open Reaction Picker for "their" message */}
+                  {!msg.is_optimistic && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveReactionMsg(activeReactionMsg === msg.id ? null : msg.id)}
+                        className={`flex items-center justify-center w-6 h-6 rounded-full transition-all border ${
+                          activeReactionMsg === msg.id 
+                            ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-sm"
+                            : "bg-[var(--color-surface)] text-[var(--color-subtle)] border-[var(--color-border-light)] hover:bg-[var(--color-surface-warm)]"
+                        }`}
+                        title="リアクションを追加"
+                      >
+                        <span className="text-[12px] font-bold">+</span>
+                      </button>
+                      
+                      {activeReactionMsg === msg.id && (
+                        <div className="absolute bottom-full left-0 mb-2 bg-white/90 backdrop-blur-md border border-[var(--color-border)] shadow-lg rounded-full px-2 py-1.5 flex gap-1 z-50 animate-in fade-in zoom-in duration-200">
+                          {AVAILABLE_REACTIONS.map(emoji => (
+                            <button
+                              key={emoji}
+                              onClick={() => handleReactionToggle(msg.id, emoji)}
+                              className="text-[20px] hover:scale-125 active:scale-90 transition-transform px-1"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Keep legacy heartbeat for my-message/older ones optionally? We'll replace it completely. */}
                 </div>
+                
+                {/* Reaction Pills Stacked Below the Bubble */}
+                {msg.reactions && msg.reactions.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5 ml-1">
+                    {Array.from(
+                      msg.reactions.reduce((acc, r) => {
+                        const existing = acc.get(r.reaction_type) || { count: 0, hasReacted: false };
+                        existing.count += 1;
+                        if (r.user_id === currentUserId) existing.hasReacted = true;
+                        acc.set(r.reaction_type, existing);
+                        return acc;
+                      }, new Map<string, { count: number, hasReacted: boolean }>())
+                    ).map(([emoji, data]) => (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReactionToggle(msg.id, emoji)}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] transition-all border shadow-sm ${
+                          data.hasReacted
+                            ? "bg-blue-50 border-blue-200 text-blue-700"
+                            : "bg-[var(--color-surface)] border-[var(--color-border-light)] text-[var(--color-text)]"
+                        }`}
+                      >
+                        <span>{emoji}</span>
+                        <span className="font-bold opacity-80">{data.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Fallback for legacy thanks if present but not migrated yet */}
+                {msg.thanks_count > 0 && (!msg.reactions || msg.reactions.length === 0) && (
+                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] mt-1 ml-1 border bg-[var(--color-heart-light)]/50 border-[var(--color-heart)]/30 text-[var(--color-heart)]">
+                     ❤️ <span className="font-bold">{msg.thanks_count}</span>
+                   </span>
+                )}
+                
               </div>
             </div>
           </motion.div>

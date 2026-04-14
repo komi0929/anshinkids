@@ -95,6 +95,18 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['message_thanks']['Row']>
         Relationships: any[]
       }
+      message_reactions: {
+        Row: {
+          id: string
+          message_id: string
+          user_id: string
+          reaction_type: string
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['message_reactions']['Row']>
+        Update: Partial<Database['public']['Tables']['message_reactions']['Row']>
+        Relationships: any[]
+      }
       wiki_entries: {
         Row: {
           id: string
